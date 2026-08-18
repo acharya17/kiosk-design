@@ -161,7 +161,7 @@
               <div class="metric-info">
                 <h3 style="font-size: 0.85rem; color: var(--text-admin-muted); font-weight: 500;">Today's Orders</h3>
                 <p class="metric-number" id="kpi-orders-count" style="font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0;">126</p>
-                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--green); font-weight: 600;" id="kpi-orders-sub">↑ 12.4% from yesterday</span>
+                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 0.25rem;" id="kpi-orders-sub"><i data-lucide="trending-up" style="width: 12px; height: 12px;"></i> 12.4% from yesterday</span>
               </div>
               <div class="metric-icon warning-bg" style="display: flex;"><i data-lucide="clipboard-list"></i></div>
             </div>
@@ -243,13 +243,14 @@
             </div>
             <div class="table-container small-table">
               <table class="data-table">
-                <thead>
+                <thead class="sortable-header" data-type="orders">
                   <tr>
-                    <th>Order ID</th>
-                    <th>Kiosk</th>
-                    <th>Amount</th>
-                    <th>Payment Status</th>
-                    <th>Order Status</th>
+                    <th data-field="orderId" style="cursor:pointer; user-select:none;">Order ID <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                    <th data-field="dateTime" style="cursor:pointer; user-select:none;">Date & Time <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                    <th data-field="customer" style="cursor:pointer; user-select:none;">Customer <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                    <th data-field="totalAmount" style="cursor:pointer; user-select:none;">Amount <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                    <th data-field="orderStatus" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                    <th style="text-align: right;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="dash-orders-tbody"></tbody>
@@ -305,15 +306,15 @@
                 <col style="width: 12%;">
                 <col style="width: 12%;">
               </colgroup>
-              <thead>
+              <thead class="sortable-header" data-type="banners">
                 <tr>
-                  <th>Banner</th>
-                  <th>Preview</th>
-                  <th>Type</th>
-                  <th>Schedule</th>
-                  <th>Duration</th>
-                  <th>Priority</th>
-                  <th>Status</th>
+                  <th data-field="title" style="cursor:pointer; user-select:none;">Banner <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="type" style="cursor:pointer; user-select:none;">Type <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th>Image</th>
+                  <th data-field="startDate" style="cursor:pointer; user-select:none;">Schedule <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="duration" style="cursor:pointer; user-select:none;">Duration <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="priority" style="cursor:pointer; user-select:none;">Priority <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="active" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -474,12 +475,12 @@
                 <col style="width: 15%;">
                 <col style="width: 12%;">
               </colgroup>
-              <thead>
+              <thead class="sortable-header" data-type="categories">
                 <tr>
-                  <th>Category</th>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Category <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th>Image Icon</th>
-                  <th>Product Count</th>
-                  <th>Status</th>
+                  <th data-field="count" style="cursor:pointer; user-select:none;">Products <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -516,14 +517,14 @@
                 <col style="width: 10%;">
                 <col style="width: 15%;">
               </colgroup>
-              <thead>
+              <thead class="sortable-header" data-type="products">
                 <tr>
-                  <th>Product</th>
                   <th>Image</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  <th>Availability</th>
-                  <th>Status</th>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Product Details <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="categoryId" style="cursor:pointer; user-select:none;">Category <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="price" style="cursor:pointer; user-select:none;">Price <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="available" style="cursor:pointer; user-select:none;">Availability <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -561,13 +562,14 @@
                 <col style="width: 15%;">
               </colgroup>
               <thead>
+              <thead class="sortable-header" data-type="modifiers">
                 <tr>
-                  <th>Modifier Name</th>
-                  <th>Type</th>
-                  <th>Price</th>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Modifier Name <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="type" style="cursor:pointer; user-select:none;">Type <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="price" style="cursor:pointer; user-select:none;">Price <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th>Required/Optional</th>
                   <th>Applicable Products</th>
-                  <th>Status</th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -579,17 +581,29 @@
 
         <!-- 5.1 TAXES TAB -->
         <section id="tab-taxes" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper" style="position: relative; max-width: 300px; flex: 1;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+              <input type="text" id="tax-search" placeholder="Search taxes..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.05); color: #fff; font-size: 0.9rem; transition: border-color 0.2s;">
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary" id="btn-add-tax" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Tax</button>
+            </div>
           </div>
           <div class="table-container">
-            <table class="data-table">
-              <thead>
+            <table class="data-table" id="taxes-table">
+              <colgroup>
+                <col style="width: 40%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+              </colgroup>
+              <thead class="sortable-header" data-type="taxes">
                 <tr>
-                  <th>Tax Name</th>
-                  <th>Percentage</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Tax Name <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="percentage" style="cursor:pointer; user-select:none;">Percentage <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="taxes-tbody"></tbody>
@@ -599,44 +613,64 @@
 
         <!-- 5.2 DISCOUNTS TAB -->
         <section id="tab-discounts" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper" style="position: relative; max-width: 300px; flex: 1;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+              <input type="text" id="discount-search" placeholder="Search discounts..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.05); color: #fff; font-size: 0.9rem; transition: border-color 0.2s;">
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary" id="btn-add-discount" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Discount</button>
+            </div>
           </div>
           <div class="table-container">
-            <table class="data-table">
-              <thead>
+            <table class="data-table" id="discounts-table">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead class="sortable-header" data-type="discounts">
                 <tr>
-                  <th>Discount Name</th>
-                  <th>Type</th>
-                  <th>Value</th>
-                  <th>Applicable Products</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Discount Name <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="value" style="cursor:pointer; user-select:none;">Value <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="applicableProducts" style="cursor:pointer; user-select:none;">Applicability <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="endDate" style="cursor:pointer; user-select:none;">Validity <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
-              <tbody id="discounts-tbody"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 6.1 KIOSKS TAB -->
+        <!-- 6.1 KIOSK TERMINALS TAB -->
         <section id="tab-kiosks" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-kiosk">+ Add Kiosk</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper" style="position: relative; max-width: 300px; flex: 1;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+              <input type="text" id="kiosk-search" placeholder="Search kiosks..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.05); color: #fff; font-size: 0.9rem; transition: border-color 0.2s;">
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary" id="btn-add-kiosk" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Kiosk</button>
+            </div>
           </div>
           <div class="table-container">
-            <table class="data-table">
-              <thead>
+            <table class="data-table" id="kiosks-table">
+              <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead class="sortable-header" data-type="kiosks">
                 <tr>
-                  <th>Kiosk Name</th>
-                  <th>Kiosk ID</th>
-                  <th>Location</th>
-                  <th>Availability</th>
-                  <th>Status</th>
-                  <th>Last Active</th>
-                  <th>Actions</th>
+                  <th data-field="id" style="cursor:pointer; user-select:none;">Kiosk ID <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="location" style="cursor:pointer; user-select:none;">Location <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="connectionStatus" style="cursor:pointer; user-select:none;">Network <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="lastActive" style="cursor:pointer; user-select:none;">Last Heartbeat <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="kiosks-tbody"></tbody>
@@ -687,18 +721,14 @@
           <div class="filter-chips-container" id="payment-history-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
             <table class="data-table">
-              <thead>
+              <thead class="sortable-header" data-type="payment-history">
                 <tr>
-                  <th>Transaction ID</th>
-                  <th>Order ID</th>
-                  <th>Order Token</th>
-                  <th>Kiosk ID</th>
-                  <th>Payment Date & Time</th>
-                  <th>Payment Method</th>
-                  <th>Amount</th>
-                  <th>Payment Status</th>
-                  <th>Order Status</th>
-                  <th>Payment Reference</th>
+                  <th data-field="orderId" style="cursor:pointer; user-select:none;">Order ID <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="kioskId" style="cursor:pointer; user-select:none;">Kiosk ID <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="dateTime" style="cursor:pointer; user-select:none;">Date & Time <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="paymentMethod" style="cursor:pointer; user-select:none;">Method <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="totalAmount" style="cursor:pointer; user-select:none;">Amount <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="paymentStatus" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -837,79 +867,71 @@
           </div>
         </section>
 
-        <!-- 9. DEVICE STATUS TAB -->
+        <!-- 9.1 DEVICES TAB -->
         <section id="tab-devices" class="tab-pane">
-          <div class="settings-grid">
-            <div class="settings-card">
-              <h3>Hardware Diagnostic Logs</h3>
-              <div class="device-list">
-                <div class="device-row">
-                  <span>Touchscreen</span>
-                  <span class="badge touch-badge" id="hw-touchscreen">ONLINE</span>
-                </div>
-                <div class="device-row">
-                  <span>Printer</span>
-                  <span class="badge touch-badge" id="hw-printer">ONLINE</span>
-                </div>
-                <div class="device-row">
-                  <span>QR/UPI Screen</span>
-                  <span class="badge touch-badge" id="hw-qr">ONLINE</span>
-                </div>
-                <div class="device-row">
-                  <span>Card Terminal</span>
-                  <span class="badge touch-badge" id="hw-card">ONLINE</span>
-                </div>
-                <div class="device-row">
-                  <span>Customer Display</span>
-                  <span class="badge touch-badge" id="hw-display">ONLINE</span>
-                </div>
-              </div>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper" style="position: relative; max-width: 300px; flex: 1;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+              <input type="text" id="device-search" placeholder="Search devices..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.05); color: #fff; font-size: 0.9rem; transition: border-color 0.2s;">
             </div>
-            
-            <div class="settings-card">
-              <h3>Live Screen Terminals</h3>
-              <div class="device-list" id="devices-live-screens"></div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary" id="btn-add-device" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Device</button>
             </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="devices-table">
+              <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead class="sortable-header" data-type="devices">
+                <tr>
+                  <th data-field="deviceId" style="cursor:pointer; user-select:none;">Device ID <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="type" style="cursor:pointer; user-select:none;">Type <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="ipAddress" style="cursor:pointer; user-select:none;">IP Address <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="devices-tbody"></tbody>
+            </table>
           </div>
         </section>
 
-        <!-- 10. ROLES & ACCESS TAB -->
+        <!-- 10.1 ROLES & USERS TAB -->
         <section id="tab-roles" class="tab-pane">
-          <div class="details-card">
-            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1.5rem; border-radius: var(--radius-md); color: var(--danger); margin-bottom: 2rem;">
-              <strong style="display: inline-flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i> Client clarification required</strong><br>
-              <p style="margin-top: 0.5rem; color: #7f1d1d; font-size: 0.9rem; line-height: 1.6;">
-                The client requirements do not specify access rules or authentication domains. This module serves as a placeholder.
-              </p>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper" style="position: relative; max-width: 300px; flex: 1;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+              <input type="text" id="role-search" placeholder="Search roles..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.05); color: #fff; font-size: 0.9rem; transition: border-color 0.2s;">
             </div>
-            <h3>Role List Matrix</h3>
-            <div class="table-container small-table" style="margin-top: 1rem;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Role Name</th>
-                    <th>Role Description</th>
-                    <th>Permissions Group</th>
-                    <th>Active Users</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Super Administrator</strong></td>
-                    <td>Complete configuration, pricing, and peripheral systems control.</td>
-                    <td><span class="badge desktop-badge">All Modules</span></td>
-                    <td>2 Users</td>
-                    <td><span class="badge touch-badge">Active</span></td>
-                    <td>
-                      <button class="btn btn-secondary btn-view-role" style="display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i> View</button>
-                      <button class="btn btn-secondary" disabled style="display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="lock" style="width: 14px; height: 14px;"></i> Lock</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary" id="btn-add-role" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add User</button>
             </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="roles-table">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead class="sortable-header" data-type="roles">
+                <tr>
+                  <th data-field="name" style="cursor:pointer; user-select:none;">Name <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="email" style="cursor:pointer; user-select:none;">Email <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="role" style="cursor:pointer; user-select:none;">Role <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th data-field="status" style="cursor:pointer; user-select:none;">Status <i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.5;"></i></th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="roles-tbody"></tbody>
+            </table>
           </div>
         </section>
         <!-- BANNER FORM TAB -->
@@ -1430,9 +1452,10 @@
           <input type="text" id="category-name" class="form-control" required>
         </div>
         <div class="form-group">
-          <label for="category-icon">Image/Icon Emoji *</label>
-          <input type="text" id="category-icon" class="form-control" maxlength="2" required placeholder="🍔">
+          <label>Icon (Lucide Name)</label>
+          <input type="text" id="category-icon" class="form-control" required placeholder="e.g. utensils, coffee">
         </div>
+      </div>
 
         <h4 class="form-section-title">Configuration</h4>
         <div class="form-group">
@@ -1816,7 +1839,8 @@
 
   <!-- Action Confirmation Dialog Modal -->
   <div class="modal" id="confirm-modal">
-    <div class="modal-content" style="width: 400px; text-align: cent      <div class="card-status-icon warning-icon" style="margin: 0 auto 1rem auto; background-color: rgba(239, 68, 68, 0.1); color: var(--danger); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="triangle-alert" style="width: 24px; height: 24px;"></i></div>
+    <div class="modal-content" style="width: 400px; text-align: center;">
+      <div class="card-status-icon warning-icon" style="margin: 0 auto 1rem auto; background-color: rgba(239, 68, 68, 0.1); color: var(--danger); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="triangle-alert" style="width: 24px; height: 24px;"></i></div>
       <h3 id="confirm-modal-title">Delete Action</h3>
       <p id="confirm-modal-body" style="font-size: 0.85rem; color: var(--text-admin-muted); margin-top: 0.5rem; line-height: 1.5;">This action cannot be undone. Are you sure you want to proceed?</p>
       <footer class="modal-footer" style="justify-content: center; gap: 1rem; border-top: none; padding-top: 0;">
@@ -1946,14 +1970,15 @@
  
         <h4 class="form-section-title">Configuration</h4>
         <p><strong>Enabled Permissions:</strong></p>
-        <div style="font-size: 0.85rem; color: var(--text-admin-muted);">
-          ✓ Dashboard View<br>
-          ✓ TV Playlist Loop Controller<br>
-          ✓ Menu Product Catalog CRUD<br>
-          ✓ Taxes & Pricing Configs<br>
-          ✓ Kiosk Terminals diagnostics<br>
-          ✓ Order logs tracking
+        <div style="font-size: 0.85rem; color: var(--text-admin-muted); line-height: 1.8;">
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> Dashboard View</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> TV Playlist Loop Controller</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> Menu Product Catalog CRUD</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> Taxes & Pricing Configs</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> Kiosk Terminals diagnostics</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle" style="width: 14px; height: 14px; color: var(--success);"></i> Order logs tracking</span>
         </div>
+      </div>
       </div>
     </div>
   </div>

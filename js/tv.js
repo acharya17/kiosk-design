@@ -116,6 +116,8 @@
       document.getElementById('fallback-hero-title').textContent = config.fallbackContent.title;
       document.getElementById('fallback-hero-desc').textContent = config.fallbackContent.description;
     }
+    
+    if (window.lucide) lucide.createIcons();
   }
 
   function buildSlidesHTML() {
@@ -198,20 +200,23 @@
     if (!document.fullscreenElement) {
       tvCanvas.requestFullscreen()
         .then(() => {
-          fsBtn.textContent = 'Exit Widescreen';
+          fsBtn.innerHTML = '<i data-lucide="minimize" style="width: 16px; height: 16px;"></i> Exit Widescreen';
+          if (window.lucide) lucide.createIcons();
         })
         .catch(err => {
           console.error('Fullscreen toggle failure:', err);
         });
     } else {
       document.exitFullscreen();
-      fsBtn.textContent = '🖥️ Fullscreen';
+      fsBtn.innerHTML = '<i data-lucide="maximize" style="width: 16px; height: 16px;"></i> Fullscreen';
+      if (window.lucide) lucide.createIcons();
     }
   });
 
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) {
-      fsBtn.textContent = '🖥️ Fullscreen';
+      fsBtn.innerHTML = '<i data-lucide="maximize" style="width: 16px; height: 16px;"></i> Fullscreen';
+      if (window.lucide) lucide.createIcons();
     }
   });
 

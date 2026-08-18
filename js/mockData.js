@@ -7,10 +7,10 @@ const getRelativeDateString = (daysOffset) => {
 };
 
 const INITIAL_CATEGORIES = [
-  { id: 'cat-burgers', name: 'Burgers', icon: '🍔', status: 'active', count: 2 },
-  { id: 'cat-beverages', name: 'Beverages', icon: '🥤', status: 'active', count: 2 },
-  { id: 'cat-snacks', name: 'Snacks', icon: '🍟', status: 'active', count: 1 },
-  { id: 'cat-desserts', name: 'Desserts', icon: '🍰', status: 'active', count: 0 }
+  { id: 'cat-burgers', name: 'Burgers', icon: 'utensils', status: 'active', count: 2 },
+  { id: 'cat-beverages', name: 'Beverages', icon: 'coffee', status: 'active', count: 2 },
+  { id: 'cat-snacks', name: 'Snacks', icon: 'popcorn', status: 'active', count: 1 },
+  { id: 'cat-desserts', name: 'Desserts', icon: 'cake', status: 'active', count: 0 }
 ];
 
 const INITIAL_PRODUCTS = [

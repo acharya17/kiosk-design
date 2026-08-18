@@ -6,6 +6,7 @@
   <title>Customer Self-Order Kiosk Terminal</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/kiosk.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script>
     if (sessionStorage.getItem('kiosk_auth') !== 'kiosk' && !window.location.search.includes('auth=true')) {
       window.location.href = 'index.html';
@@ -18,7 +19,7 @@
     <!-- Network Offline Shield -->
     <div class="kiosk-shield" id="offline-shield">
       <div class="shield-content">
-        <span class="shield-icon">⚠️</span>
+        <i data-lucide="triangle-alert" class="shield-icon" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
         <h2>Terminal Offline</h2>
         <p>This self-ordering terminal is temporarily undergoing a routine system update or network refresh. Please use another kiosk or order at the counter.</p>
         <div class="spinner"></div>
@@ -30,7 +31,6 @@
     <section id="screen-welcome" class="kiosk-screen active">
       <div class="welcome-overlay">
         <div class="brand-header">
-          <span class="brand-icon">🍔</span>
           <h1 id="welcome-store-name">Antigravity Bistro</h1>
           <p>Fresh &bull; Fast &bull; Gourmet</p>
         </div>
@@ -38,40 +38,38 @@
         <div class="welcome-body">
           <div class="touch-cta" id="btn-start-order">
             <div class="ripple-circle"></div>
-            <span class="touch-icon">👆</span>
-            <h2>Tap to Order</h2>
+            <i data-lucide="pointer" class="touch-icon" style="width: 32px; height: 32px;"></i>
+            <h2>Start Order</h2>
             <p>Start your gourmet experience</p>
           </div>
         </div>
 
         <div class="welcome-footer">
-          <div class="language-selector">
-            <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
-            <button class="lang-btn" data-lang="es">🇪🇸 Español</button>
-            <button class="lang-btn" data-lang="fr">🇫🇷 Français</button>
+          <div class="language-selector" id="kiosk-language-selector" style="display: none;">
+            <!-- Rendered by JS if configured -->
           </div>
           <p class="footer-tag">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span> | <a href="#" id="btn-kiosk-logout" style="color: rgba(255,255,255,0.4); text-decoration: underline; font-size: 0.8rem; margin-left: 0.25rem;">Exit Kiosk</a></p>
         </div>
       </div>
     </section>
 
-    <!-- Screen 2: Dine In / Takeaway Selection -->
+    <!-- Screen 2: Dine In / Takeaway Selection (Merged/Skipped if config says so, but keeping for flow) -->
     <section id="screen-order-type" class="kiosk-screen">
-      <div class="kiosk-header">
-        <button class="back-btn btn-to-welcome">&larr; Home</button>
-        <span class="header-logo">🍔</span>
+      <div class="kiosk-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
+        <button class="back-btn btn-to-welcome" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back</button>
+        <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.5rem;">Antigravity Bistro</h2>
         <span></span>
       </div>
       <div class="screen-content flex-center">
         <h2 class="title-prompt">Where will you be eating today?</h2>
         <div class="order-type-grid">
           <button class="type-card" id="btn-type-dinein">
-            <span class="type-icon">🍽️</span>
+            <i data-lucide="utensils" class="type-icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--primary);"></i>
             <h3>Dine In</h3>
             <p>Enjoy your meal warm inside our cozy dining hall</p>
           </button>
           <button class="type-card" id="btn-type-takeaway">
-            <span class="type-icon">🛍️</span>
+            <i data-lucide="shopping-bag" class="type-icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--primary);"></i>
             <h3>Takeaway</h3>
             <p>Freshly packed to go in eco-friendly packaging</p>
           </button>
@@ -81,104 +79,86 @@
 
     <!-- Screen 3: Main Browsing Experience -->
     <section id="screen-browse" class="kiosk-screen">
-      <!-- Top Bar -->
-      <header class="kiosk-top-bar">
-        <button class="back-btn" id="btn-browse-back">&larr; Change Type</button>
-        <div class="order-type-badge" id="browse-type-badge">Dine In</div>
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="product-search" placeholder="Search menu...">
+      <!-- Top Bar matching Prompt Requirements -->
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="header-left" style="display: flex; align-items: center; gap: 1rem;">
+          <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="store" style="width:24px;height:24px;"></i> Antigravity Bistro</h2>
+        </div>
+        <div class="header-center search-box" style="flex: 1; max-width: 400px; position: relative;">
+          <i data-lucide="search" class="search-icon" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-admin-muted);"></i>
+          <input type="text" id="product-search" placeholder="Search products..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 50px; border: 1px solid var(--border-admin); font-size: 1rem; box-sizing: border-box;">
+          <i data-lucide="x" id="product-search-clear" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-admin-muted); cursor: pointer; display: none;"></i>
+        </div>
+        <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem;">
+          <button class="btn-icon" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-admin);">
+            <i data-lucide="languages" style="width: 24px; height: 24px;"></i>
+          </button>
+          <button class="btn-icon" id="btn-header-cart" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-admin); position: relative;">
+            <i data-lucide="shopping-cart" style="width: 28px; height: 28px;"></i>
+            <span class="cart-count-badge" id="header-cart-count" style="position: absolute; top: -8px; right: -8px; background: var(--primary); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;">0</span>
+          </button>
         </div>
       </header>
 
       <!-- Grid layout with Sidebar -->
-      <div class="browse-layout">
-        <aside class="category-sidebar">
+      <div class="browse-layout" style="display: flex; height: calc(100vh - 73px);">
+        <aside class="category-sidebar" style="background: #f9fafb; border-right: 1px solid var(--border-admin); width: 220px; padding: 1rem 0; overflow-y: auto;">
           <div class="category-list" id="kiosk-category-list">
             <!-- Dynamically populated -->
           </div>
         </aside>
         
-        <main class="product-grid-container">
-          <h2 class="category-title" id="current-category-title">Burgers</h2>
-          <div class="products-grid" id="kiosk-products-grid">
+        <main class="product-grid-container" style="padding: 2rem; overflow-y: auto; background: #fff; flex: 1;">
+          <div id="browse-type-badge" style="display: inline-block; padding: 0.25rem 0.75rem; background: rgba(0,0,0,0.05); border-radius: 20px; font-size: 0.85rem; margin-bottom: 1rem; color: var(--text-admin-muted);">Dine In</div>
+          <h2 class="category-title" id="current-category-title" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 2rem; color: var(--text-admin);">All Products</h2>
+          <div class="products-grid" id="kiosk-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
             <!-- Dynamically populated -->
           </div>
         </main>
       </div>
-
-      <!-- Bottom Cart Summary Bar -->
-      <footer class="cart-summary-bar" id="cart-summary-bar">
-        <div class="cart-info">
-          <span class="cart-count-badge" id="summary-cart-count">0</span>
-          <div>
-            <span class="cart-total-price" id="summary-cart-total">$0.00</span>
-            <small>Includes taxes & discounts</small>
-          </div>
-        </div>
-        <button class="btn btn-checkout" id="btn-view-cart">View Cart / Order &rarr;</button>
-      </footer>
     </section>
 
     <!-- Screen 4: Cart and Checkout Details -->
     <section id="screen-cart" class="kiosk-screen">
-      <header class="kiosk-top-bar">
-        <button class="back-btn" id="btn-cart-back">&larr; Back to Menu</button>
-        <h2>Your Order Summary</h2>
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <button class="back-btn" id="btn-cart-back" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back to Menu</button>
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shopping-cart"></i> Cart</h2>
         <span></span>
       </header>
 
-      <div class="cart-layout">
+      <div class="cart-layout" style="display: flex; height: calc(100vh - 73px);">
         <!-- Scrollable items list -->
-        <div class="cart-items-panel">
-          <div class="items-list" id="cart-items-list">
+        <div class="cart-items-panel" style="flex: 1; padding: 2rem; overflow-y: auto; background: #f9fafb;">
+          <div class="items-list" id="cart-items-list" style="display: flex; flex-direction: column; gap: 1rem;">
             <!-- Dynamically populated -->
           </div>
-          
-          <!-- Promo Code area -->
-          <div class="promo-box">
-            <input type="text" id="promo-input" placeholder="Enter coupon (e.g. WELCOME10)">
-            <button class="btn" id="btn-apply-promo">Apply</button>
-          </div>
-          <small class="promo-msg" id="promo-msg"></small>
         </div>
 
         <!-- Checkout & Totals Summary Panel -->
-        <div class="cart-checkout-panel">
-          <div class="totals-breakdown">
-            <div class="total-row">
+        <div class="cart-checkout-panel" style="width: 420px; background: #fff; padding: 2rem; border-left: 1px solid var(--border-admin); display: flex; flex-direction: column;">
+          <div class="totals-breakdown" style="flex: 1;">
+            <div class="total-row" style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-admin-muted);">
               <span>Subtotal</span>
               <span id="calc-subtotal">$0.00</span>
             </div>
-            <div class="total-row discount-row" id="calc-discount-row" style="display: none;">
+            <div class="total-row discount-row" id="calc-discount-row" style="display: none; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);">
               <span>Discount</span>
               <span id="calc-discount">-$0.00</span>
             </div>
-            <div class="total-row">
+            <div class="total-row" style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-admin-muted);">
               <span>Taxes (<span id="calc-tax-percent">0</span>%)</span>
               <span id="calc-tax">$0.00</span>
             </div>
-            <div class="total-row grand-total">
-              <span>Grand Total</span>
+            <hr style="border: none; border-top: 2px dashed var(--border-admin); margin: 1.5rem 0;">
+            <div class="total-row grand-total" style="display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 700; color: var(--text-admin);">
+              <span>Total</span>
               <span id="calc-grand-total">$0.00</span>
             </div>
           </div>
 
-          <form id="checkout-form" class="checkout-form">
-            <h3>Dine-in Information</h3>
-            <div class="form-group" id="table-number-group">
-              <label for="check-table">Table Number (1-50) *</label>
-              <input type="number" id="check-table" class="form-control" min="1" max="50" placeholder="e.g. 12">
-            </div>
-            <div class="form-group">
-              <label for="check-name">Customer Name *</label>
-              <input type="text" id="check-name" class="form-control" required placeholder="e.g. John Doe">
-            </div>
-            <div class="form-group">
-              <label for="check-mobile">Mobile Number *</label>
-              <input type="tel" id="check-mobile" class="form-control" required placeholder="e.g. 9876543210">
-            </div>
-            <button type="submit" class="btn btn-checkout-submit" id="btn-pay-now">Proceed to Payment</button>
+          <form id="checkout-form" class="checkout-form" style="margin-top: 2rem;">
+            <button type="button" class="btn btn-secondary" id="btn-continue-ordering" style="width: 100%; margin-bottom: 1rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Continue Ordering</button>
+            <button type="submit" class="btn btn-primary" id="btn-pay-now" style="width: 100%; padding: 1rem; font-size: 1.2rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">Proceed to Payment <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i></button>
           </form>
         </div>
       </div>
@@ -186,119 +166,89 @@
 
     <!-- Screen 5: Simulated Payment Steps -->
     <section id="screen-payment" class="kiosk-screen">
-      <div class="payment-wrapper">
-        <h2 class="title-prompt">Choose Your Payment Method</h2>
-        <p class="payable-indicator">Total Payable: <strong id="payment-grand-total">$0.00</strong></p>
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <button class="back-btn" id="btn-payment-back" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back to Cart</button>
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="credit-card"></i> Payment</h2>
+        <span></span>
+      </header>
 
-        <div class="payment-options-grid" id="payment-options-container">
-          <button class="payment-card" data-method="upi" id="pay-opt-upi">
-            <span class="pay-icon">📱</span>
-            <h3>UPI / Scan QR</h3>
-            <p>Scan & pay securely with GPay, PhonePe, or BHIM</p>
-          </button>
-          <button class="payment-card" data-method="card" id="pay-opt-card">
-            <span class="pay-icon">💳</span>
-            <h3>Card Terminal</h3>
-            <p>Insert or Tap credit/debit card on terminal</p>
-          </button>
-          <button class="payment-card" data-method="cash" id="pay-opt-cash">
-            <span class="pay-icon">💵</span>
-            <h3>Pay Cash at Counter</h3>
-            <p>Order is sent to queue. Pay cashier directly</p>
-          </button>
+      <div class="payment-wrapper flex-center" style="height: calc(100vh - 73px); background: #f9fafb; flex-direction: column; padding: 2rem;">
+        <h2 class="title-prompt" style="font-size: 2rem; margin-bottom: 0.5rem;">Choose Payment Method</h2>
+        <p class="payable-indicator" style="font-size: 1.25rem; color: var(--text-admin-muted); margin-bottom: 3rem;">Total Payable: <strong id="payment-grand-total" style="color: var(--text-admin); font-size: 1.5rem;">$0.00</strong></p>
+
+        <div class="payment-options-grid" id="payment-options-container" style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+          <!-- Rendered by JS -->
         </div>
 
-        <button class="btn btn-secondary" id="btn-cancel-payment">Cancel Order & Return</button>
+        <button class="btn btn-secondary" id="btn-cancel-payment" style="margin-top: 4rem; padding: 1rem 2rem; font-size: 1.1rem; color: var(--danger); border-color: rgba(220, 38, 38, 0.2); background: rgba(220, 38, 38, 0.05); border-radius: var(--radius-md);">Cancel Order</button>
       </div>
     </section>
 
-    <!-- Screen 6: Order Confirmation & Receipt -->
+    <!-- Screen 6: Order Confirmation -->
     <section id="screen-confirmation" class="kiosk-screen">
-      <div class="confirmation-wrapper">
-        <div class="conf-stamp">✓</div>
-        <h2>Order Confirmed!</h2>
-        <p class="subtitle">Thank you for ordering. Your food is being prepared fresh.</p>
+      <div class="confirmation-wrapper flex-center" style="height: 100vh; flex-direction: column; background: #fff;">
+        <i data-lucide="circle-check" style="width: 80px; height: 80px; color: var(--green); margin-bottom: 1.5rem;"></i>
+        <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Order Confirmed</h2>
+        <p class="subtitle" style="color: var(--text-admin-muted); font-size: 1.2rem; margin-bottom: 3rem;">Thank you for your order.</p>
 
-        <div class="token-banner">
-          <span>YOUR TOKEN NUMBER</span>
-          <h1 id="conf-token-number">#102</h1>
-        </div>
+        <div style="background: #f9fafb; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); padding: 3rem; width: 100%; max-width: 500px; text-align: center;">
+          <p style="color: var(--text-admin-muted); margin-bottom: 0.5rem; font-size: 1.1rem;">Order Number:</p>
+          <h1 id="conf-order-id" style="font-family: var(--font-display); font-size: 3rem; margin: 0 0 2rem 0; color: var(--primary);">ORD-1026</h1>
+          
+          <div style="text-align: left; margin-bottom: 2rem; max-height: 200px; overflow-y: auto;">
+            <h4 style="margin: 0 0 1rem 0; color: var(--text-admin-muted); border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem;">Items</h4>
+            <div id="conf-items-list" style="font-size: 1.1rem; line-height: 1.6;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
 
-        <div class="order-details-box">
-          <p>Order ID: <span id="conf-order-id" style="font-family: monospace;">-</span></p>
-          <p>Payment: <span id="conf-payment-status" class="badge">SUCCESS</span></p>
-          <p>Est. Preparation Time: <strong id="conf-prep-time">12-15 Mins</strong></p>
-        </div>
-
-        <!-- Receipt Print Simulation -->
-        <div class="receipt-printer-box">
-          <div class="printer-mouth"></div>
-          <div class="paper-receipt" id="paper-receipt">
-            <div class="receipt-header">
-              <h3>ANTIGRAVITY BISTRO</h3>
-              <p>Self-Order Kiosk Terminal</p>
-              <p id="receipt-date">Date: 2026-08-18</p>
-            </div>
-            <div class="receipt-divider">--------------------------------</div>
-            <div class="receipt-items" id="receipt-items-list">
-              <!-- items populated dynamically -->
-            </div>
-            <div class="receipt-divider">--------------------------------</div>
-            <div class="receipt-totals">
-              <p>Subtotal: <span id="receipt-subtotal">$0.00</span></p>
-              <p>Tax: <span id="receipt-tax">$0.00</span></p>
-              <p>Discount: <span id="receipt-discount">-$0.00</span></p>
-              <p><strong>Grand Total: <span id="receipt-total">$0.00</span></strong></p>
-            </div>
-            <div class="receipt-footer">
-              <p>Table: <span id="receipt-table">-</span></p>
-              <p>Token Number: <span id="receipt-token">#102</span></p>
-              <p>Thank you! Visit again.</p>
-            </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.25rem; font-weight: 700; border-top: 2px dashed var(--border-admin); padding-top: 1.5rem; margin-bottom: 1rem;">
+            <span>Total:</span>
+            <span id="conf-grand-total">$0.00</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-admin-muted);">
+            <span>Payment:</span>
+            <span style="color: var(--green); font-weight: 600;">Successful</span>
           </div>
         </div>
 
-        <button class="btn btn-checkout" id="btn-finish-order">Complete & Return Home (15s)</button>
+        <button class="btn btn-primary" id="btn-finish-order" style="margin-top: 3rem; padding: 1rem 3rem; font-size: 1.25rem; border-radius: var(--radius-lg);">Done</button>
       </div>
     </section>
   </div>
 
   <!-- PRODUCT DETAILS & CUSTOMIZER MODAL DRAWER -->
-  <div class="modal" id="customizer-modal">
-    <div class="customizer-drawer">
-      <div class="customizer-header">
-        <h3 id="cust-product-name">Product Name</h3>
-        <button class="modal-close" id="btn-close-customizer">&times;</button>
+  <div class="modal" id="customizer-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="customizer-drawer" style="background: #fff; width: 90%; max-width: 600px; height: 90vh; border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <div class="customizer-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="cust-product-name" style="margin: 0; font-size: 1.5rem;">Product Name</h3>
+        <button class="modal-close" id="btn-close-customizer" style="background: none; border: none; cursor: pointer; color: var(--text-admin); padding: 0.5rem;"><i data-lucide="x" style="width: 24px; height: 24px;"></i></button>
       </div>
       
-      <div class="customizer-body">
-        <img src="" id="cust-product-image" class="customizer-img" alt="product">
-        <p id="cust-product-desc" class="customizer-desc">Product description goes here.</p>
+      <div class="customizer-body" style="flex: 1; overflow-y: auto; padding: 1.5rem;">
+        <img src="" id="cust-product-image" class="customizer-img" alt="product" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+        <p id="cust-product-desc" class="customizer-desc" style="color: var(--text-admin-muted); line-height: 1.5; margin-bottom: 2rem;">Product description goes here.</p>
+        <h3 id="cust-product-price" style="font-size: 1.5rem; margin-top: -1rem; margin-bottom: 2rem;">$0.00</h3>
 
         <!-- Variants Container -->
-        <div class="customizer-section" id="cust-variants-section">
+        <div class="customizer-section" id="cust-variants-section" style="margin-bottom: 2rem;">
           <!-- Dynamically populated -->
         </div>
 
         <!-- Addons Container -->
-        <div class="customizer-section" id="cust-addons-section">
+        <div class="customizer-section" id="cust-addons-section" style="margin-bottom: 2rem;">
           <!-- Dynamically populated -->
-        </div>
-
-        <!-- Special Instructions -->
-        <div class="customizer-section">
-          <h4>Special Instructions</h4>
-          <textarea id="cust-instructions" class="form-control text-area" placeholder="e.g. No onions, sauce on the side..."></textarea>
         </div>
       </div>
 
-      <div class="customizer-footer">
-        <div class="quantity-controller">
-          <button class="qty-btn" id="btn-cust-minus">-</button>
-          <span class="qty-val" id="cust-qty-val">1</span>
-          <button class="qty-btn" id="btn-cust-plus">+</button>
+      <div class="customizer-footer" style="padding: 1.5rem; border-top: 1px solid var(--border-admin); background: #f9fafb; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+        <div class="quantity-controller" style="display: flex; align-items: center; background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-md); padding: 0.5rem;">
+          <button class="qty-btn" id="btn-cust-minus" style="background: none; border: none; cursor: pointer; padding: 0.5rem;"><i data-lucide="minus" style="width: 20px; height: 20px;"></i></button>
+          <span class="qty-val" id="cust-qty-val" style="width: 40px; text-align: center; font-weight: 600; font-size: 1.25rem;">1</span>
+          <button class="qty-btn" id="btn-cust-plus" style="background: none; border: none; cursor: pointer; padding: 0.5rem;"><i data-lucide="plus" style="width: 20px; height: 20px;"></i></button>
         </div>
-        <button class="btn btn-add-to-cart" id="btn-cust-add-cart">
+        <button class="btn btn-primary" id="btn-cust-add-cart" style="flex: 1; padding: 1rem; font-size: 1.25rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
           Add to Cart &bull; <span id="cust-total-price">$0.00</span>
         </button>
       </div>
@@ -306,56 +256,63 @@
   </div>
 
   <!-- PAYMENT STATUS MODAL OVERLAY -->
-  <div class="modal" id="payment-status-modal">
+  <div class="modal" id="payment-status-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+    
     <!-- Processing State -->
-    <div class="payment-popup-card active" id="pay-state-processing">
-      <div class="spinner spinner-large"></div>
-      <h3>Processing Payment</h3>
-      <p>Simulating card transaction or waiting for UPI payment receipt...</p>
-      <div class="progress-bar-container">
-        <div class="progress-bar" id="pay-progress-bar"></div>
-      </div>
-      <small>Do not remove card or refresh screen.</small>
+    <div class="payment-popup-card" id="pay-state-processing" style="background: #fff; padding: 3rem; border-radius: var(--radius-lg); text-align: center; max-width: 400px; width: 90%; display: none;">
+      <i data-lucide="loader-circle" style="width: 64px; height: 64px; color: var(--primary); animation: spin 2s linear infinite; margin-bottom: 1.5rem; display: inline-block;"></i>
+      <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Processing Payment</h3>
+      <p style="color: var(--text-admin-muted);">Please wait while we confirm your payment.</p>
     </div>
 
-    <!-- Failed / Retry State -->
-    <div class="payment-popup-card" id="pay-state-failed">
-      <div class="card-status-icon fail-icon">✕</div>
-      <h3>Payment Transaction Failed</h3>
-      <p id="payment-fail-reason">The transaction timed out or was rejected by your financial institution.</p>
-      <div class="card-buttons">
-        <button class="btn btn-primary" id="btn-payment-retry">Retry Payment</button>
-        <button class="btn btn-secondary" id="btn-payment-cancel-failed">Cancel & Edit Cart</button>
+    <!-- Failed State -->
+    <div class="payment-popup-card" id="pay-state-failed" style="background: #fff; padding: 3rem; border-radius: var(--radius-lg); text-align: center; max-width: 400px; width: 90%; display: none;">
+      <i data-lucide="circle-x" style="width: 64px; height: 64px; color: var(--danger); margin-bottom: 1.5rem; display: inline-block;"></i>
+      <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Payment Unsuccessful</h3>
+      <p style="color: var(--text-admin-muted); margin-bottom: 2rem;">We couldn't complete your payment.</p>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <button class="btn btn-primary" id="btn-payment-retry" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md);">Try Again</button>
+        <button class="btn btn-secondary" id="btn-payment-cancel-failed" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md);">Return to Cart</button>
       </div>
     </div>
 
     <!-- Timeout Alert State -->
-    <div class="payment-popup-card" id="pay-state-timeout">
-      <div class="card-status-icon warning-icon">⏳</div>
-      <h3>Verification In Progress</h3>
-      <p>Payment signal did not arrive in time. Verifying payment status on our terminal system before permitting retries...</p>
-      <div class="spinner"></div>
-      <button class="btn btn-primary" id="btn-payment-check-status">Verify and Complete</button>
+    <div class="payment-popup-card" id="pay-state-timeout" style="background: #fff; padding: 3rem; border-radius: var(--radius-lg); text-align: center; max-width: 400px; width: 90%; display: none;">
+      <i data-lucide="clock-3" style="width: 64px; height: 64px; color: var(--warning); margin-bottom: 1.5rem; display: inline-block;"></i>
+      <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Taking Longer Than Expected</h3>
+      <p style="color: var(--text-admin-muted); margin-bottom: 2rem;">Checking your payment status...</p>
+      <i data-lucide="loader-circle" style="width: 32px; height: 32px; color: var(--warning); animation: spin 2s linear infinite; display: inline-block;"></i>
     </div>
   </div>
 
   <!-- INACTIVITY TIMEOUT MODAL WARNING -->
-  <div class="modal" id="inactivity-modal">
-    <div class="payment-popup-card">
-      <div class="card-status-icon warning-icon">⏳</div>
-      <h3>Are you still there?</h3>
-      <p>Your session is about to expire due to inactivity. We will clear the cart and return to home in:</p>
-      <div class="inactivity-countdown" id="inactivity-countdown-number">10</div>
-      <div class="card-buttons">
-        <button class="btn btn-primary" id="btn-inactivity-continue">Yes, Continue Ordering</button>
-        <button class="btn btn-secondary" id="btn-inactivity-exit">Cancel & Start Over</button>
+  <div class="modal" id="inactivity-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center;">
+    <div class="payment-popup-card" style="background: #fff; padding: 3rem; border-radius: var(--radius-lg); text-align: center; max-width: 450px; width: 90%;">
+      <i data-lucide="timer" style="width: 64px; height: 64px; color: var(--warning); margin-bottom: 1.5rem; display: inline-block;"></i>
+      <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Are you still ordering?</h3>
+      <p style="color: var(--text-admin-muted); margin-bottom: 1.5rem;">Your session will reset in <strong id="inactivity-countdown-number" style="color: var(--text-admin); font-size: 1.2rem;">30</strong> seconds.</p>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <button class="btn btn-primary" id="btn-inactivity-continue" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md);">Continue Ordering</button>
+        <button class="btn btn-secondary" id="btn-inactivity-exit" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md);">Start Over</button>
       </div>
     </div>
   </div>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 
   <!-- Shared store scripts -->
   <script src="js/mockData.js"></script>
   <script src="js/store.js"></script>
   <script src="js/kiosk.js"></script>
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

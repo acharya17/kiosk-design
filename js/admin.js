@@ -1585,23 +1585,57 @@
   function handleUploadedFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      hiddenImageInput.value = e.target.result;
-      const uploadSpan = uploadZone.querySelector('span');
-      if (uploadSpan) {
-        uploadSpan.textContent = `Uploaded: ${file.name}`;
-        uploadSpan.style.color = 'var(--green)';
+      const src = e.target.result;
+      document.getElementById('banner-page-image').value = src;
+      
+      const isVideo = file.type.startsWith('video/');
+      const detectedType = isVideo ? 'video' : 'image';
+      document.getElementById('banner-page-content-type').value = detectedType;
+      
+      document.getElementById('banner-upload-prompt').style.display = 'none';
+      const previewArea = document.getElementById('banner-media-preview');
+      previewArea.style.display = 'flex';
+      
+      const imgPreview = document.getElementById('banner-preview-img');
+      const vidPreview = document.getElementById('banner-preview-vid');
+      
+      if (isVideo) {
+        imgPreview.style.display = 'none';
+        vidPreview.style.display = 'block';
+        vidPreview.src = src;
+      } else {
+        vidPreview.style.display = 'none';
+        imgPreview.style.display = 'block';
+        imgPreview.src = src;
       }
-      // Auto-detect content type
-      const detectedType = file.type.startsWith('video/') ? 'video' : 'image';
-      const ctField = document.getElementById('banner-page-content-type');
-      const ctDisplay = document.getElementById('banner-page-content-type-display');
-      if (ctField) ctField.value = detectedType;
-      if (ctDisplay) {
-        ctDisplay.innerHTML = `<span class="badge desktop-badge">${detectedType.toUpperCase()}</span><small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>`;
-      }
+      
+      document.getElementById('banner-preview-filename').textContent = file.name;
+      document.getElementById('banner-detected-type').textContent = detectedType.toUpperCase();
+      
       showToast(`Selected "${file.name}" for upload.`);
     };
     reader.readAsDataURL(file);
+  }
+
+  function resetMediaPreview() {
+    document.getElementById('banner-page-image').value = '';
+    document.getElementById('banner-page-file-input').value = '';
+    document.getElementById('banner-upload-prompt').style.display = 'flex';
+    document.getElementById('banner-media-preview').style.display = 'none';
+    document.getElementById('banner-preview-img').src = '';
+    document.getElementById('banner-preview-vid').src = '';
+  }
+
+  const btnReplaceMedia = document.getElementById('btn-replace-media');
+  if (btnReplaceMedia) {
+    btnReplaceMedia.addEventListener('click', () => {
+      document.getElementById('banner-page-file-input').click();
+    });
+  }
+  
+  const btnRemoveMedia = document.getElementById('btn-remove-media');
+  if (btnRemoveMedia) {
+    btnRemoveMedia.addEventListener('click', resetMediaPreview);
   }
 
   // Navigation cancellation helper for Banners
@@ -1612,58 +1646,91 @@
       tabTitle.textContent = 'Banners';
       tabDescription.textContent = 'Manage promotional banners and media.';
       breadcrumbCurrent.textContent = 'Banners';
+      
+      // Stop any playing video
+      const viewVideo = document.getElementById('banner-view-video');
+      if (viewVideo) {
+        viewVideo.pause();
+        viewVideo.src = '';
+      }
     });
   });
 
   // CRUD actions for Banners (Page based)
   document.getElementById('btn-add-banner').addEventListener('click', () => {
     document.getElementById('banner-form-page').reset();
+    resetMediaPreview();
     document.getElementById('banner-page-id').value = '';
     document.getElementById('banner-form-title-h3').textContent = 'Add Banner';
+    document.getElementById('btn-save-banner').textContent = 'Save Banner';
+    
     document.getElementById('banner-page-start-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('banner-page-start-time').value = '08:00';
     document.getElementById('banner-page-end-date').value = new Date(Date.now() + 5*24*60*60*1000).toISOString().split('T')[0];
     document.getElementById('banner-page-end-time').value = '22:00';
-
-    const uploadSpan = document.querySelector('#banner-page-upload-zone span');
-    if (uploadSpan) {
-      uploadSpan.textContent = 'Drag and drop your file here, or click to browse';
-      uploadSpan.style.color = '';
-    }
+    document.getElementById('banner-page-active').checked = true;
+    document.getElementById('banner-status-label').textContent = 'Active';
+    document.getElementById('banner-date-error').style.display = 'none';
 
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-form').classList.add('active');
     tabTitle.textContent = 'Add Banner';
-    tabDescription.textContent = 'Configure promotion details.';
+    tabDescription.textContent = 'Create and schedule promotional content for your TV displays.';
     breadcrumbCurrent.textContent = 'Add Banner';
   });
 
+  const activeSwitch = document.getElementById('banner-page-active');
+  if (activeSwitch) {
+    activeSwitch.addEventListener('change', (e) => {
+      document.getElementById('banner-status-label').textContent = e.target.checked ? 'Active' : 'Inactive';
+    });
+  }
+
   document.getElementById('banner-form-page').addEventListener('submit', (e) => {
     e.preventDefault();
-    const id = document.getElementById('banner-page-id').value;
-    const title = document.getElementById('banner-page-title').value.trim();
-    const image = document.getElementById('banner-page-image').value.trim();
-    const duration = parseInt(document.getElementById('banner-page-duration').value) || 5;
-    const priority = parseInt(document.getElementById('banner-page-priority').value) || 1;
+    
     const startDate = document.getElementById('banner-page-start-date').value;
     const startTime = document.getElementById('banner-page-start-time').value;
     const endDate = document.getElementById('banner-page-end-date').value;
     const endTime = document.getElementById('banner-page-end-time').value;
+    
+    // Validate Dates
+    const startObj = new Date(`${startDate}T${startTime}`);
+    const endObj = new Date(`${endDate}T${endTime}`);
+    
+    if (startObj >= endObj) {
+      document.getElementById('banner-date-error').style.display = 'block';
+      return;
+    } else {
+      document.getElementById('banner-date-error').style.display = 'none';
+    }
+
+    const id = document.getElementById('banner-page-id').value;
+    const title = document.getElementById('banner-page-title').value.trim();
+    const image = document.getElementById('banner-page-image').value.trim();
+    const duration = parseInt(document.getElementById('banner-page-duration').value) || 8;
+    const priority = parseInt(document.getElementById('banner-page-priority').value) || 1;
     const contentType = document.getElementById('banner-page-content-type').value;
+    const active = document.getElementById('banner-page-active').checked;
+
+    if (!image) {
+      showToast('Please upload a banner media file.');
+      return;
+    }
 
     const list = KioskStore.getBanners();
     if (id) {
       const b = list.find(item => item.id === id);
       if (b) {
-        Object.assign(b, { title, image, duration, priority, startDate, startTime, endDate, endTime, contentType });
+        Object.assign(b, { title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active });
       }
     } else {
-      list.push({ id: 'banner-' + Date.now(), title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active: true, playlistId: 'play-default' });
+      list.push({ id: 'banner-' + Date.now(), title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active, playlistId: 'play-main' });
     }
 
     KioskStore.setBanners(list);
-    showToast(`Banner "${title}" saved successfully.`);
-    // Return
+    showToast('Banner created successfully.');
+    
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banners').classList.add('active');
     tabTitle.textContent = 'Banners';
@@ -1686,23 +1753,38 @@
     document.getElementById('banner-page-end-date').value = b.endDate;
     document.getElementById('banner-page-end-time').value = b.endTime || '22:00';
     document.getElementById('banner-page-content-type').value = b.contentType;
-    const ctDisplay = document.getElementById('banner-page-content-type-display');
-    if (ctDisplay) {
-      ctDisplay.innerHTML = `<span class="badge desktop-badge">${b.contentType.toUpperCase()}</span><small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>`;
-    }
+    document.getElementById('banner-page-active').checked = b.active;
+    document.getElementById('banner-status-label').textContent = b.active ? 'Active' : 'Inactive';
+    document.getElementById('banner-date-error').style.display = 'none';
 
-    const uploadSpan = document.querySelector('#banner-page-upload-zone span');
-    if (uploadSpan) {
-      uploadSpan.textContent = 'Media loaded (Drag or click to replace)';
-      uploadSpan.style.color = 'var(--primary)';
+    // Setup media preview
+    document.getElementById('banner-upload-prompt').style.display = 'none';
+    const previewArea = document.getElementById('banner-media-preview');
+    previewArea.style.display = 'flex';
+    
+    const imgPreview = document.getElementById('banner-preview-img');
+    const vidPreview = document.getElementById('banner-preview-vid');
+    
+    if (b.contentType === 'video') {
+      imgPreview.style.display = 'none';
+      vidPreview.style.display = 'block';
+      vidPreview.src = b.image;
+    } else {
+      vidPreview.style.display = 'none';
+      imgPreview.style.display = 'block';
+      imgPreview.src = b.image;
     }
+    
+    document.getElementById('banner-preview-filename').textContent = 'existing_media';
+    document.getElementById('banner-detected-type').textContent = b.contentType.toUpperCase();
 
     document.getElementById('banner-form-title-h3').textContent = 'Edit Banner';
+    document.getElementById('btn-save-banner').textContent = 'Save Changes';
     
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-form').classList.add('active');
     tabTitle.textContent = 'Edit Banner';
-    tabDescription.textContent = 'Configure promotion details.';
+    tabDescription.textContent = 'Create and schedule promotional content for your TV displays.';
     breadcrumbCurrent.textContent = 'Edit Banner';
   }
 
@@ -1711,18 +1793,37 @@
     const b = banners.find(item => item.id === id);
     if (!b) return;
 
-    document.getElementById('banner-view-title-h3').textContent = b.title;
-    document.getElementById('banner-view-image').src = b.image;
+    document.getElementById('banner-view-title').textContent = b.title;
+    
+    const viewImg = document.getElementById('banner-view-image');
+    const viewVid = document.getElementById('banner-view-video');
+    
+    if (b.contentType === 'video') {
+      viewImg.style.display = 'none';
+      viewVid.style.display = 'block';
+      viewVid.src = b.image;
+    } else {
+      viewVid.style.display = 'none';
+      viewImg.style.display = 'block';
+      viewImg.src = b.image;
+    }
+
     document.getElementById('banner-view-type').textContent = b.contentType.toUpperCase();
     document.getElementById('banner-view-duration').textContent = b.duration;
     document.getElementById('banner-view-priority').textContent = b.priority;
-    document.getElementById('banner-view-schedule').textContent = `${b.startDate} to ${b.endDate}`;
-    document.getElementById('banner-view-status').textContent = b.active ? 'Active' : 'Inactive';
+    
+    const startFormatted = formatDatePretty(b.startDate, b.startTime);
+    const endFormatted = formatDatePretty(b.endDate, b.endTime);
+    document.getElementById('banner-view-schedule').innerHTML = `${startFormatted}<br><span style="color:var(--text-admin-muted);">to</span><br>${endFormatted}`;
+    
+    const statusEl = document.getElementById('banner-view-status');
+    statusEl.textContent = b.active ? 'Active' : 'Inactive';
+    statusEl.className = b.active ? 'badge touch-badge' : 'badge danger-badge';
 
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-view').classList.add('active');
     tabTitle.textContent = 'Banner Details';
-    tabDescription.textContent = 'View digital screen configuration.';
+    tabDescription.textContent = 'View configuration and preview media.';
     breadcrumbCurrent.textContent = 'View Banner';
   }
 

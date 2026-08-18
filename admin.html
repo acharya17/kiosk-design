@@ -830,103 +830,182 @@
           </div>
         </section>
         <!-- BANNER FORM TAB -->
+        <!-- BANNER FORM TAB -->
         <section id="tab-banner-form" class="tab-pane">
-          <div class="settings-grid">
-            <div class="settings-card" style="grid-column: span 2;">
-              <h3 id="banner-form-title-h3">Add Banner</h3>
-              <form id="banner-form-page">
-                <input type="hidden" id="banner-page-id">
-                <h4 class="form-section-title">Basic Information</h4>
-                <div class="form-group">
-                  <label for="banner-page-title">Banner Name *</label>
-                  <input type="text" id="banner-page-title" class="form-control" required>
-                </div>
-                <div class="form-group">
-                  <label>Media Content (Image/Video) *</label>
-                  <div id="banner-page-upload-zone" style="border: 2px dashed var(--border-admin); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <i data-lucide="upload-cloud" style="width: 28px; height: 28px; color: var(--primary);"></i>
-                    <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">Drag and drop your file here, or click to browse</span>
-                    <span style="font-size: 0.7rem; color: var(--text-admin-muted);">Supports PNG, JPG, MP4 (Max 10MB)</span>
-                    <input type="file" id="banner-page-file-input" accept="image/*,video/*" style="display: none;">
-                  </div>
-                  <!-- Hidden input to store template URL or uploaded Base64 data -->
-                  <input type="hidden" id="banner-page-image" required>
-                  <div class="preset-links" style="margin-top: 0.75rem;">
-                    <span>Or Quick Presets: </span>
-                    <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=1200&auto=format&fit=crop&q=80">Coffee Deal</button>
-                    <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&auto=format&fit=crop&q=80">Pizza Feast</button>
-                  </div>
-                </div>
+          <div style="max-width: 1000px; padding-bottom: 2rem;">
+            <!-- Back Button Header -->
+            <div style="margin-bottom: 2rem;">
+              <button type="button" class="btn btn-secondary btn-cancel-banner" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back
+              </button>
+            </div>
 
-                <h4 class="form-section-title">Configuration</h4>
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label for="banner-page-duration">Display Duration (s) *</label>
-                    <input type="number" id="banner-page-duration" class="form-control" min="3" max="60" value="5" required>
+            <form id="banner-form-page">
+              <input type="hidden" id="banner-page-id">
+              
+              <!-- Basic Information Section -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Basic Information</h4>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="banner-page-title">Banner Name *</label>
+                  <input type="text" id="banner-page-title" class="form-control" placeholder="Enter banner name" required>
+                </div>
+              </div>
+
+              <!-- Media Content Section -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Media Content</h4>
+                <label>Banner Media *</label>
+                <div id="banner-page-upload-zone" style="border: 1px dashed var(--border-admin); border-radius: var(--radius-md); padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
+                  <div id="banner-upload-prompt" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: var(--primary);"></i>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-admin-main);">Upload image or video</span>
+                    <span style="font-size: 0.85rem; color: var(--text-admin-muted);">Drag & drop your file here or Browse</span>
+                    <span style="font-size: 0.75rem; color: var(--text-admin-muted); margin-top: 0.5rem;">Supported formats: JPG, PNG, WEBP, MP4, WEBM</span>
                   </div>
-                  <div class="form-group col">
-                    <label for="banner-page-priority">Priority *</label>
+                  <div id="banner-media-preview" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 1rem;">
+                    <img id="banner-preview-img" src="" style="max-height: 200px; max-width: 100%; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-admin); display: none;">
+                    <video id="banner-preview-vid" src="" style="max-height: 200px; max-width: 100%; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-admin); display: none;" controls></video>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                      <span id="banner-preview-filename" style="font-weight: 500; font-size: 0.85rem;">filename.jpg</span>
+                      <div id="banner-page-content-type-display" style="font-size: 0.75rem; color: var(--text-admin-muted);">
+                        Detected type: <span class="badge desktop-badge" id="banner-detected-type">IMAGE</span>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                      <button type="button" class="btn btn-secondary" id="btn-replace-media" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Replace</button>
+                      <button type="button" class="btn btn-secondary btn-action-danger" id="btn-remove-media" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; color: var(--danger);">Remove</button>
+                    </div>
+                  </div>
+                  <input type="file" id="banner-page-file-input" accept="image/*,video/*" style="display: none;">
+                </div>
+                <!-- Hidden inputs -->
+                <input type="hidden" id="banner-page-image" required>
+                <input type="hidden" id="banner-page-content-type" value="image">
+              </div>
+
+              <!-- Schedule & Playback Section -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Schedule & Playback</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                  <!-- Row 1 -->
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-duration">Display Duration</label>
+                    <div style="position: relative;">
+                      <input type="number" id="banner-page-duration" class="form-control" min="3" max="60" value="8" required style="padding-right: 2.5rem;">
+                      <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-admin-muted); font-size: 0.8rem; pointer-events: none;">sec</span>
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-priority">Display Priority</label>
                     <input type="number" id="banner-page-priority" class="form-control" min="1" max="100" value="1" required>
                   </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label for="banner-page-start-date">Start Date *</label>
+                  
+                  <!-- Row 2 -->
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-start-date">Start Date</label>
                     <input type="date" id="banner-page-start-date" class="form-control" required>
                   </div>
-                  <div class="form-group col">
-                    <label for="banner-page-start-time">Start Time *</label>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-start-time">Start Time</label>
                     <input type="time" id="banner-page-start-time" class="form-control" required>
                   </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label for="banner-page-end-date">End Date *</label>
+
+                  <!-- Row 3 -->
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-end-date">End Date</label>
                     <input type="date" id="banner-page-end-date" class="form-control" required>
                   </div>
-                  <div class="form-group col">
-                    <label for="banner-page-end-time">End Time *</label>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="banner-page-end-time">End Time</label>
                     <input type="time" id="banner-page-end-time" class="form-control" required>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label>Content Type</label>
-                  <input type="hidden" id="banner-page-content-type" value="image">
-                  <div id="banner-page-content-type-display" style="padding: 0.5rem 0; font-size: 0.85rem; color: var(--text-admin-main);">
-                    <span class="badge desktop-badge">IMAGE</span>
-                    <small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>
+                <div id="banner-date-error" style="color: var(--danger); font-size: 0.8rem; margin-top: 0.75rem; display: none;">
+                  End date and time must be after the start date and time.
+                </div>
+              </div>
+
+              <!-- Status Section -->
+              <div style="margin-bottom: 3rem;">
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Status</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; max-width: 400px;">
+                  <div>
+                    <label style="margin-bottom: 0; font-weight: 500;">Active Status</label>
+                    <p style="font-size: 0.8rem; color: var(--text-admin-muted); margin: 0.25rem 0 0 0;">Enable or disable this banner.</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span id="banner-status-label" style="font-size: 0.85rem; font-weight: 600;">Active</span>
+                    <label class="status-switch" style="width: 44px; height: 24px; display: inline-block;">
+                      <input type="checkbox" id="banner-page-active" checked>
+                      <span class="slider" style="border-radius: 24px;"></span>
+                    </label>
                   </div>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                  <button type="button" class="btn btn-secondary btn-cancel-banner">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save Banner</button>
-                </div>
-              </form>
-            </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div style="display: flex; align-items: center; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-admin);">
+                <button type="submit" class="btn btn-primary" id="btn-save-banner" style="min-width: 160px;">Save Banner</button>
+                <button type="button" class="btn btn-secondary btn-cancel-banner" style="min-width: 120px;">Cancel</button>
+              </div>
+            </form>
           </div>
         </section>
 
         <!-- BANNER VIEW TAB -->
         <section id="tab-banner-view" class="tab-pane">
-          <div class="settings-grid">
-            <div class="settings-card" style="grid-column: span 2;">
-              <h3 id="banner-view-title-h3">Banner Details</h3>
-              <div style="background: #000; border-radius: var(--radius-md); overflow: hidden; height: 320px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                <img src="" id="banner-view-image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-              </div>
-              <h4 class="form-section-title">Configuration</h4>
-              <div class="settings-grid" style="grid-template-columns: 1fr 1fr; font-size: 0.95rem; margin-bottom: 1.5rem; gap: 1rem;">
-                <div>
-                  <p style="margin-bottom: 0.6rem;"><strong>Type:</strong> <span id="banner-view-type">-</span></p>
-                  <p style="margin-bottom: 0.6rem;"><strong>Duration:</strong> <span id="banner-view-duration">-</span>s</p>
-                  <p style="margin-bottom: 0.6rem;"><strong>Priority:</strong> <span id="banner-view-priority">-</span></p>
+          <div style="max-width: 1000px; padding-bottom: 2rem;">
+            <!-- Back Button Header -->
+            <div style="margin-bottom: 2rem;">
+              <button type="button" class="btn btn-secondary btn-cancel-banner" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back
+              </button>
+            </div>
+
+            <!-- Media Preview Area -->
+            <div style="background: #000; min-height: 240px; display: flex; align-items: center; justify-content: center; position: relative; border-radius: var(--radius-md); margin-bottom: 2.5rem; overflow: hidden;">
+              <img src="" id="banner-view-image" style="max-width: 100%; max-height: 400px; object-fit: contain; display: none;">
+              <video src="" id="banner-view-video" style="max-width: 100%; max-height: 400px; object-fit: contain; display: none;" controls></video>
+            </div>
+            
+            <!-- Info Sections -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+              
+              <!-- Left Column: Details -->
+              <div>
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Banner Details</h4>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Name</p>
+                  <p id="banner-view-title" style="font-weight: 600; font-size: 1.1rem; color: var(--text-admin-main);">-</p>
                 </div>
-                <div>
-                  <p style="margin-bottom: 0.6rem;"><strong>Schedule:</strong> <span id="banner-view-schedule">-</span></p>
-                  <p style="margin-bottom: 0.6rem;"><strong>Status:</strong> <span id="banner-view-status">-</span></p>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Media Type</p>
+                  <span id="banner-view-type" class="badge desktop-badge">-</span>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Status</p>
+                  <span id="banner-view-status" class="badge touch-badge">-</span>
                 </div>
               </div>
-              <button type="button" class="btn btn-secondary btn-cancel-banner">Go Back</button>
+              
+              <!-- Right Column: Schedule & Configuration -->
+              <div>
+                <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Schedule & Configuration</h4>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Schedule</p>
+                  <p id="banner-view-schedule" style="font-size: 0.95rem; color: var(--text-admin-main); line-height: 1.5;">-</p>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Display Duration</p>
+                  <p style="font-size: 0.95rem; color: var(--text-admin-main);"><span id="banner-view-duration">-</span> sec</p>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Display Priority</p>
+                  <p style="font-size: 0.95rem; color: var(--text-admin-main);">P<span id="banner-view-priority">-</span></p>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>

@@ -870,6 +870,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   height: 16px;
 }
 .search-input-wrapper input {
+  width: 100%;
   padding-left: 2.25rem !important;
   padding-right: 2rem !important;
 }

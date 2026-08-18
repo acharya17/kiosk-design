@@ -4,8 +4,10 @@
 
   // Logout trigger
   document.getElementById('btn-auth-logout').addEventListener('click', () => {
-    sessionStorage.removeItem('kiosk_auth');
-    window.location.href = 'index.html';
+    triggerConfirm('Logout', 'Are you sure you want to logout?', () => {
+      sessionStorage.removeItem('kiosk_auth');
+      window.location.href = 'index.html';
+    }, { isDestructive: true, confirmText: 'Yes, Logout' });
   });
 
 
@@ -21,12 +23,17 @@
     'dashboard': { title: 'Dashboard', desc: 'Overview of system status and performance.' },
     'banners': { title: 'Banners', desc: 'Manage promotional banners and media.' },
     'playlists': { title: 'Playlists', desc: 'Create and configure media loops.' },
-    'tvs': { title: 'TV Displays', desc: 'Assign signage schedules and configure fallback contents.' },
+    'tvs': { title: 'TVs', desc: 'Assign and map signage loop schedules.' },
+    'fallback': { title: 'Default / Fallback Content', desc: 'Manage screens running when no schedule matches.' },
     'categories': { title: 'Categories', desc: 'Browse and edit catalog menu partitions.' },
-    'products': { title: 'Products', desc: 'Manage menu items, taxes, and promotional discount campaigns.' },
+    'products': { title: 'Products', desc: 'Manage products prices and menu listings.' },
     'customisation': { title: 'Customisation', desc: 'Configure product modifications and addon matrix.' },
-    'kiosks': { title: 'Kiosks', desc: 'Register self-order customer terminals and apply configurations.' },
-    'payments': { title: 'Payments', desc: 'Manage UPI, Card, and Cash gateway settings.' },
+    'taxes': { title: 'Taxes', desc: 'Manage VAT and local service cess tax configs.' },
+    'discounts': { title: 'Discounts', desc: 'Configure promotional coupon campaigns.' },
+    'kiosks': { title: 'Kiosks', desc: 'Register self-order customer terminals.' },
+    'kiosk-config': { title: 'Kiosk Configuration', desc: 'Global settings profiles for kiosks.' },
+    'payments': { title: 'Payment Configuration', desc: 'Manage UPI, Card, and Cash gateway settings.' },
+    'payment-history': { title: 'Payment History', desc: 'Monitor payment transactions and order links.' },
     'orders': { title: 'Orders', desc: 'Monitor kiosk generated orders logs.' },
     'devices': { title: 'Device Status', desc: 'Hardware peripheral diagnostic logs.' },
     'roles': { title: 'Roles & Access', desc: 'Pending clarification. Placeholders active.' }
@@ -53,42 +60,6 @@
       breadcrumbCurrent.textContent = meta.title;
     });
   });
-
-  // Products Inner Sub-Tabs Switcher
-  document.addEventListener('click', (e) => {
-    const subtabBtn = e.target.closest('.subtab-link');
-    if (subtabBtn) {
-      const targetSubtab = subtabBtn.getAttribute('data-subtab');
-      const parent = subtabBtn.parentElement;
-      
-      parent.querySelectorAll('.subtab-link').forEach(btn => {
-        btn.classList.remove('active-subtab');
-        btn.style.color = 'var(--text-admin-muted)';
-        btn.style.borderBottom = 'none';
-      });
-      subtabBtn.classList.add('active-subtab');
-      subtabBtn.style.color = 'var(--primary)';
-      subtabBtn.style.borderBottom = '2px solid var(--primary)';
-
-      const container = parent.parentElement;
-      container.querySelectorAll('.subtab-content').forEach(pane => {
-        pane.style.display = 'none';
-      });
-      const targetPane = document.getElementById(`subtab-${targetSubtab}`);
-      if (targetPane) {
-        targetPane.style.display = 'block';
-      }
-    }
-  });
-
-  // Simulator Drawer
-  const simToggle = document.getElementById('simulation-toggle');
-  const simDrawer = document.querySelector('.simulation-drawer');
-  if (simToggle) {
-    simToggle.addEventListener('click', () => {
-      simDrawer.classList.toggle('expanded');
-    });
-  }
 
 
   // --- 3. TOAST NOTIFICATIONS WRAPPER ---
@@ -120,26 +91,195 @@
     const orders = KioskStore.getOrders() || [];
 
     const activeBanners = banners.filter(b => b.active).length;
-    const activeTvs = tvs.filter(t => t.connectionStatus === 'online').length;
-    const activeKiosks = kiosks.filter(k => k.connectionStatus === 'online').length;
+    const onlineTvs = tvs.filter(t => t.connectionStatus === 'online').length;
+    const onlineKiosks = kiosks.filter(k => k.connectionStatus === 'online' || k.connectionStatus === 'warning').length;
 
     // Set metrics
-    document.getElementById('kpi-active-tvs').textContent = activeTvs;
+    document.getElementById('kpi-active-tvs').textContent = onlineTvs;
+    document.getElementById('kpi-active-tvs-sub').textContent = `${onlineTvs} of ${tvs.length} TVs online`;
+
     document.getElementById('kpi-active-banners').textContent = activeBanners;
-    document.getElementById('kpi-active-kiosks').textContent = activeKiosks;
-    document.getElementById('kpi-orders-count').textContent = orders.length;
+    document.getElementById('kpi-active-banners-sub').textContent = `3 scheduled today`;
+
+    document.getElementById('kpi-active-kiosks').textContent = onlineKiosks;
+    document.getElementById('kpi-active-kiosks-sub').textContent = `${onlineKiosks} of ${kiosks.length} kiosks online`;
+
+    document.getElementById('kpi-orders-count').textContent = '126';
+    document.getElementById('kpi-orders-sub').textContent = '↑ 12.4% from yesterday';
+
+    // Destroy previous chart instances if they exist
+    if (window.myOrdersOverviewChart) { window.myOrdersOverviewChart.destroy(); }
+    if (window.myOrderStatusChart) { window.myOrderStatusChart.destroy(); }
+    if (window.myDeviceStatusChart) { window.myDeviceStatusChart.destroy(); }
+
+    if (window.Chart) {
+      // 1. Orders Overview Line Chart
+      const ctx1 = document.getElementById('chart-orders-overview').getContext('2d');
+      window.myOrdersOverviewChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Orders',
+            data: [18, 24, 21, 27, 19, 34, 29],
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.05)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#4f46e5',
+            pointHoverRadius: 6,
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: '#1f2937',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#374151',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) { return ` ${context.raw} Orders`; }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9ca3af', font: { size: 10 } }
+            },
+            y: {
+              grid: { color: 'rgba(75, 85, 99, 0.15)' },
+              ticks: { color: '#9ca3af', font: { size: 10 } }
+            }
+          }
+        }
+      });
+
+      // 2. Order Status Donut Chart
+      const ctx2 = document.getElementById('chart-order-status').getContext('2d');
+      window.myOrderStatusChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Pending', 'Cancelled', 'Failed'],
+          datasets: [{
+            data: [82, 14, 8, 4],
+            backgroundColor: ['#10b981', '#f59e0b', '#6b7280', '#ef4444'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#e5e7eb',
+                font: { size: 10 },
+                padding: 10,
+                boxWidth: 10
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              callbacks: {
+                label: function(context) { return ` ${context.label}: ${context.raw} orders`; }
+              }
+            }
+          }
+        }
+      });
+
+      // 3. Device Status Horizontal Bar Chart
+      const ctx3 = document.getElementById('chart-device-status').getContext('2d');
+      window.myDeviceStatusChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: ['TVs', 'Kiosks'],
+          datasets: [
+            {
+              label: 'Online',
+              data: [
+                tvs.filter(t => t.connectionStatus === 'online').length,
+                kiosks.filter(k => k.connectionStatus === 'online').length
+              ],
+              backgroundColor: '#10b981',
+              barThickness: 12
+            },
+            {
+              label: 'Warning',
+              data: [
+                0,
+                kiosks.filter(k => k.connectionStatus === 'warning').length
+              ],
+              backgroundColor: '#f59e0b',
+              barThickness: 12
+            },
+            {
+              label: 'Offline',
+              data: [
+                tvs.filter(t => t.connectionStatus === 'offline').length,
+                kiosks.filter(k => k.connectionStatus === 'offline').length
+              ],
+              backgroundColor: '#ef4444',
+              barThickness: 12
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#e5e7eb',
+                font: { size: 10 },
+                boxWidth: 8
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1f2937'
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { color: '#9ca3af', font: { size: 10 } }
+            },
+            y: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { color: '#9ca3af', font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
 
     // Render TV status table
     const tvTbody = document.getElementById('dash-tv-tbody');
     tvTbody.innerHTML = '';
     tvs.forEach(t => {
       const pl = KioskStore.getPlaylists().find(p => p.id === t.assignedPlaylistId)?.name || 'None';
+      const statusClass = t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge';
+      const statusText = t.connectionStatus === 'online' ? 'Online' : 'Offline';
       tvTbody.innerHTML += `
         <tr>
-          <td><strong>${t.name}</strong></td>
+          <td><strong>${t.id}</strong></td>
           <td>${t.location || 'Foyer'}</td>
           <td><span class="badge desktop-badge">${pl}</span></td>
-          <td><span class="badge ${t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${t.connectionStatus.toUpperCase()}</span></td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
         </tr>
       `;
     });
@@ -148,11 +288,20 @@
     const kioskTbody = document.getElementById('dash-kiosk-tbody');
     kioskTbody.innerHTML = '';
     kiosks.forEach(k => {
+      let statusClass = 'touch-badge';
+      let statusText = 'Online';
+      if (k.connectionStatus === 'warning') {
+        statusClass = 'warning-badge';
+        statusText = 'Warning';
+      } else if (k.connectionStatus === 'offline') {
+        statusClass = 'danger-badge';
+        statusText = 'Offline';
+      }
       kioskTbody.innerHTML += `
         <tr>
-          <td><strong>${k.name}</strong></td>
+          <td><strong>${k.id}</strong></td>
           <td>${k.location || 'Lobby'}</td>
-          <td><span class="badge ${k.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${k.connectionStatus.toUpperCase()}</span></td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
         </tr>
       `;
     });
@@ -164,97 +313,550 @@
       ordersTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No orders processed.</td></tr>';
     } else {
       orders.slice(0, 5).forEach(o => {
+        let payClass = 'touch-badge';
+        let payText = 'Successful';
+        if (o.paymentStatus === 'pending') {
+          payClass = 'warning-badge';
+          payText = 'Pending';
+        } else if (o.paymentStatus === 'failed') {
+          payClass = 'danger-badge';
+          payText = 'Failed';
+        }
+
+        let orderClass = 'desktop-badge';
+        let orderText = 'Completed';
+        if (o.orderStatus === 'created') {
+          orderClass = 'warning-badge';
+          orderText = 'Created';
+        } else if (o.orderStatus === 'cancelled') {
+          orderClass = 'danger-badge';
+          orderText = 'Cancelled';
+        }
+
         ordersTbody.innerHTML += `
           <tr>
-            <td><span style="font-family: monospace; font-size: 0.75rem;">${o.orderId.slice(0, 8)}</span></td>
-            <td>Kiosk ${o.kioskId}</td>
-            <td><strong>$${o.totalAmount.toFixed(2)}</strong></td>
-            <td><span class="badge touch-badge">${o.paymentStatus.toUpperCase()}</span></td>
-            <td><span class="badge desktop-badge">${o.orderStatus.toUpperCase()}</span></td>
+            <td><strong>${o.orderId}</strong></td>
+            <td>${o.kioskId}</td>
+            <td><strong>₹${o.totalAmount.toFixed(2)}</strong></td>
+            <td><span class="badge ${payClass}">${payText}</span></td>
+            <td><span class="badge ${orderClass}">${orderText}</span></td>
           </tr>
         `;
       });
     }
 
-    // Dynamic alerts
-    const alertsBar = document.getElementById('dashboard-alerts-bar');
-    alertsBar.innerHTML = '';
-    const failures = KioskStore.getFailures();
-    let alertFound = false;
+    // Render System Alerts
+    const alertsList = document.getElementById('dashboard-alerts-list');
+    if (alertsList) {
+      alertsList.innerHTML = `
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-admin);">
+          <i data-lucide="triangle-alert" style="width: 16px; height: 16px; color: var(--danger); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">TV-004 Offline</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">Display connection lost 12 minutes ago.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-admin);">
+          <i data-lucide="alert-circle" style="width: 16px; height: 16px; color: var(--warning); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Kiosk-004 Warning</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">Printer requires attention.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0;">
+          <i data-lucide="bell" style="width: 16px; height: 16px; color: var(--warning); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Banner Expiring</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">"Weekend Special" expires today at 11:00 PM.</p>
+          </div>
+        </div>
+      `;
+    }
 
-    if (failures.networkOffline) {
-      alertsBar.innerHTML += `<div class="alert-strip danger"><span class="alert-icon">⚠️</span> [NETWORK OUTAGE] active. Kiosk orders locked.</div>`;
-      alertFound = true;
-    }
-    if (failures.backendCrash) {
-      alertsBar.innerHTML += `<div class="alert-strip danger"><span class="alert-icon">⚠️</span> [SERVER OUTAGE] active. Offline warnings triggered.</div>`;
-      alertFound = true;
-    }
-    if (failures.printerOffline) {
-      alertsBar.innerHTML += `<div class="alert-strip danger"><span class="alert-icon">⚠️</span> [PRINTER ERROR] active. Thermal ticket printer offline.</div>`;
-      alertFound = true;
-    }
-    if (failures.cardTerminalOffline) {
-      alertsBar.innerHTML += `<div class="alert-strip danger"><span class="alert-icon">⚠️</span> [TERMINAL OUTAGE] active. Card swipes restricted.</div>`;
-      alertFound = true;
+    // Render Recent Activity
+    const activityList = document.getElementById('dashboard-activity-list');
+    if (activityList) {
+      activityList.innerHTML = `
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-admin);">
+          <i data-lucide="refresh-cw" style="width: 16px; height: 16px; color: var(--primary); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Banner updated</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">Summer Offer was updated by Admin &bull; 8 minutes ago</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-admin);">
+          <i data-lucide="link" style="width: 16px; height: 16px; color: var(--primary); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Playlist assigned</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">Weekend Playlist assigned to TV-002 &bull; 22 minutes ago</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-admin);">
+          <i data-lucide="settings" style="width: 16px; height: 16px; color: var(--primary); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Kiosk updated</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">Kiosk-004 configuration updated &bull; 45 minutes ago</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0;">
+          <i data-lucide="check-circle" style="width: 16px; height: 16px; color: var(--green); flex-shrink: 0; margin-top: 0.25rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-admin-main);">Order completed</strong>
+            <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin: 0.15rem 0 0 0;">ORD-1026 completed &bull; 1 hour ago</p>
+          </div>
+        </div>
+      `;
     }
 
-    if (!alertFound) {
-      alertsBar.innerHTML = `<div class="alert-strip success"><span class="alert-icon">✓</span> All displays, peripheral systems, and payment endpoints operating online.</div>`;
-    }
+    // Set up click listeners for the view details dashboard anchors
+    document.querySelectorAll('.btn-dashboard-nav').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTab = btn.getAttribute('data-tab');
+        const sidebarItem = document.querySelector(`.nav-item[data-tab="${targetTab}"]`);
+        if (sidebarItem) {
+          sidebarItem.click();
+        }
+      });
+    });
   }
 
+  // --- FILTER SYSTEM STATE AND DRAWERS ---
+  const activeFilters = {};
+  let activeFilterTab = 'banners';
+
+  // Toggle filter drawer
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-filter-toggle');
+    if (btn) {
+      const tab = btn.getAttribute('data-tab');
+      openFilterDrawer(tab);
+    }
+  });
+
+  function openFilterDrawer(tab) {
+    activeFilterTab = tab;
+    const body = document.getElementById('filter-drawer-body');
+    body.innerHTML = '';
+
+    if (!activeFilters[tab]) {
+      activeFilters[tab] = { status: [], type: [], playlist: [], priority: [], location: [], category: [], availability: [], paymentStatus: [], orderStatus: [], kiosk: [], startDate: '', endDate: '' };
+    }
+    const current = activeFilters[tab];
+
+    if (tab === 'banners') {
+      const banners = KioskStore.getBanners() || [];
+      const playlists = KioskStore.getPlaylists() || [];
+      body.innerHTML += `
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('status', 'active', 'Active', banners.filter(b => b.active).length, current.status)}
+          ${renderCheckboxOption('status', 'inactive', 'Inactive', banners.filter(b => !b.active).length, current.status)}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Content Type</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('type', 'image', 'Image', banners.filter(b => b.contentType === 'image').length, current.type)}
+          ${renderCheckboxOption('type', 'video', 'Video', banners.filter(b => b.contentType === 'video').length, current.type)}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Playlist</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${playlists.map(pl => renderCheckboxOption('playlist', pl.id, pl.name, banners.filter(b => b.playlistId === pl.id).length, current.playlist)).join('')}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Priority</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('priority', '1', 'Priority 1', banners.filter(b => b.priority === 1).length, current.priority)}
+          ${renderCheckboxOption('priority', '2', 'Priority 2', banners.filter(b => b.priority === 2).length, current.priority)}
+          ${renderCheckboxOption('priority', '3', 'Priority 3', banners.filter(b => b.priority === 3).length, current.priority)}
+        </div>
+      `;
+    } else if (tab === 'playlists') {
+      const playlists = KioskStore.getPlaylists() || [];
+      body.innerHTML += `
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('status', 'active', 'Active', playlists.filter(p => p.status === 'active').length, current.status)}
+          ${renderCheckboxOption('status', 'inactive', 'Inactive', playlists.filter(p => p.status === 'inactive').length, current.status)}
+        </div>
+      `;
+    } else if (tab === 'tvs') {
+      const tvs = KioskStore.getTVs() || [];
+      const playlists = KioskStore.getPlaylists() || [];
+      const locations = Array.from(new Set(tvs.map(t => t.location).filter(Boolean)));
+      body.innerHTML += `
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('status', 'active', 'Active', tvs.filter(t => t.status === 'active').length, current.status)}
+          ${renderCheckboxOption('status', 'inactive', 'Inactive', tvs.filter(t => t.status === 'inactive').length, current.status)}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Connection Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('type', 'online', 'Online', tvs.filter(t => t.connectionStatus === 'online').length, current.type)}
+          ${renderCheckboxOption('type', 'offline', 'Offline', tvs.filter(t => t.connectionStatus === 'offline').length, current.type)}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Playlist</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${playlists.map(pl => renderCheckboxOption('playlist', pl.id, pl.name, tvs.filter(t => t.assignedPlaylistId === pl.id).length, current.playlist)).join('')}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Location</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${locations.map(loc => renderCheckboxOption('location', loc, loc, tvs.filter(t => t.location === loc).length, current.location)).join('')}
+        </div>
+      `;
+    } else if (tab === 'payment-history') {
+      const orders = KioskStore.getOrders() || [];
+      const kiosks = Array.from(new Set(orders.map(o => o.kioskId).filter(Boolean)));
+      const methods = Array.from(new Set(orders.map(o => o.paymentMethod).filter(Boolean)));
+      body.innerHTML += `
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Payment Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('paymentStatus', 'success', 'Successful', orders.filter(o => o.paymentStatus === 'success').length, current.paymentStatus)}
+          ${renderCheckboxOption('paymentStatus', 'pending', 'Pending', orders.filter(o => o.paymentStatus === 'pending').length, current.paymentStatus)}
+          ${renderCheckboxOption('paymentStatus', 'failed', 'Failed', orders.filter(o => o.paymentStatus === 'failed').length, current.paymentStatus)}
+          ${renderCheckboxOption('paymentStatus', 'cancelled', 'Cancelled', orders.filter(o => o.paymentStatus === 'cancelled').length, current.paymentStatus)}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Payment Method</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${methods.map(m => renderCheckboxOption('paymentMethod', m, m, orders.filter(o => o.paymentMethod === m).length, current.paymentMethod)).join('')}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Kiosk</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${kiosks.map(k => renderCheckboxOption('kiosk', k, k, orders.filter(o => o.kioskId === k).length, current.kiosk)).join('')}
+        </div>
+        <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.5rem;">Order Status</h4>
+        <div class="filter-group" style="margin-bottom: 1.25rem;">
+          ${renderCheckboxOption('orderStatus', 'completed', 'Completed', orders.filter(o => o.orderStatus === 'completed').length, current.orderStatus)}
+          ${renderCheckboxOption('orderStatus', 'created', 'Created', orders.filter(o => o.orderStatus === 'created').length, current.orderStatus)}
+          ${renderCheckboxOption('orderStatus', 'cancelled', 'Cancelled', orders.filter(o => o.orderStatus === 'cancelled').length, current.orderStatus)}
+        </div>
+      `;
+    }
+
+    if (window.lucide) { lucide.createIcons(); }
+    document.getElementById('filter-drawer-modal').classList.add('visible');
+  }
+
+  function renderCheckboxOption(groupName, value, label, count, activeList) {
+    const isChecked = activeList.includes(value) ? 'checked' : '';
+    return `
+      <label style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; cursor: pointer; color: var(--text-admin-main); font-weight: normal; margin-bottom: 0.5rem;">
+        <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" name="filter-${groupName}" value="${value}" ${isChecked} style="cursor: pointer;">
+          ${label}
+        </span>
+        <span style="font-size: 0.75rem; color: var(--text-admin-muted);">${count || 0}</span>
+      </label>
+    `;
+  }
+
+  // Clear filters
+  document.getElementById('btn-filter-clear-all').addEventListener('click', () => {
+    const tab = activeFilterTab;
+    activeFilters[tab] = { status: [], type: [], playlist: [], priority: [], location: [], category: [], availability: [], paymentStatus: [], orderStatus: [], kiosk: [], startDate: '', endDate: '' };
+    document.querySelectorAll('#filter-drawer-body input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.getElementById('filter-drawer-modal').classList.remove('visible');
+    updateFilterChips(tab);
+    refreshActiveTabList(tab);
+  });
+
+  // Apply filters
+  document.getElementById('btn-filter-apply').addEventListener('click', () => {
+    const tab = activeFilterTab;
+    const current = activeFilters[tab];
+
+    const getChecked = (name) => Array.from(document.querySelectorAll(`input[name="filter-${name}"]:checked`)).map(c => c.value);
+    current.status = getChecked('status');
+    current.type = getChecked('type');
+    current.playlist = getChecked('playlist');
+    current.priority = getChecked('priority');
+    current.location = getChecked('location');
+    current.paymentStatus = getChecked('paymentStatus');
+    current.paymentMethod = getChecked('paymentMethod');
+    current.kiosk = getChecked('kiosk');
+    current.orderStatus = getChecked('orderStatus');
+
+    document.getElementById('filter-drawer-modal').classList.remove('visible');
+    updateFilterChips(tab);
+    refreshActiveTabList(tab);
+  });
+
+  function updateFilterChips(tab) {
+    const container = document.getElementById(`${tab}-filter-chips`);
+    if (!container) return;
+    container.innerHTML = '';
+
+    const current = activeFilters[tab] || { status: [], type: [], playlist: [], priority: [], location: [], paymentStatus: [], paymentMethod: [], kiosk: [], orderStatus: [] };
+    let totalCount = 0;
+
+    const renderChip = (group, value, label) => {
+      totalCount++;
+      container.innerHTML += `
+        <span class="badge desktop-badge" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; padding: 0.25rem 0.5rem; background-color: var(--border-admin); color: var(--text-admin);">
+          ${group}: ${label}
+          <i data-lucide="x" class="remove-chip" data-tab="${tab}" data-group="${group.toLowerCase()}" data-value="${value}" style="width: 12px; height: 12px; cursor: pointer;"></i>
+        </span>
+      `;
+    };
+
+    if (current.status) current.status.forEach(val => renderChip('Status', val, val.charAt(0).toUpperCase() + val.slice(1)));
+    if (current.type) current.type.forEach(val => renderChip('Type', val, val.charAt(0).toUpperCase() + val.slice(1)));
+    if (current.playlist) {
+      current.playlist.forEach(val => {
+        const pl = KioskStore.getPlaylists().find(p => p.id === val);
+        renderChip('Playlist', val, pl ? pl.name : val);
+      });
+    }
+    if (current.priority) current.priority.forEach(val => renderChip('Priority', val, `P${val}`));
+    if (current.location) current.location.forEach(val => renderChip('Location', val, val));
+
+    if (tab === 'payment-history') {
+      if (current.paymentStatus) current.paymentStatus.forEach(val => renderChip('PaymentStatus', val, val.charAt(0).toUpperCase() + val.slice(1)));
+      if (current.paymentMethod) current.paymentMethod.forEach(val => renderChip('PaymentMethod', val, val));
+      if (current.kiosk) current.kiosk.forEach(val => renderChip('Kiosk', val, val));
+      if (current.orderStatus) current.orderStatus.forEach(val => renderChip('OrderStatus', val, val.charAt(0).toUpperCase() + val.slice(1)));
+    }
+
+    if (totalCount > 0) {
+      container.innerHTML += `
+        <button class="btn-clear-chips" data-tab="${tab}" style="background: transparent; border: none; color: var(--danger); font-size: 0.75rem; font-weight: 600; cursor: pointer;">Clear All</button>
+      `;
+    }
+
+    const btn = document.querySelector(`.btn-filter-toggle[data-tab="${tab}"]`);
+    if (btn) {
+      const badge = btn.querySelector('.filter-count');
+      if (badge) {
+        if (totalCount > 0) {
+          badge.textContent = totalCount;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+    if (window.lucide) { lucide.createIcons(); }
+  }
+
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.remove-chip');
+    if (chip) {
+      const tab = chip.getAttribute('data-tab');
+      const group = chip.getAttribute('data-group');
+      const val = chip.getAttribute('data-value');
+      const current = activeFilters[tab];
+
+      if (group === 'status') current.status = current.status.filter(v => v !== val);
+      if (group === 'type') current.type = current.type.filter(v => v !== val);
+      if (group === 'playlist') current.playlist = current.playlist.filter(v => v !== val);
+      if (group === 'priority') current.priority = current.priority.filter(v => v !== val);
+      if (group === 'location') current.location = current.location.filter(v => v !== val);
+      if (group === 'paymentstatus') current.paymentStatus = current.paymentStatus.filter(v => v !== val);
+      if (group === 'paymentmethod') current.paymentMethod = current.paymentMethod.filter(v => v !== val);
+      if (group === 'kiosk') current.kiosk = current.kiosk.filter(v => v !== val);
+      if (group === 'orderstatus') current.orderStatus = current.orderStatus.filter(v => v !== val);
+
+      updateFilterChips(tab);
+      refreshActiveTabList(tab);
+    }
+
+    const clearAll = e.target.closest('.btn-clear-chips');
+    if (clearAll) {
+      const tab = clearAll.getAttribute('data-tab');
+      activeFilters[tab] = { status: [], type: [], playlist: [], priority: [], location: [], category: [], availability: [], paymentStatus: [], orderStatus: [], kiosk: [], startDate: '', endDate: '' };
+      updateFilterChips(tab);
+      refreshActiveTabList(tab);
+    }
+  });
+
+  function refreshActiveTabList(tab) {
+    if (tab === 'banners') renderBanners();
+    if (tab === 'playlists') renderPlaylists();
+    if (tab === 'tvs') renderTVs();
+    if (tab === 'payment-history') renderPaymentHistory();
+  }
+
+
   // 4.2 Banners CRUD
+  let bannerPage = 1;
+  let bannerPageSize = 10;
+
+  function formatDatePretty(dateStr, timeStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + (timeStr ? 'T' + timeStr : ''));
+    if (isNaN(d)) return dateStr;
+    const day = d.getDate();
+    const month = d.toLocaleString('en-US', { month: 'short' });
+    const year = d.getFullYear();
+    const time = timeStr || '';
+    return time ? `${day} ${month} ${year}, ${time}` : `${day} ${month} ${year}`;
+  }
+
   function renderBanners() {
     const banners = KioskStore.getBanners() || [];
-    const playlists = KioskStore.getPlaylists() || [];
     const tbody = document.getElementById('banners-tbody');
+    const paginationEl = document.getElementById('banners-pagination');
     tbody.innerHTML = '';
 
     const search = document.getElementById('banner-search').value.toLowerCase();
-    const fStatus = document.getElementById('banner-filter-status').value;
-    const fType = document.getElementById('banner-filter-type').value;
-    const fPlaylist = document.getElementById('banner-filter-playlist').value;
-
-    // Populate dropdown
-    const playlistSelect = document.getElementById('banner-filter-playlist');
-    if (playlistSelect.options.length === 1) {
-      playlists.forEach(p => {
-        playlistSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-      });
-    }
+    const current = activeFilters.banners || { status: [], type: [], playlist: [], priority: [] };
 
     const filtered = banners.filter(b => {
       const matchSearch = b.title.toLowerCase().includes(search);
-      const matchStatus = fStatus === 'all' || (fStatus === 'active' && b.active) || (fStatus === 'inactive' && !b.active);
-      const matchType = fType === 'all' || b.contentType === fType;
-      const matchPlaylist = fPlaylist === 'all' || b.playlistId === fPlaylist;
-      return matchSearch && matchStatus && matchType && matchPlaylist;
+      let matchStatus = true;
+      if (current.status.length > 0) {
+        matchStatus = false;
+        if (current.status.includes('active') && b.active) matchStatus = true;
+        if (current.status.includes('inactive') && !b.active) matchStatus = true;
+      }
+      let matchType = true;
+      if (current.type.length > 0) {
+        matchType = current.type.includes(b.contentType);
+      }
+      let matchPlaylist = true;
+      if (current.playlist.length > 0) {
+        matchPlaylist = current.playlist.includes(b.playlistId);
+      }
+      let matchPriority = true;
+      if (current.priority.length > 0) {
+        matchPriority = current.priority.includes(b.priority.toString());
+      }
+      return matchSearch && matchStatus && matchType && matchPlaylist && matchPriority;
     });
 
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;">No scheduled banners found.</td></tr>';
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / bannerPageSize));
+    if (bannerPage > totalPages) bannerPage = totalPages;
+    const startIdx = (bannerPage - 1) * bannerPageSize;
+    const pageItems = filtered.slice(startIdx, startIdx + bannerPageSize);
+
+    // Empty states
+    if (totalItems === 0) {
+      const hasSearch = search.length > 0;
+      const hasFilters = current.status.length > 0 || current.type.length > 0 || current.playlist.length > 0 || current.priority.length > 0;
+      let emptyHtml = '';
+      if (hasSearch) {
+        emptyHtml = `<tr><td colspan="8"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No banners match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('banner-search').value='';document.getElementById('banner-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+      } else if (hasFilters) {
+        emptyHtml = `<tr><td colspan="8"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No banners match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.banners={status:[],type:[],playlist:[],priority:[]};updateFilterChips('banners');renderBanners();">Clear Filters</button></div></td></tr>`;
+      } else {
+        emptyHtml = `<tr><td colspan="8"><div class="table-empty-state"><i data-lucide="image" class="empty-icon"></i><h4>No banners found</h4><p>Create your first promotional banner.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-banner').click();">Create Banner</button></div></td></tr>`;
+      }
+      tbody.innerHTML = emptyHtml;
+      paginationEl.innerHTML = '';
+      if (window.lucide) lucide.createIcons();
       return;
     }
 
-    filtered.forEach(b => {
+    pageItems.forEach(b => {
+      const startFormatted = formatDatePretty(b.startDate, b.startTime);
+      const endFormatted = formatDatePretty(b.endDate, b.endTime);
+      const isActive = b.active;
+      const statusBadge = isActive
+        ? '<span class="badge touch-badge">Active</span>'
+        : '<span class="badge danger-badge">Inactive</span>';
+
       tbody.innerHTML += `
         <tr>
-          <td><strong>${b.title}</strong></td>
-          <td><img src="${b.image}" class="thumbnail" alt="thumbnail"></td>
-          <td><span class="badge desktop-badge">${b.contentType.toUpperCase()}</span></td>
-          <td>${b.duration}s</td>
-          <td><small>${b.startDate} @ ${b.startTime}</small></td>
-          <td><small>${b.endDate} @ ${b.endTime}</small></td>
-          <td>Priority ${b.priority}</td>
-          <td><span class="badge ${b.active ? 'touch-badge' : 'danger-badge'}">${b.active ? 'Active' : 'Inactive'}</span></td>
           <td>
-            <button class="btn btn-secondary btn-view-banner" data-id="${b.id}">View</button>
-            <button class="btn btn-secondary btn-edit-banner" data-id="${b.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-banner" data-id="${b.id}">Delete</button>
+            <strong style="display:block;line-height:1.3;">${b.title}</strong>
+            <small style="color: var(--text-admin-muted); font-size: 0.7rem;">Promotional Banner</small>
+          </td>
+          <td>
+            <img src="${b.image}" style="width: 64px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-admin); display: block;"
+              alt="${b.title}" onerror="this.outerHTML='<div class=\\'thumb-placeholder\\'><i data-lucide=\\'image\\' style=\\'width:18px;height:18px;\\'></i></div>'">
+          </td>
+          <td><span class="badge desktop-badge">${b.contentType.toUpperCase()}</span></td>
+          <td>
+            <small style="display:block;line-height:1.5;white-space:nowrap;">${startFormatted}<br><span style="color:var(--text-admin-muted);">to</span><br>${endFormatted}</small>
+          </td>
+          <td>${b.duration} sec</td>
+          <td>P${b.priority}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              ${statusBadge}
+              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
+                <input type="checkbox" class="banner-status-toggle" data-id="${b.id}" ${isActive ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn-action btn-view-banner" data-id="${b.id}" title="View Details">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-edit-banner" data-id="${b.id}" title="Edit">
+                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-action-danger btn-delete-banner" data-id="${b.id}" title="Delete">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
+    });
+
+    // Pagination
+    const showFrom = startIdx + 1;
+    const showTo = Math.min(startIdx + bannerPageSize, totalItems);
+    let pagesHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+      pagesHtml += `<button class="page-btn ${i === bannerPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    paginationEl.innerHTML = `
+      <div class="pagination-info">
+        Showing <strong>${showFrom}–${showTo}</strong> of <strong>${totalItems}</strong> banners
+        <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
+        <select class="page-size-select" id="banner-page-size-select">
+          <option value="10" ${bannerPageSize === 10 ? 'selected' : ''}>10</option>
+          <option value="20" ${bannerPageSize === 20 ? 'selected' : ''}>20</option>
+          <option value="50" ${bannerPageSize === 50 ? 'selected' : ''}>50</option>
+        </select>
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" data-page="prev" ${bannerPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+        ${pagesHtml}
+        <button class="page-btn" data-page="next" ${bannerPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+      </div>
+    `;
+
+    // Bind pagination events
+    paginationEl.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pg = btn.getAttribute('data-page');
+        if (pg === 'prev') bannerPage = Math.max(1, bannerPage - 1);
+        else if (pg === 'next') bannerPage = Math.min(totalPages, bannerPage + 1);
+        else bannerPage = parseInt(pg);
+        renderBanners();
+      });
+    });
+    const pageSizeSel = document.getElementById('banner-page-size-select');
+    if (pageSizeSel) {
+      pageSizeSel.addEventListener('change', (e) => {
+        bannerPageSize = parseInt(e.target.value);
+        bannerPage = 1;
+        renderBanners();
+      });
+    }
+
+    // Bind toggle switches
+    document.querySelectorAll('.banner-status-toggle').forEach(toggle => {
+      toggle.addEventListener('change', (e) => {
+        e.preventDefault();
+        const bid = toggle.getAttribute('data-id');
+        const allBanners = KioskStore.getBanners();
+        const banner = allBanners.find(x => x.id === bid);
+        if (!banner) return;
+        const wasActive = banner.active;
+        // Revert immediately — wait for confirmation
+        toggle.checked = wasActive;
+        const action = wasActive ? 'Deactivate' : 'Activate';
+        triggerConfirm(`${action} ${banner.title}?`, `Are you sure you want to ${action.toLowerCase()} this banner?`, () => {
+          banner.active = !wasActive;
+          KioskStore.setBanners(allBanners);
+          showToast(`${banner.title} ${wasActive ? 'deactivated' : 'activated'}.`);
+        }, { isDestructive: wasActive, confirmText: `Yes, ${action}` });
+      });
     });
 
     bindEvents('.btn-view-banner', previewBanner);
@@ -268,7 +870,24 @@
     const tbody = document.getElementById('playlists-tbody');
     tbody.innerHTML = '';
 
-    playlists.forEach(p => {
+    const search = document.getElementById('playlist-search').value.toLowerCase();
+    const current = activeFilters.playlists || { status: [] };
+
+    const filtered = playlists.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(search);
+      let matchStatus = true;
+      if (current.status.length > 0) {
+        matchStatus = current.status.includes(p.status);
+      }
+      return matchSearch && matchStatus;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No playlists match the selected filters.</td></tr>';
+      return;
+    }
+
+    filtered.forEach(p => {
       tbody.innerHTML += `
         <tr>
           <td><strong>${p.name}</strong><br><small style="color: var(--text-admin-muted);">ID: ${p.id}</small></td>
@@ -276,10 +895,12 @@
           <td>${p.assignedTVs || '0 TVs'}</td>
           <td><span class="badge touch-badge">${p.status.toUpperCase()}</span></td>
           <td>${p.updatedDate}</td>
-          <td>
-            <button class="btn btn-secondary btn-view-playlist" data-id="${p.id}">View</button>
-            <button class="btn btn-secondary btn-edit-playlist" data-id="${p.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-playlist" data-id="${p.id}">Delete</button>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon-only btn-view-playlist" data-id="${p.id}" title="View Details" style="padding: 0.3rem 0.4rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i></button>
+              <button class="btn btn-secondary btn-icon-only btn-edit-playlist" data-id="${p.id}" title="Edit Settings" style="padding: 0.3rem 0.4rem;"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
+              <button class="btn btn-danger btn-icon-only btn-delete-playlist" data-id="${p.id}" title="Delete Record" style="padding: 0.3rem 0.4rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+            </div>
           </td>
         </tr>
       `;
@@ -297,7 +918,36 @@
     const tbody = document.getElementById('tvs-tbody');
     tbody.innerHTML = '';
 
-    tvs.forEach(t => {
+    const search = document.getElementById('tv-search').value.toLowerCase();
+    const current = activeFilters.tvs || { status: [], type: [], playlist: [], location: [] };
+
+    const filtered = tvs.filter(t => {
+      const matchSearch = t.name.toLowerCase().includes(search);
+      let matchStatus = true;
+      if (current.status.length > 0) {
+        matchStatus = current.status.includes(t.status);
+      }
+      let matchType = true;
+      if (current.type.length > 0) {
+        matchType = current.type.includes(t.connectionStatus);
+      }
+      let matchPlaylist = true;
+      if (current.playlist.length > 0) {
+        matchPlaylist = current.playlist.includes(t.assignedPlaylistId);
+      }
+      let matchLocation = true;
+      if (current.location.length > 0) {
+        matchLocation = current.location.includes(t.location);
+      }
+      return matchSearch && matchStatus && matchType && matchPlaylist && matchLocation;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No TVs match the selected filters.</td></tr>';
+      return;
+    }
+
+    filtered.forEach(t => {
       const pl = playlists.find(p => p.id === t.assignedPlaylistId)?.name || 'None';
       tbody.innerHTML += `
         <tr>
@@ -308,10 +958,12 @@
           <td><span class="badge touch-badge">${t.status.toUpperCase()}</span></td>
           <td><span class="badge ${t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${t.connectionStatus.toUpperCase()}</span></td>
           <td>${t.lastActive}</td>
-          <td>
-            <button class="btn btn-secondary btn-view-tv" data-id="${t.id}">View</button>
-            <button class="btn btn-secondary btn-edit-tv" data-id="${t.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-tv" data-id="${t.id}">Delete</button>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon-only btn-view-tv" data-id="${t.id}" title="View Details" style="padding: 0.3rem 0.4rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i></button>
+              <button class="btn btn-secondary btn-icon-only btn-edit-tv" data-id="${t.id}" title="Edit Settings" style="padding: 0.3rem 0.4rem;"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
+              <button class="btn btn-danger btn-icon-only btn-delete-tv" data-id="${t.id}" title="Delete Record" style="padding: 0.3rem 0.4rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+            </div>
           </td>
         </tr>
       `;
@@ -552,10 +1204,11 @@
       grid.innerHTML += `
         <div class="settings-card">
           <h3>${p.name}</h3>
-          <p><strong>Config:</strong> ${p.configuration}</p>
-          <p><strong>Status:</strong> <span class="badge ${p.status === 'enabled' ? 'touch-badge' : 'danger-badge'}">${p.status.toUpperCase()}</span></p>
+          <p style="margin-top: 0.5rem;"><strong>Config:</strong> ${p.configuration}</p>
+          <p style="margin-top: 0.25rem;"><strong>Status:</strong> <span class="badge ${p.status === 'enabled' ? 'touch-badge' : 'danger-badge'}">${p.status.toUpperCase()}</span></p>
           <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
-            <button class="btn ${p.status === 'enabled' ? 'btn-danger' : 'btn-checkout'} btn-toggle-payment" data-id="${p.id}">
+            <button class="btn ${p.status === 'enabled' ? 'btn-danger' : 'btn-primary'} btn-toggle-payment" data-id="${p.id}" style="display: inline-flex; align-items: center; gap: 0.4rem; justify-content: center; width: 100%;">
+              <i data-lucide="${p.status === 'enabled' ? 'circle-off' : 'check-circle'}" style="width: 16px; height: 16px;"></i>
               ${p.status === 'enabled' ? 'Disable Method' : 'Enable Method'}
             </button>
           </div>
@@ -564,6 +1217,155 @@
     });
 
     bindEvents('.btn-toggle-payment', togglePaymentGateway);
+    if (window.lucide) { lucide.createIcons(); }
+  }
+
+  // 4.13.2 Payment History
+  function renderPaymentHistory() {
+    const orders = KioskStore.getOrders() || [];
+    const tbody = document.getElementById('pay-history-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const search = document.getElementById('pay-history-search').value.toLowerCase();
+    const current = activeFilters['payment-history'] || { paymentStatus: [], paymentMethod: [], kiosk: [], orderStatus: [] };
+
+    const filtered = orders.filter(o => {
+      const txId = o.orderId.replace('ORD-', 'PAY-');
+      const matchSearch = txId.toLowerCase().includes(search) || o.orderId.toLowerCase().includes(search);
+
+      let matchPayStatus = true;
+      if (current.paymentStatus && current.paymentStatus.length > 0) {
+        matchPayStatus = current.paymentStatus.includes(o.paymentStatus);
+      }
+
+      let matchMethod = true;
+      if (current.paymentMethod && current.paymentMethod.length > 0) {
+        matchMethod = current.paymentMethod.includes(o.paymentMethod);
+      }
+
+      let matchKiosk = true;
+      if (current.kiosk && current.kiosk.length > 0) {
+        matchKiosk = current.kiosk.includes(o.kioskId);
+      }
+
+      let matchOrderStatus = true;
+      if (current.orderStatus && current.orderStatus.length > 0) {
+        matchOrderStatus = current.orderStatus.includes(o.orderStatus);
+      }
+
+      return matchSearch && matchPayStatus && matchMethod && matchKiosk && matchOrderStatus;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No payment records found.</td></tr>';
+      return;
+    }
+
+    filtered.forEach(o => {
+      const txId = o.orderId.replace('ORD-', 'PAY-');
+      const ref = o.paymentStatus === 'success' ? `REF-${o.orderId.split('-')[1]}` : '—';
+      
+      let payStatusClass = 'touch-badge';
+      let payStatusText = 'Successful';
+      if (o.paymentStatus === 'pending') {
+        payStatusClass = 'warning-badge';
+        payStatusText = 'Pending';
+      } else if (o.paymentStatus === 'failed') {
+        payStatusClass = 'danger-badge';
+        payStatusText = 'Failed';
+      } else if (o.paymentStatus === 'cancelled') {
+        payStatusClass = 'danger-badge';
+        payStatusText = 'Cancelled';
+      }
+
+      let orderStatusClass = 'desktop-badge';
+      let orderStatusText = 'Completed';
+      if (o.orderStatus === 'created') {
+        orderStatusClass = 'warning-badge';
+        orderStatusText = 'Created';
+      } else if (o.orderStatus === 'cancelled') {
+        orderStatusClass = 'danger-badge';
+        orderStatusText = 'Cancelled';
+      }
+
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${txId}</strong></td>
+          <td><span style="font-family: monospace;">${o.orderId}</span></td>
+          <td><span style="font-family: monospace;">#${o.orderToken}</span></td>
+          <td>${o.kioskId}</td>
+          <td>${new Date(o.dateTime).toLocaleString()}</td>
+          <td><span class="badge desktop-badge">${o.paymentMethod}</span></td>
+          <td><strong>₹${o.totalAmount.toFixed(2)}</strong></td>
+          <td><span class="badge ${payStatusClass}">${payStatusText}</span></td>
+          <td><span class="badge ${orderStatusClass}">${orderStatusText}</span></td>
+          <td><span style="font-family: monospace; font-size: 0.75rem;">${ref}</span></td>
+          <td style="text-align: right;">
+            <button class="btn-action btn-view-pay-history" data-id="${o.orderId}" title="View Details">
+              <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    bindEvents('.btn-view-pay-history', (id) => showPaymentDetails(id));
+    if (window.lucide) { lucide.createIcons(); }
+  }
+
+  function showPaymentDetails(id) {
+    const orders = KioskStore.getOrders() || [];
+    const o = orders.find(item => item.orderId === id);
+    if (!o) return;
+
+    const txId = o.orderId.replace('ORD-', 'PAY-');
+    document.getElementById('pay-details-tx-id').innerHTML = `<i data-lucide="receipt" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.25rem;"></i> Transaction details for ${txId}`;
+    
+    document.getElementById('pay-view-tx-id').textContent = txId;
+    document.getElementById('pay-view-order-id').textContent = o.orderId;
+    document.getElementById('pay-view-kiosk-id').textContent = o.kioskId;
+    document.getElementById('pay-view-datetime').textContent = new Date(o.dateTime).toLocaleString();
+    document.getElementById('pay-view-amount').textContent = `₹${o.totalAmount.toFixed(2)}`;
+    document.getElementById('pay-view-method').textContent = o.paymentMethod;
+    
+    // Status text mapping
+    let payStatusText = 'Successful';
+    if (o.paymentStatus === 'pending') payStatusText = 'Pending Verification';
+    if (o.paymentStatus === 'failed') payStatusText = 'Failed / Declined';
+    if (o.paymentStatus === 'cancelled') payStatusText = 'Cancelled by Customer';
+    document.getElementById('pay-view-status').innerHTML = `<span class="badge ${o.paymentStatus === 'success' ? 'touch-badge' : 'danger-badge'}">${payStatusText}</span>`;
+
+    document.getElementById('pay-view-token').textContent = `#${o.orderToken}`;
+    document.getElementById('pay-view-order-status').textContent = o.orderStatus.toUpperCase();
+    
+    const itemsText = o.items.map(item => `${item.name} x${item.quantity}`).join(', ');
+    document.getElementById('pay-view-items').textContent = itemsText;
+
+    // Timeline setup
+    const dateStr = new Date(o.dateTime);
+    document.getElementById('timeline-initiated-time').textContent = new Date(dateStr.getTime() - 25000).toLocaleTimeString();
+    document.getElementById('timeline-processing-time').textContent = new Date(dateStr.getTime() - 12000).toLocaleTimeString();
+    document.getElementById('timeline-final-time').textContent = dateStr.toLocaleTimeString();
+
+    const timelineDot = document.getElementById('timeline-final-dot');
+    const timelineTitle = document.getElementById('timeline-final-title');
+    if (o.paymentStatus === 'success') {
+      timelineDot.style.background = 'var(--green)';
+      timelineTitle.textContent = 'Payment Successful & Order Confirmed';
+    } else if (o.paymentStatus === 'pending') {
+      timelineDot.style.background = 'var(--warning)';
+      timelineTitle.textContent = 'Verification Pending';
+    } else {
+      timelineDot.style.background = 'var(--danger)';
+      timelineTitle.textContent = 'Payment Failed / Cancelled';
+    }
+
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-payment-history-view').classList.add('active');
+    tabTitle.textContent = 'Payment Details';
+    tabDescription.textContent = 'Verify gateway receipts and timelines.';
+    breadcrumbCurrent.textContent = 'Payment Details';
   }
 
   // 4.14 Orders List details
@@ -652,8 +1454,8 @@
 
     kiosks.forEach(k => {
       container.innerHTML += `
-        <div class="device-row">
-          <span>🖥️ Lobby Kiosk: ${k.name}</span>
+        <div class="device-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-admin);">
+          <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-admin);"><i data-lucide="monitor" style="width: 16px; height: 16px; color: var(--primary);"></i> Lobby Kiosk: ${k.name}</span>
           <span class="badge ${k.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${k.connectionStatus.toUpperCase()}</span>
         </div>
       `;
@@ -661,12 +1463,14 @@
 
     tvs.forEach(t => {
       container.innerHTML += `
-        <div class="device-row">
-          <span>📺 Billboard TV: ${t.name}</span>
+        <div class="device-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-admin);">
+          <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-admin);"><i data-lucide="monitor-play" style="width: 16px; height: 16px; color: var(--primary);"></i> Billboard TV: ${t.name}</span>
           <span class="badge ${t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${t.connectionStatus.toUpperCase()}</span>
         </div>
       `;
     });
+
+    if (window.lucide) { lucide.createIcons(); }
   }
 
 
@@ -682,10 +1486,30 @@
   }
 
   let confirmCallback = null;
-  function triggerConfirm(title, body, executeCallback) {
-    document.getElementById('confirm-modal-title').textContent = title;
-    document.getElementById('confirm-modal-body').textContent = body;
+  function triggerConfirm(title, body, executeCallback, options = {}) {
+    const titleEl = document.getElementById('confirm-modal-title');
+    const bodyEl = document.getElementById('confirm-modal-body');
+    const executeBtn = document.getElementById('btn-confirm-execute');
+    const iconContainer = document.querySelector('#confirm-modal .card-status-icon');
+
+    titleEl.textContent = title;
+    bodyEl.textContent = body;
     confirmCallback = executeCallback;
+
+    executeBtn.className = options.isDestructive ? 'btn btn-danger' : 'btn btn-primary';
+    executeBtn.textContent = options.confirmText || 'Confirm Action';
+
+    if (options.isDestructive) {
+      iconContainer.innerHTML = '<i data-lucide="triangle-alert" style="width: 24px; height: 24px;"></i>';
+      iconContainer.style.color = 'var(--danger)';
+      iconContainer.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+    } else {
+      iconContainer.innerHTML = '<i data-lucide="info" style="width: 24px; height: 24px;"></i>';
+      iconContainer.style.color = 'var(--primary)';
+      iconContainer.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
+    }
+    if (window.lucide) { lucide.createIcons(); }
+
     document.getElementById('confirm-modal').classList.add('visible');
   }
 
@@ -694,79 +1518,192 @@
     document.getElementById('confirm-modal').classList.remove('visible');
   });
 
-  // PRESETS BANNERS LINKS
+  // Keyboard close modal support
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const activeConfirm = document.getElementById('confirm-modal');
+      if (activeConfirm && activeConfirm.classList.contains('visible')) {
+        activeConfirm.classList.remove('visible');
+      }
+    }
+  });
+
+
+  // Preset bindings for page form
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('banner-image').value = btn.getAttribute('data-url');
+      const imgInput = document.getElementById('banner-page-image');
+      if (imgInput) {
+        imgInput.value = btn.getAttribute('data-url');
+        const uploadSpan = document.querySelector('#banner-page-upload-zone span');
+        if (uploadSpan) {
+          uploadSpan.textContent = `Preset selected: ${btn.textContent}`;
+          uploadSpan.style.color = 'var(--primary)';
+        }
+        showToast(`Preset "${btn.textContent}" loaded.`);
+      }
     });
   });
 
-  // CRUD actions for Banners
+  // Setup Drag & Drop File Upload listeners
+  const uploadZone = document.getElementById('banner-page-upload-zone');
+  const fileInput = document.getElementById('banner-page-file-input');
+  const hiddenImageInput = document.getElementById('banner-page-image');
+
+  if (uploadZone && fileInput) {
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--primary)';
+      uploadZone.style.background = 'rgba(79, 70, 229, 0.05)';
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.style.borderColor = 'var(--border-admin)';
+      uploadZone.style.background = 'rgba(255,255,255,0.02)';
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--border-admin)';
+      uploadZone.style.background = 'rgba(255,255,255,0.02)';
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        handleUploadedFile(file);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        handleUploadedFile(file);
+      }
+    });
+  }
+
+  function handleUploadedFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      hiddenImageInput.value = e.target.result;
+      const uploadSpan = uploadZone.querySelector('span');
+      if (uploadSpan) {
+        uploadSpan.textContent = `Uploaded: ${file.name}`;
+        uploadSpan.style.color = 'var(--green)';
+      }
+      // Auto-detect content type
+      const detectedType = file.type.startsWith('video/') ? 'video' : 'image';
+      const ctField = document.getElementById('banner-page-content-type');
+      const ctDisplay = document.getElementById('banner-page-content-type-display');
+      if (ctField) ctField.value = detectedType;
+      if (ctDisplay) {
+        ctDisplay.innerHTML = `<span class="badge desktop-badge">${detectedType.toUpperCase()}</span><small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>`;
+      }
+      showToast(`Selected "${file.name}" for upload.`);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Navigation cancellation helper for Banners
+  document.querySelectorAll('.btn-cancel-banner').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      document.getElementById('tab-banners').classList.add('active');
+      tabTitle.textContent = 'Banners';
+      tabDescription.textContent = 'Manage promotional banners and media.';
+      breadcrumbCurrent.textContent = 'Banners';
+    });
+  });
+
+  // CRUD actions for Banners (Page based)
   document.getElementById('btn-add-banner').addEventListener('click', () => {
-    document.getElementById('banner-form').reset();
-    document.getElementById('banner-id').value = '';
-    document.getElementById('banner-modal-title').textContent = 'Add Banner';
-    document.getElementById('banner-start-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('banner-start-time').value = '08:00';
-    document.getElementById('banner-end-date').value = new Date(Date.now() + 5*24*60*60*1000).toISOString().split('T')[0];
-    document.getElementById('banner-end-time').value = '22:00';
-    document.getElementById('banner-modal').classList.add('visible');
+    document.getElementById('banner-form-page').reset();
+    document.getElementById('banner-page-id').value = '';
+    document.getElementById('banner-form-title-h3').textContent = 'Add Banner';
+    document.getElementById('banner-page-start-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('banner-page-start-time').value = '08:00';
+    document.getElementById('banner-page-end-date').value = new Date(Date.now() + 5*24*60*60*1000).toISOString().split('T')[0];
+    document.getElementById('banner-page-end-time').value = '22:00';
+
+    const uploadSpan = document.querySelector('#banner-page-upload-zone span');
+    if (uploadSpan) {
+      uploadSpan.textContent = 'Drag and drop your file here, or click to browse';
+      uploadSpan.style.color = '';
+    }
+
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-banner-form').classList.add('active');
+    tabTitle.textContent = 'Add Banner';
+    tabDescription.textContent = 'Configure promotion details.';
+    breadcrumbCurrent.textContent = 'Add Banner';
   });
 
-  document.getElementById('banner-form').addEventListener('submit', (e) => {
+  document.getElementById('banner-form-page').addEventListener('submit', (e) => {
     e.preventDefault();
-    saveBannerData(false);
-  });
-
-  document.getElementById('btn-save-activate-banner').addEventListener('click', () => {
-    saveBannerData(true);
-  });
-
-  function saveBannerData(activate = false) {
-    const id = document.getElementById('banner-id').value;
-    const title = document.getElementById('banner-title').value.trim();
-    const image = document.getElementById('banner-image').value.trim();
-    const duration = parseInt(document.getElementById('banner-duration').value) || 5;
-    const priority = parseInt(document.getElementById('banner-priority').value) || 1;
-    const startDate = document.getElementById('banner-start-date').value;
-    const startTime = document.getElementById('banner-start-time').value;
-    const endDate = document.getElementById('banner-end-date').value;
-    const endTime = document.getElementById('banner-end-time').value;
-    const contentType = document.getElementById('banner-content-type').value;
+    const id = document.getElementById('banner-page-id').value;
+    const title = document.getElementById('banner-page-title').value.trim();
+    const image = document.getElementById('banner-page-image').value.trim();
+    const duration = parseInt(document.getElementById('banner-page-duration').value) || 5;
+    const priority = parseInt(document.getElementById('banner-page-priority').value) || 1;
+    const startDate = document.getElementById('banner-page-start-date').value;
+    const startTime = document.getElementById('banner-page-start-time').value;
+    const endDate = document.getElementById('banner-page-end-date').value;
+    const endTime = document.getElementById('banner-page-end-time').value;
+    const contentType = document.getElementById('banner-page-content-type').value;
 
     const list = KioskStore.getBanners();
     if (id) {
       const b = list.find(item => item.id === id);
       if (b) {
-        Object.assign(b, { title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active: activate ? true : b.active });
+        Object.assign(b, { title, image, duration, priority, startDate, startTime, endDate, endTime, contentType });
       }
     } else {
-      list.push({ id: 'banner-' + Date.now(), title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active: activate, playlistId: 'play-default' });
+      list.push({ id: 'banner-' + Date.now(), title, image, duration, priority, startDate, startTime, endDate, endTime, contentType, active: true, playlistId: 'play-default' });
     }
 
     KioskStore.setBanners(list);
-    document.getElementById('banner-modal').classList.remove('visible');
     showToast(`Banner "${title}" saved successfully.`);
-  }
+    // Return
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-banners').classList.add('active');
+    tabTitle.textContent = 'Banners';
+    tabDescription.textContent = 'Manage promotional banners and media.';
+    breadcrumbCurrent.textContent = 'Banners';
+  });
 
   function editBanner(id) {
     const banners = KioskStore.getBanners();
     const b = banners.find(item => item.id === id);
     if (!b) return;
 
-    document.getElementById('banner-id').value = b.id;
-    document.getElementById('banner-title').value = b.title;
-    document.getElementById('banner-image').value = b.image;
-    document.getElementById('banner-duration').value = b.duration;
-    document.getElementById('banner-priority').value = b.priority;
-    document.getElementById('banner-start-date').value = b.startDate;
-    document.getElementById('banner-start-time').value = b.startTime || '08:00';
-    document.getElementById('banner-end-date').value = b.endDate;
-    document.getElementById('banner-end-time').value = b.endTime || '22:00';
-    document.getElementById('banner-content-type').value = b.contentType;
+    document.getElementById('banner-page-id').value = b.id;
+    document.getElementById('banner-page-title').value = b.title;
+    document.getElementById('banner-page-image').value = b.image;
+    document.getElementById('banner-page-duration').value = b.duration;
+    document.getElementById('banner-page-priority').value = b.priority;
+    document.getElementById('banner-page-start-date').value = b.startDate;
+    document.getElementById('banner-page-start-time').value = b.startTime || '08:00';
+    document.getElementById('banner-page-end-date').value = b.endDate;
+    document.getElementById('banner-page-end-time').value = b.endTime || '22:00';
+    document.getElementById('banner-page-content-type').value = b.contentType;
+    const ctDisplay = document.getElementById('banner-page-content-type-display');
+    if (ctDisplay) {
+      ctDisplay.innerHTML = `<span class="badge desktop-badge">${b.contentType.toUpperCase()}</span><small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>`;
+    }
 
-    document.getElementById('banner-modal-title').textContent = 'Edit Banner';
-    document.getElementById('banner-modal').classList.add('visible');
+    const uploadSpan = document.querySelector('#banner-page-upload-zone span');
+    if (uploadSpan) {
+      uploadSpan.textContent = 'Media loaded (Drag or click to replace)';
+      uploadSpan.style.color = 'var(--primary)';
+    }
+
+    document.getElementById('banner-form-title-h3').textContent = 'Edit Banner';
+    
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-banner-form').classList.add('active');
+    tabTitle.textContent = 'Edit Banner';
+    tabDescription.textContent = 'Configure promotion details.';
+    breadcrumbCurrent.textContent = 'Edit Banner';
   }
 
   function previewBanner(id) {
@@ -774,52 +1711,74 @@
     const b = banners.find(item => item.id === id);
     if (!b) return;
 
-    document.getElementById('preview-modal-title').textContent = b.title;
-    document.getElementById('preview-modal-image').src = b.image;
-    document.getElementById('preview-modal-type').textContent = b.contentType.toUpperCase();
-    document.getElementById('preview-modal-duration').textContent = b.duration;
-    document.getElementById('preview-modal-priority').textContent = b.priority;
-    document.getElementById('preview-modal-schedule').textContent = `${b.startDate} to ${b.endDate}`;
-    document.getElementById('preview-modal-status').textContent = b.active ? 'ACTIVE PLAYBACK' : 'INACTIVE';
+    document.getElementById('banner-view-title-h3').textContent = b.title;
+    document.getElementById('banner-view-image').src = b.image;
+    document.getElementById('banner-view-type').textContent = b.contentType.toUpperCase();
+    document.getElementById('banner-view-duration').textContent = b.duration;
+    document.getElementById('banner-view-priority').textContent = b.priority;
+    document.getElementById('banner-view-schedule').textContent = `${b.startDate} to ${b.endDate}`;
+    document.getElementById('banner-view-status').textContent = b.active ? 'Active' : 'Inactive';
 
-    document.getElementById('banner-preview-modal').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-banner-view').classList.add('active');
+    tabTitle.textContent = 'Banner Details';
+    tabDescription.textContent = 'View digital screen configuration.';
+    breadcrumbCurrent.textContent = 'View Banner';
   }
 
   function deleteBanner(id) {
-    triggerConfirm('Delete Banner', 'Are you sure you want to delete this promotional banner slide?', () => {
-      const list = KioskStore.getBanners();
-      KioskStore.setBanners(list.filter(b => b.id !== id));
+    const list = KioskStore.getBanners();
+    const b = list.find(item => item.id === id);
+    const name = b ? b.title : 'Banner';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setBanners(list.filter(item => item.id !== id));
       showToast('Banner deleted.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
-  // Playlists add/edit
+  // Navigation cancellation helper for Playlists
+  document.querySelectorAll('.btn-cancel-playlist').forEach(btn => {
+    btn.addEventListener('click', () => {
+      clearInterval(window.playlistPreviewInterval);
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      document.getElementById('tab-playlists').classList.add('active');
+      tabTitle.textContent = 'Playlists';
+      tabDescription.textContent = 'Create and configure media loops.';
+      breadcrumbCurrent.textContent = 'Playlists';
+    });
+  });
+
+  // Playlists add/edit (Page based)
   document.getElementById('btn-add-playlist').addEventListener('click', () => {
-    document.getElementById('playlist-form').reset();
-    document.getElementById('playlist-id').value = '';
-    document.getElementById('playlist-modal-title').textContent = 'Add Playlist';
+    document.getElementById('playlist-form-page').reset();
+    document.getElementById('playlist-page-id').value = '';
+    document.getElementById('playlist-form-title-h3').textContent = 'Add Playlist';
 
     const banners = KioskStore.getBanners() || [];
-    const checklist = document.getElementById('playlist-banners-checklist');
+    const checklist = document.getElementById('playlist-page-banners-checklist');
     checklist.innerHTML = '';
     banners.forEach(b => {
       checklist.innerHTML += `
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="pl-banners" value="${b.id}">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.4rem;">
+          <input type="checkbox" name="pl-page-banners" value="${b.id}">
           ${b.title} (Priority ${b.priority})
         </label>
       `;
     });
 
-    document.getElementById('playlist-modal').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-playlist-form').classList.add('active');
+    tabTitle.textContent = 'Add Playlist';
+    tabDescription.textContent = 'Create dynamic media cycles.';
+    breadcrumbCurrent.textContent = 'Add Playlist';
   });
 
-  document.getElementById('playlist-form').addEventListener('submit', (e) => {
+  document.getElementById('playlist-form-page').addEventListener('submit', (e) => {
     e.preventDefault();
-    const id = document.getElementById('playlist-id').value;
-    const name = document.getElementById('playlist-name').value.trim();
+    const id = document.getElementById('playlist-page-id').value;
+    const name = document.getElementById('playlist-page-name').value.trim();
 
-    const checked = document.querySelectorAll('input[name="pl-banners"]:checked');
+    const checked = document.querySelectorAll('input[name="pl-page-banners"]:checked');
     const bannerIds = Array.from(checked).map(c => c.value);
 
     const list = KioskStore.getPlaylists() || [];
@@ -831,8 +1790,14 @@
     }
 
     KioskStore.setPlaylists(list);
-    document.getElementById('playlist-modal').classList.remove('visible');
     showToast(`Playlist "${name}" saved.`);
+    
+    // Return
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-playlists').classList.add('active');
+    tabTitle.textContent = 'Playlists';
+    tabDescription.textContent = 'Create and configure media loops.';
+    breadcrumbCurrent.textContent = 'Playlists';
   });
 
   function editPlaylist(id) {
@@ -840,24 +1805,28 @@
     const p = playlists.find(item => item.id === id);
     if (!p) return;
 
-    document.getElementById('playlist-id').value = p.id;
-    document.getElementById('playlist-name').value = p.name;
-    document.getElementById('playlist-modal-title').textContent = 'Edit Playlist';
+    document.getElementById('playlist-page-id').value = p.id;
+    document.getElementById('playlist-page-name').value = p.name;
+    document.getElementById('playlist-form-title-h3').textContent = 'Edit Playlist';
 
     const banners = KioskStore.getBanners() || [];
-    const checklist = document.getElementById('playlist-banners-checklist');
+    const checklist = document.getElementById('playlist-page-banners-checklist');
     checklist.innerHTML = '';
     banners.forEach(b => {
       const checked = p.bannerIds.includes(b.id) ? 'checked' : '';
       checklist.innerHTML += `
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="pl-banners" value="${b.id}" ${checked}>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.4rem;">
+          <input type="checkbox" name="pl-page-banners" value="${b.id}" ${checked}>
           ${b.title} (Priority ${b.priority})
         </label>
       `;
     });
 
-    document.getElementById('playlist-modal').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-playlist-form').classList.add('active');
+    tabTitle.textContent = 'Edit Playlist';
+    tabDescription.textContent = 'Modify dynamic media cycles.';
+    breadcrumbCurrent.textContent = 'Edit Playlist';
   }
 
   function simulatePlaylistSequence(id) {
@@ -876,9 +1845,14 @@
       return;
     }
 
-    document.getElementById('playlist-preview-modal').classList.add('visible');
-    const imageEl = document.getElementById('playlist-preview-image');
-    const labelEl = document.getElementById('playlist-preview-label');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-playlist-view').classList.add('active');
+    tabTitle.textContent = 'Playlist Playback';
+    tabDescription.textContent = 'Preview looping broadcast content.';
+    breadcrumbCurrent.textContent = 'View Playlist';
+
+    const imageEl = document.getElementById('playlist-page-view-image');
+    const labelEl = document.getElementById('playlist-page-view-label');
 
     let idx = 0;
     const playNext = () => {
@@ -898,37 +1872,54 @@
   }
 
   function deletePlaylist(id) {
-    triggerConfirm('Delete Playlist', 'Are you sure you want to delete this playlist?', () => {
-      const pl = KioskStore.getPlaylists();
-      KioskStore.setPlaylists(pl.filter(p => p.id !== id));
+    const list = KioskStore.getPlaylists();
+    const p = list.find(item => item.id === id);
+    const name = p ? p.name : 'Playlist';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setPlaylists(list.filter(item => item.id !== id));
       showToast('Playlist deleted.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
-  // TVs CRUD
+  // Navigation cancellation helper for TVs
+  document.querySelectorAll('.btn-cancel-tv').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      document.getElementById('tab-tvs').classList.add('active');
+      tabTitle.textContent = 'TVs';
+      tabDescription.textContent = 'Assign and map signage loop schedules.';
+      breadcrumbCurrent.textContent = 'TVs';
+    });
+  });
+
+  // TVs CRUD (Page based)
   document.getElementById('btn-add-tv').addEventListener('click', () => {
-    document.getElementById('tv-form').reset();
-    document.getElementById('tv-id').value = '';
-    document.getElementById('tv-modal-title').textContent = 'Add TV';
+    document.getElementById('tv-form-page').reset();
+    document.getElementById('tv-page-id').value = '';
+    document.getElementById('tv-form-title-h3').textContent = 'Add TV';
 
     const playlists = KioskStore.getPlaylists() || [];
-    const select = document.getElementById('tv-playlist-select');
+    const select = document.getElementById('tv-page-playlist-select');
     select.innerHTML = '';
     playlists.forEach(pl => {
       select.innerHTML += `<option value="${pl.id}">${pl.name}</option>`;
     });
 
-    document.getElementById('tv-modal').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tv-form').classList.add('active');
+    tabTitle.textContent = 'Add TV';
+    tabDescription.textContent = 'Configure digital screen identity.';
+    breadcrumbCurrent.textContent = 'Add TV';
   });
 
-  document.getElementById('tv-form').addEventListener('submit', (e) => {
+  document.getElementById('tv-form-page').addEventListener('submit', (e) => {
     e.preventDefault();
-    const id = document.getElementById('tv-id').value;
-    const name = document.getElementById('tv-name').value.trim();
-    const loc = document.getElementById('tv-location').value.trim();
-    const grp = document.getElementById('tv-group').value.trim();
-    const plid = document.getElementById('tv-playlist-select').value;
-    const status = document.getElementById('tv-status').value;
+    const id = document.getElementById('tv-page-id').value;
+    const name = document.getElementById('tv-page-name').value.trim();
+    const loc = document.getElementById('tv-page-location').value.trim();
+    const grp = document.getElementById('tv-page-group').value.trim();
+    const plid = document.getElementById('tv-page-playlist-select').value;
+    const status = document.getElementById('tv-page-status').value;
 
     const list = KioskStore.getTVs() || [];
     if (id) {
@@ -939,8 +1930,14 @@
     }
 
     KioskStore.setTVs(list);
-    document.getElementById('tv-modal').classList.remove('visible');
     showToast(`TV Screen "${name}" configured.`);
+
+    // Return
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tvs').classList.add('active');
+    tabTitle.textContent = 'TVs';
+    tabDescription.textContent = 'Assign and map signage loop schedules.';
+    breadcrumbCurrent.textContent = 'TVs';
   });
 
   function editTV(id) {
@@ -948,36 +1945,43 @@
     const t = tvs.find(item => item.id === id);
     if (!t) return;
 
-    document.getElementById('tv-id').value = t.id;
-    document.getElementById('tv-name').value = t.name;
-    document.getElementById('tv-location').value = t.location || '';
-    document.getElementById('tv-group').value = t.tvGroup || '';
-    document.getElementById('tv-status').value = t.status;
+    document.getElementById('tv-page-id').value = t.id;
+    document.getElementById('tv-page-name').value = t.name;
+    document.getElementById('tv-page-location').value = t.location || '';
+    document.getElementById('tv-page-group').value = t.tvGroup || '';
+    document.getElementById('tv-page-status').value = t.status;
 
     const playlists = KioskStore.getPlaylists() || [];
-    const select = document.getElementById('tv-playlist-select');
+    const select = document.getElementById('tv-page-playlist-select');
     select.innerHTML = '';
     playlists.forEach(pl => {
       const sel = pl.id === t.assignedPlaylistId ? 'selected' : '';
       select.innerHTML += `<option value="${pl.id}" ${sel}>${pl.name}</option>`;
     });
 
-    document.getElementById('tv-modal-title').textContent = 'Edit TV Settings';
-    document.getElementById('tv-modal').classList.add('visible');
+    document.getElementById('tv-form-title-h3').textContent = 'Edit TV Settings';
+
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tv-form').classList.add('active');
+    tabTitle.textContent = 'Edit TV Settings';
+    tabDescription.textContent = 'Configure digital screen identity.';
+    breadcrumbCurrent.textContent = 'Edit TV';
   }
 
   function deleteTV(id) {
-    triggerConfirm('Remove TV', 'Delete TV configuration from mapped screens?', () => {
-      const list = KioskStore.getTVs();
-      KioskStore.setTVs(list.filter(t => t.id !== id));
+    const list = KioskStore.getTVs();
+    const t = list.find(item => item.id === id);
+    const name = t ? t.name : 'TV Screen';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setTVs(list.filter(item => item.id !== id));
       showToast('TV display unregistered.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Fallback setup form
   document.getElementById('fallback-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    triggerConfirm('Replace Fallback Content', 'This will immediately update fallback contents on mapped TV displays. Continue?', () => {
+    triggerConfirm('Replace Fallback Content', 'Are you sure you want to replace the active fallback content?', () => {
       const title = document.getElementById('fallback-title').value.trim();
       const description = document.getElementById('fallback-desc').value.trim();
       const image = document.getElementById('fallback-image').value.trim();
@@ -988,7 +1992,7 @@
       };
       KioskStore.setConfig(config);
       showToast('Active Fallback Content replaced successfully.');
-    });
+    }, { isDestructive: false, confirmText: 'Yes, Replace' });
   });
 
   document.getElementById('btn-preview-fallback').addEventListener('click', () => {
@@ -1051,11 +2055,13 @@
   }
 
   function deleteCategory(id) {
-    triggerConfirm('Delete Category', 'Delete this product category? Products will remain in database.', () => {
-      const list = KioskStore.getCategories();
-      KioskStore.setCategories(list.filter(c => c.id !== id));
+    const list = KioskStore.getCategories();
+    const c = list.find(item => item.id === id);
+    const name = c ? c.name : 'Category';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setCategories(list.filter(item => item.id !== id));
       showToast('Category deleted.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Product Add/Edit
@@ -1109,11 +2115,13 @@
   }
 
   function deleteProduct(id) {
-    triggerConfirm('Delete Product', 'Remove this product item from database listings?', () => {
-      const list = KioskStore.getProducts();
-      KioskStore.setProducts(list.filter(p => p.id !== id));
+    const list = KioskStore.getProducts();
+    const p = list.find(item => item.id === id);
+    const name = p ? p.name : 'Product';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setProducts(list.filter(item => item.id !== id));
       showToast('Product item deleted.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   function showProductDetails(id) {
@@ -1226,12 +2234,14 @@
   }
 
   function deleteModifier(id) {
-    triggerConfirm('Delete Modifier', 'Delete modifier configurations option?', () => {
-      const list = KioskStore.get('kiosk_modifiers') || [];
-      KioskStore.set('kiosk_modifiers', list.filter(m => m.id !== id));
+    const list = KioskStore.get('kiosk_modifiers') || [];
+    const m = list.find(item => item.id === id);
+    const name = m ? m.name : 'Modifier';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.set('kiosk_modifiers', list.filter(item => item.id !== id));
       showToast('Modifier option removed.');
       renderModifiers();
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Taxes
@@ -1277,11 +2287,13 @@
   }
 
   function deleteTax(id) {
-    triggerConfirm('Delete Tax Profile', 'Delete this tax profile?', () => {
-      const list = KioskStore.getTaxes();
-      KioskStore.setTaxes(list.filter(t => t.id !== id));
+    const list = KioskStore.getTaxes();
+    const t = list.find(item => item.id === id);
+    const name = t ? t.name : 'Tax Profile';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setTaxes(list.filter(item => item.id !== id));
       showToast('Tax profile removed.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Discounts
@@ -1335,11 +2347,13 @@
   }
 
   function deleteDiscount(id) {
-    triggerConfirm('Delete Discount', 'Deletes discount campaign?', () => {
-      const list = KioskStore.getDiscounts();
-      KioskStore.setDiscounts(list.filter(d => d.id !== id));
+    const list = KioskStore.getDiscounts();
+    const d = list.find(item => item.id === id);
+    const name = d ? d.name : 'Discount Campaign';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setDiscounts(list.filter(item => item.id !== id));
       showToast('Discount campaign deleted.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Kiosk Add/Edit/View
@@ -1391,11 +2405,13 @@
   }
 
   function deleteKiosk(id) {
-    triggerConfirm('Delete Kiosk', 'Remove this kiosk terminal?', () => {
-      const list = KioskStore.getKiosks();
-      KioskStore.setKiosks(list.filter(k => k.id !== id));
+    const list = KioskStore.getKiosks();
+    const k = list.find(item => item.id === id);
+    const name = k ? k.name : 'Kiosk Terminal';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setKiosks(list.filter(item => item.id !== id));
       showToast('Kiosk terminal removed.');
-    });
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   function showKioskDetails(id) {
@@ -1442,11 +2458,13 @@
 
   // Save kiosk configs
   document.getElementById('btn-save-kiosk-config').addEventListener('click', () => {
-    const config = KioskStore.getConfig();
-    config.storeName = document.getElementById('set-kiosk-store-name').value.trim();
-    config.inactivityTimeout = parseInt(document.getElementById('set-inactivity-time').value) || 30;
-    KioskStore.setConfig(config);
-    showToast('Kiosk configurations saved.');
+    triggerConfirm('Save Configuration', 'Are you sure you want to change Kiosk Configuration?', () => {
+      const config = KioskStore.getConfig();
+      config.storeName = document.getElementById('set-kiosk-store-name').value.trim();
+      config.inactivityTimeout = parseInt(document.getElementById('set-inactivity-time').value) || 30;
+      KioskStore.setConfig(config);
+      showToast('Kiosk configurations saved.');
+    }, { isDestructive: false, confirmText: 'Yes, Save' });
   });
 
   // Enable/Disable gateway
@@ -1454,9 +2472,15 @@
     const list = KioskStore.getPayments() || [];
     const p = list.find(item => item.id === id);
     if (p) {
-      p.status = p.status === 'enabled' ? 'disabled' : 'enabled';
-      KioskStore.setPayments(list);
-      showToast(`${p.name} configured as ${p.status}.`);
+      const currentEnabled = p.status === 'enabled';
+      const title = currentEnabled ? `Deactivate ${p.name}?` : `Activate ${p.name}?`;
+      const body = currentEnabled ? `Are you sure you want to deactivate this item?` : `Are you sure you want to activate this item?`;
+      const confirmText = currentEnabled ? 'Yes, Deactivate' : 'Yes, Activate';
+      triggerConfirm(title, body, () => {
+        p.status = currentEnabled ? 'disabled' : 'enabled';
+        KioskStore.setPayments(list);
+        showToast(`${p.name} configured as ${p.status}.`);
+      }, { isDestructive: currentEnabled, confirmText });
     }
   }
 
@@ -1504,17 +2528,20 @@
     if (!t) return;
 
     const pl = playlists.find(p => p.id === t.assignedPlaylistId)?.name || 'None';
-    document.getElementById('details-tv-name-header').textContent = t.name;
-    document.getElementById('details-tv-name').textContent = t.name;
-    document.getElementById('details-tv-id').textContent = t.id;
-    document.getElementById('details-tv-loc').textContent = t.location || 'Counter';
-    document.getElementById('details-tv-group').textContent = t.tvGroup || 'None';
-    document.getElementById('details-tv-playlist').textContent = pl;
-    document.getElementById('details-tv-status').textContent = t.status.toUpperCase();
-    document.getElementById('details-tv-conn').textContent = t.connectionStatus.toUpperCase();
-    document.getElementById('details-tv-active').textContent = t.lastActive;
+    document.getElementById('tv-view-name').textContent = t.name;
+    document.getElementById('tv-view-id').textContent = t.id;
+    document.getElementById('tv-view-loc').textContent = t.location || 'Counter';
+    document.getElementById('tv-view-group').textContent = t.tvGroup || 'None';
+    document.getElementById('tv-view-playlist').textContent = pl;
+    document.getElementById('tv-view-status').textContent = t.status.toUpperCase();
+    document.getElementById('tv-view-conn').textContent = t.connectionStatus.toUpperCase();
+    document.getElementById('tv-view-active').textContent = t.lastActive;
 
-    document.getElementById('tv-details-drawer').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tv-view').classList.add('active');
+    tabTitle.textContent = 'TV Screen Details';
+    tabDescription.textContent = 'View hardware screen parameters.';
+    breadcrumbCurrent.textContent = 'View TV';
   }
 
   function showCategoryDetails(id) {
@@ -1604,10 +2631,8 @@
   }
 
   // Bind key inputs filter render loops
-  document.getElementById('banner-search').addEventListener('input', renderBanners);
-  document.getElementById('banner-filter-status').addEventListener('change', renderBanners);
-  document.getElementById('banner-filter-type').addEventListener('change', renderBanners);
-  document.getElementById('banner-filter-playlist').addEventListener('change', renderBanners);
+  document.getElementById('playlist-search').addEventListener('input', renderPlaylists);
+  document.getElementById('tv-search').addEventListener('input', renderTVs);
 
   document.getElementById('product-search').addEventListener('input', renderProducts);
   document.getElementById('product-category-filter').addEventListener('change', renderProducts);
@@ -1618,29 +2643,7 @@
   document.getElementById('order-filter-pay').addEventListener('change', renderOrders);
 
 
-  // --- 6. SIMULATIONS LISTENERS ---
 
-  const simElements = {
-    networkOffline: document.getElementById('sim-network'),
-    backendCrash: document.getElementById('sim-backend'),
-    printerOffline: document.getElementById('sim-printer'),
-    cardTerminalOffline: document.getElementById('sim-card-term'),
-    bannerLoadFail: document.getElementById('sim-banner-fail')
-  };
-
-  Object.keys(simElements).forEach(k => {
-    const el = simElements[k];
-    if (el) {
-      // Sync on load
-      const failures = KioskStore.getFailures();
-      el.checked = failures[k];
-
-      el.addEventListener('change', () => {
-        KioskStore.updateFailure(k, el.checked);
-        showToast(`Simulation state updated.`);
-      });
-    }
-  });
 
 
   function decorateDynamicIcons() {
@@ -1697,6 +2700,7 @@
     renderDiscounts();
     renderKiosks();
     renderPayments();
+    renderPaymentHistory();
     renderOrders();
     renderDevices();
 
@@ -1718,7 +2722,43 @@
     }
   });
 
+  // Payment history cancellations
+  document.querySelectorAll('.btn-cancel-pay-history').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      document.getElementById('tab-payment-history').classList.add('active');
+      tabTitle.textContent = 'Payment History';
+      tabDescription.textContent = 'Monitor payment transactions and order links.';
+      breadcrumbCurrent.textContent = 'Payment History';
+    });
+  });
+
+  const searchPayInput = document.getElementById('pay-history-search');
+  if (searchPayInput) {
+    searchPayInput.addEventListener('input', renderPaymentHistory);
+  }
+
+  // Banner search clear button
+  const bannerSearchClear = document.getElementById('banner-search-clear');
+  if (bannerSearchClear) {
+    bannerSearchClear.addEventListener('click', () => {
+      const input = document.getElementById('banner-search');
+      input.value = '';
+      bannerPage = 1;
+      renderBanners();
+    });
+  }
+  // Reset page on search
+  const bannerSearchInput = document.getElementById('banner-search');
+  if (bannerSearchInput) {
+    bannerSearchInput.addEventListener('input', () => {
+      bannerPage = 1;
+      renderBanners();
+    });
+  }
+
   // Pre-load setups
   loadKioskConfigs();
+  refreshAll();
 
 })();

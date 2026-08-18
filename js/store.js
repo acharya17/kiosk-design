@@ -24,6 +24,12 @@
   };
 
   function initStore() {
+    // Clean stale prototype datasets from previous runs
+    const dataSample = localStorage.getItem(KEYS.BANNERS);
+    if (!dataSample || !dataSample.includes('Lunch Promotion')) {
+      localStorage.clear();
+    }
+
     if (!localStorage.getItem(KEYS.CATEGORIES)) {
       localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(window.INITIAL_CATEGORIES));
     }

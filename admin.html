@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/admin.css">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     if (sessionStorage.getItem('kiosk_auth') !== 'admin' && !window.location.search.includes('auth=true')) {
       window.location.href = 'index.html';
@@ -35,8 +36,8 @@
           <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
         </a>
 
-        <!-- Content Section -->
-        <span class="nav-group-title">Content</span>
+        <!-- TV & Display Section -->
+        <span class="nav-group-title">TV & Display</span>
         <a href="#banners" class="nav-item" data-tab="banners">
           <span class="nav-icon"><i data-lucide="image"></i></span> Banners
         </a>
@@ -44,11 +45,14 @@
           <span class="nav-icon"><i data-lucide="list-video"></i></span> Playlists
         </a>
         <a href="#tvs" class="nav-item" data-tab="tvs">
-          <span class="nav-icon"><i data-lucide="monitor"></i></span> TV Displays
+          <span class="nav-icon"><i data-lucide="monitor"></i></span> TVs
+        </a>
+        <a href="#fallback" class="nav-item" data-tab="fallback">
+          <span class="nav-icon"><i data-lucide="shield-alert"></i></span> Default / Fallback
         </a>
 
-        <!-- Catalog Section -->
-        <span class="nav-group-title">Catalog</span>
+        <!-- Product Catalog Section -->
+        <span class="nav-group-title">Product Catalog</span>
         <a href="#categories" class="nav-item" data-tab="categories">
           <span class="nav-icon"><i data-lucide="folder"></i></span> Categories
         </a>
@@ -59,16 +63,37 @@
           <span class="nav-icon"><i data-lucide="sliders-horizontal"></i></span> Customisation
         </a>
 
-        <!-- Operations Section -->
-        <span class="nav-group-title">Operations</span>
+        <!-- Pricing & Promotions Section -->
+        <span class="nav-group-title">Pricing & Promotions</span>
+        <a href="#taxes" class="nav-item" data-tab="taxes">
+          <span class="nav-icon"><i data-lucide="receipt-text"></i></span> Taxes
+        </a>
+        <a href="#discounts" class="nav-item" data-tab="discounts">
+          <span class="nav-icon"><i data-lucide="tag"></i></span> Discounts
+        </a>
+
+        <!-- Kiosk Management Section -->
+        <span class="nav-group-title">Kiosk Management</span>
         <a href="#kiosks" class="nav-item" data-tab="kiosks">
           <span class="nav-icon"><i data-lucide="monitor-smartphone"></i></span> Kiosks
         </a>
+        <a href="#kiosk-config" class="nav-item" data-tab="kiosk-config">
+          <span class="nav-icon"><i data-lucide="settings"></i></span> Kiosk Configuration
+        </a>
+
+        <!-- Payment Configuration Section -->
+        <span class="nav-group-title">Payment Configuration</span>
+        <a href="#payments" class="nav-item" data-tab="payments">
+          <span class="nav-icon"><i data-lucide="credit-card"></i></span> Payment Methods
+        </a>
+        <a href="#payment-history" class="nav-item" data-tab="payment-history">
+          <span class="nav-icon"><i data-lucide="history"></i></span> Payment History
+        </a>
+
+        <!-- Orders Section -->
+        <span class="nav-group-title">Orders</span>
         <a href="#orders" class="nav-item" data-tab="orders">
           <span class="nav-icon"><i data-lucide="clipboard-list"></i></span> Orders
-        </a>
-        <a href="#payments" class="nav-item" data-tab="payments">
-          <span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments
         </a>
 
         <!-- Devices Section -->
@@ -103,44 +128,77 @@
         <!-- 2. DASHBOARD PANEL -->
         <section id="tab-dashboard" class="tab-pane active">
           <!-- 4 KPIs Grid -->
-          <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
+            <!-- Active TVs -->
             <div class="metric-card">
               <div class="metric-info">
-                <h3>Active TVs</h3>
-                <p class="metric-number" id="kpi-active-tvs">0</p>
+                <h3 style="font-size: 0.85rem; color: var(--text-admin-muted); font-weight: 500;">Active TVs</h3>
+                <p class="metric-number" id="kpi-active-tvs" style="font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0;">0</p>
+                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--text-admin-muted);" id="kpi-active-tvs-sub">3 of 4 TVs online</span>
               </div>
               <div class="metric-icon info-bg" style="display: flex;"><i data-lucide="monitor"></i></div>
             </div>
+            <!-- Active Banners -->
             <div class="metric-card">
               <div class="metric-info">
-                <h3>Active Banners</h3>
-                <p class="metric-number" id="kpi-active-banners">0</p>
+                <h3 style="font-size: 0.85rem; color: var(--text-admin-muted); font-weight: 500;">Active Banners</h3>
+                <p class="metric-number" id="kpi-active-banners" style="font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0;">0</p>
+                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--text-admin-muted);" id="kpi-active-banners-sub">3 scheduled today</span>
               </div>
               <div class="metric-icon success-bg" style="display: flex;"><i data-lucide="image"></i></div>
             </div>
+            <!-- Active Kiosks -->
             <div class="metric-card">
               <div class="metric-info">
-                <h3>Active Kiosks</h3>
-                <p class="metric-number" id="kpi-active-kiosks">0</p>
+                <h3 style="font-size: 0.85rem; color: var(--text-admin-muted); font-weight: 500;">Active Kiosks</h3>
+                <p class="metric-number" id="kpi-active-kiosks" style="font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0;">0</p>
+                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--text-admin-muted);" id="kpi-active-kiosks-sub">4 of 5 kiosks online</span>
               </div>
               <div class="metric-icon primary-bg" style="display: flex;"><i data-lucide="monitor-smartphone"></i></div>
             </div>
+            <!-- Today's Orders -->
             <div class="metric-card">
               <div class="metric-info">
-                <h3>Today's Orders</h3>
-                <p class="metric-number" id="kpi-orders-count">0</p>
+                <h3 style="font-size: 0.85rem; color: var(--text-admin-muted); font-weight: 500;">Today's Orders</h3>
+                <p class="metric-number" id="kpi-orders-count" style="font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0;">126</p>
+                <span class="metric-subtext" style="font-size: 0.75rem; color: var(--green); font-weight: 600;" id="kpi-orders-sub">↑ 12.4% from yesterday</span>
               </div>
               <div class="metric-icon warning-bg" style="display: flex;"><i data-lucide="clipboard-list"></i></div>
             </div>
           </div>
 
-          <!-- Alert strip box -->
-          <div class="dashboard-alerts-bar" id="dashboard-alerts-bar"></div>
+          <!-- Charts Row -->
+          <div class="dashboard-details" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+            <!-- Orders Overview -->
+            <div class="details-card">
+              <h3 style="margin-bottom: 0.25rem;">Orders Overview</h3>
+              <p style="font-size: 0.75rem; color: var(--text-admin-muted); margin-bottom: 1rem;">Order activity for the last 7 days</p>
+              <div style="height: 220px; position: relative;">
+                <canvas id="chart-orders-overview"></canvas>
+              </div>
+            </div>
 
-          <div class="dashboard-details">
+            <!-- Order Status Donut -->
+            <div class="details-card">
+              <h3 style="margin-bottom: 1rem;">Order Status</h3>
+              <div style="height: 180px; position: relative; display: flex; justify-content: center; align-items: center;">
+                <canvas id="chart-order-status"></canvas>
+                <div style="position: absolute; text-align: center; pointer-events: none; margin-bottom: 25px;">
+                  <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">108</div>
+                  <div style="font-size: 0.65rem; color: var(--text-admin-muted); text-transform: uppercase; letter-spacing: 0.05em;">Total Orders</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TV and Kiosk Grid -->
+          <div class="dashboard-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
             <!-- TV Status -->
             <div class="details-card">
-              <h3>TV Status</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>TV Status</h3>
+                <a href="#tvs" class="btn-dashboard-nav" data-tab="tvs" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">View All</a>
+              </div>
               <div class="table-container small-table">
                 <table class="data-table">
                   <thead>
@@ -158,7 +216,10 @@
 
             <!-- Kiosk Status -->
             <div class="details-card">
-              <h3>Kiosk Status</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>Kiosk Status</h3>
+                <a href="#kiosks" class="btn-dashboard-nav" data-tab="kiosks" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">View All</a>
+              </div>
               <div class="table-container small-table">
                 <table class="data-table">
                   <thead>
@@ -172,23 +233,45 @@
                 </table>
               </div>
             </div>
+          </div>
 
-            <!-- Recent Orders -->
-            <div class="details-card" style="grid-column: span 2;">
+          <!-- Recent Orders -->
+          <div class="details-card" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3>Recent Orders</h3>
-              <div class="table-container small-table">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Kiosk ID</th>
-                      <th>Amount</th>
-                      <th>Payment Status</th>
-                      <th>Order Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dash-orders-tbody"></tbody>
-                </table>
+              <a href="#orders" class="btn-dashboard-nav" data-tab="orders" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">View All Orders</a>
+            </div>
+            <div class="table-container small-table">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Kiosk</th>
+                    <th>Amount</th>
+                    <th>Payment Status</th>
+                    <th>Order Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Device Status & System Alerts Section -->
+          <div class="dashboard-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+            <!-- Device Status Chart -->
+            <div class="details-card">
+              <h3 style="margin-bottom: 1rem;">Device Status</h3>
+              <div style="height: 180px; position: relative; display: flex; justify-content: center; align-items: center;">
+                <canvas id="chart-device-status"></canvas>
+              </div>
+            </div>
+
+            <!-- System Alerts -->
+            <div class="details-card">
+              <h3>System Alerts</h3>
+              <div id="dashboard-alerts-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                <!-- Populated dynamically via JS -->
               </div>
             </div>
           </div>
@@ -196,50 +279,62 @@
 
         <!-- 3.1 BANNERS TAB -->
         <section id="tab-banners" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-banner">+ Add Banner</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="banner-search" class="form-control inline-filter" placeholder="Search Banners..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="banner-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="banners" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-banner" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Banner</button>
+            </div>
           </div>
-          <div class="filter-panel">
-            <input type="text" id="banner-search" class="form-control inline-filter" placeholder="Search Banners...">
-            <select id="banner-filter-status" class="form-select inline-filter">
-              <option value="all">Status: All</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
-            <select id="banner-filter-type" class="form-select inline-filter">
-              <option value="all">Type: All</option>
-              <option value="image">Image</option>
-              <option value="video">Video</option>
-            </select>
-            <select id="banner-filter-playlist" class="form-select inline-filter">
-              <option value="all">Playlist: All</option>
-            </select>
-          </div>
+          <div class="filter-chips-container" id="banners-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="banners-table">
+              <colgroup>
+                <col style="width: 24%;">
+                <col style="width: 9%;">
+                <col style="width: 8%;">
+                <col style="width: 18%;">
+                <col style="width: 9%;">
+                <col style="width: 8%;">
+                <col style="width: 12%;">
+                <col style="width: 12%;">
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Banner Name</th>
+                  <th>Banner</th>
                   <th>Preview</th>
                   <th>Type</th>
+                  <th>Schedule</th>
                   <th>Duration</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
                   <th>Priority</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="banners-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="banners-pagination"></div>
           </div>
         </section>
 
         <!-- 3.2 PLAYLISTS TAB -->
         <section id="tab-playlists" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-playlist">+ Add Playlist</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <input type="text" id="playlist-search" class="form-control inline-filter" placeholder="Search Playlists..." style="max-width: 300px; margin-bottom: 0;">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="playlists" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-playlist">+ Add Playlist</button>
+            </div>
           </div>
+          <div class="filter-chips-container" id="playlist-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -249,7 +344,7 @@
                   <th>Assigned TVs</th>
                   <th>Status</th>
                   <th>Last Updated</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="playlists-tbody"></tbody>
@@ -259,9 +354,16 @@
 
         <!-- 3.3 TV TAB -->
         <section id="tab-tvs" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-tv">+ Add TV</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <input type="text" id="tv-search" class="form-control inline-filter" placeholder="Search TVs..." style="max-width: 300px; margin-bottom: 0;">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="tvs" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-tv">+ Add TV</button>
+            </div>
           </div>
+          <div class="filter-chips-container" id="tv-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -273,14 +375,17 @@
                   <th>Status</th>
                   <th>Connection</th>
                   <th>Last Active</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="tvs-tbody"></tbody>
             </table>
           </div>
+        </section>
 
-          <div class="settings-grid" style="margin-top: 2rem;">
+        <!-- 3.4 DEFAULT / FALLBACK TAB -->
+        <section id="tab-fallback" class="tab-pane">
+          <div class="settings-grid">
             <div class="settings-card" style="grid-column: span 2;">
               <h3>Fallback Content Configuration</h3>
               <div class="fallback-preview-block" style="display: flex; gap: 2rem; margin-bottom: 2rem;">
@@ -340,85 +445,29 @@
         <!-- 4.2 PRODUCTS TAB -->
         <section id="tab-products" class="tab-pane">
           <div class="pane-header-row">
-        <!-- 4.2 PRODUCTS TAB -->
-        <section id="tab-products" class="tab-pane">
-          <div class="filter-panel" style="border-bottom: 1px solid var(--border-admin); padding-bottom: 0.75rem; margin-bottom: 1.5rem; gap: 1.5rem; width: 100%;">
-            <button class="subtab-link active-subtab" data-subtab="products-grid" style="border: none; background: transparent; color: var(--primary); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; transition: all 0.2s;">Products</button>
-            <button class="subtab-link" data-subtab="taxes-grid" style="border: none; background: transparent; color: var(--text-admin-muted); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; padding-bottom: 0.5rem; transition: all 0.2s;">Taxes Profile</button>
-            <button class="subtab-link" data-subtab="discounts-grid" style="border: none; background: transparent; color: var(--text-admin-muted); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; padding-bottom: 0.5rem; transition: all 0.2s;">Promotional Discounts</button>
+            <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
           </div>
-
-          <!-- A. PRODUCTS SUBTAB -->
-          <div class="subtab-content" id="subtab-products-grid">
-            <div class="pane-header-row">
-              <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
-            </div>
-            <div class="filter-panel">
-              <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
-              <select id="product-category-filter" class="form-select inline-filter">
-                <option value="all">All Categories</option>
-              </select>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Image</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Availability</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="products-tbody"></tbody>
-              </table>
-            </div>
+          <div class="filter-panel">
+            <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
+            <select id="product-category-filter" class="form-select inline-filter">
+              <option value="all">All Categories</option>
+            </select>
           </div>
-
-          <!-- B. TAXES SUBTAB -->
-          <div class="subtab-content" id="subtab-taxes-grid" style="display: none;">
-            <div class="pane-header-row">
-              <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Tax Name</th>
-                    <th>Percentage</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="taxes-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- C. DISCOUNTS SUBTAB -->
-          <div class="subtab-content" id="subtab-discounts-grid" style="display: none;">
-            <div class="pane-header-row">
-              <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Discount Name</th>
-                    <th>Type</th>
-                    <th>Value</th>
-                    <th>Applicable Products</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="discounts-tbody"></tbody>
-              </table>
-            </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Image</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Availability</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
           </div>
         </section>
 
@@ -445,6 +494,50 @@
           </div>
         </section>
 
+        <!-- 5.1 TAXES TAB -->
+        <section id="tab-taxes" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tax Name</th>
+                  <th>Percentage</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="taxes-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5.2 DISCOUNTS TAB -->
+        <section id="tab-discounts" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Discount Name</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Applicable Products</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="discounts-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- 6.1 KIOSKS TAB -->
         <section id="tab-kiosks" class="tab-pane">
           <div class="pane-header-row">
@@ -466,8 +559,11 @@
               <tbody id="kiosks-tbody"></tbody>
             </table>
           </div>
+        </section>
 
-          <div class="settings-grid" style="margin-top: 2rem;">
+        <!-- 6.2 KIOSK CONFIGURATION TAB -->
+        <section id="tab-kiosk-config" class="tab-pane">
+          <div class="settings-grid">
             <div class="settings-card">
               <h3>General Configuration</h3>
               <div class="form-group">
@@ -493,6 +589,129 @@
         <!-- 7. PAYMENT METHODS CONFIG TAB -->
         <section id="tab-payments" class="tab-pane">
           <div class="settings-grid" id="payment-gateways-grid"></div>
+        </section>
+
+        <!-- 7.2 PAYMENT HISTORY TAB -->
+        <section id="tab-payment-history" class="tab-pane">
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <input type="text" id="pay-history-search" class="form-control inline-filter" placeholder="Search Payments..." style="max-width: 300px; margin-bottom: 0;">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="payment-history" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+            </div>
+          </div>
+          <div class="filter-chips-container" id="payment-history-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Order ID</th>
+                  <th>Order Token</th>
+                  <th>Kiosk ID</th>
+                  <th>Payment Date & Time</th>
+                  <th>Payment Method</th>
+                  <th>Amount</th>
+                  <th>Payment Status</th>
+                  <th>Order Status</th>
+                  <th>Payment Reference</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pay-history-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PAYMENT HISTORY DETAILS VIEW TAB -->
+        <section id="tab-payment-history-view" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h3 id="pay-details-tx-id" style="margin: 0;">Payment Details</h3>
+                <button type="button" class="btn btn-secondary btn-cancel-pay-history" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back to List
+                </button>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Payment Section -->
+                <div>
+                  <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.75rem;">Payment</h4>
+                  <table class="data-table-vertical" style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; width: 40%; color: var(--text-admin-muted);">Transaction ID:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-tx-id">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Order ID:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-order-id">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Kiosk ID:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-kiosk-id">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Date & Time:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-datetime">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Amount:</td>
+                      <td style="padding: 0.5rem 0; font-weight: 700; color: var(--text-admin-main);" id="pay-view-amount">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Payment Method:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-method">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Payment Status:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-status">-</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <!-- Order Details & Timeline Section -->
+                <div>
+                  <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.75rem;">Order</h4>
+                  <table class="data-table-vertical" style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; width: 40%; color: var(--text-admin-muted);">Order Token:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-token">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Order Status:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-order-status">-</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-admin);">
+                      <td style="padding: 0.5rem 0; font-weight: 600; color: var(--text-admin-muted);">Ordered Items:</td>
+                      <td style="padding: 0.5rem 0;" id="pay-view-items">-</td>
+                    </tr>
+                  </table>
+
+                  <h4 class="form-section-title" style="color: var(--text-admin-main); margin-bottom: 0.75rem;">Payment Timeline</h4>
+                  <div style="display: flex; flex-direction: column; gap: 0.75rem; padding-left: 0.75rem; border-left: 2px solid var(--border-admin);">
+                    <div style="position: relative; padding-left: 0.75rem;">
+                      <div style="position: absolute; left: -15px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--green);"></div>
+                      <span style="font-size: 0.8rem; font-weight: 600; display: block; color: var(--text-admin-main);">Payment Initiated</span>
+                      <span style="font-size: 0.7rem; color: var(--text-admin-muted);" id="timeline-initiated-time">-</span>
+                    </div>
+                    <div style="position: relative; padding-left: 0.75rem;">
+                      <div style="position: absolute; left: -15px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary);"></div>
+                      <span style="font-size: 0.8rem; font-weight: 600; display: block; color: var(--text-admin-main);">Payment Processing</span>
+                      <span style="font-size: 0.7rem; color: var(--text-admin-muted);" id="timeline-processing-time">-</span>
+                    </div>
+                    <div style="position: relative; padding-left: 0.75rem;">
+                      <div style="position: absolute; left: -15px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--green);" id="timeline-final-dot"></div>
+                      <span style="font-size: 0.8rem; font-weight: 600; display: block; color: var(--text-admin-main);" id="timeline-final-title">Payment Successful</span>
+                      <span style="font-size: 0.7rem; color: var(--text-admin-muted);" id="timeline-final-time">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </section>
 
         <!-- 8. ORDER MANAGEMENT TAB -->
@@ -574,9 +793,9 @@
         <!-- 10. ROLES & ACCESS TAB -->
         <section id="tab-roles" class="tab-pane">
           <div class="details-card">
-            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1.5rem; border-radius: var(--radius-md); color: #fff; margin-bottom: 2rem;">
-              <strong>🔒 Client clarification required</strong><br>
-              <p style="margin-top: 0.5rem; color: var(--text-admin-muted); font-size: 0.9rem; line-height: 1.6;">
+            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1.5rem; border-radius: var(--radius-md); color: var(--danger); margin-bottom: 2rem;">
+              <strong style="display: inline-flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i> Client clarification required</strong><br>
+              <p style="margin-top: 0.5rem; color: #7f1d1d; font-size: 0.9rem; line-height: 1.6;">
                 The client requirements do not specify access rules or authentication domains. This module serves as a placeholder.
               </p>
             </div>
@@ -601,8 +820,8 @@
                     <td>2 Users</td>
                     <td><span class="badge touch-badge">Active</span></td>
                     <td>
-                      <button class="btn btn-secondary btn-view-role">View</button>
-                      <button class="btn btn-secondary" disabled>Lock</button>
+                      <button class="btn btn-secondary btn-view-role" style="display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i> View</button>
+                      <button class="btn btn-secondary" disabled style="display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="lock" style="width: 14px; height: 14px;"></i> Lock</button>
                     </td>
                   </tr>
                 </tbody>
@@ -610,54 +829,225 @@
             </div>
           </div>
         </section>
+        <!-- BANNER FORM TAB -->
+        <section id="tab-banner-form" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3 id="banner-form-title-h3">Add Banner</h3>
+              <form id="banner-form-page">
+                <input type="hidden" id="banner-page-id">
+                <h4 class="form-section-title">Basic Information</h4>
+                <div class="form-group">
+                  <label for="banner-page-title">Banner Name *</label>
+                  <input type="text" id="banner-page-title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Media Content (Image/Video) *</label>
+                  <div id="banner-page-upload-zone" style="border: 2px dashed var(--border-admin); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i data-lucide="upload-cloud" style="width: 28px; height: 28px; color: var(--primary);"></i>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">Drag and drop your file here, or click to browse</span>
+                    <span style="font-size: 0.7rem; color: var(--text-admin-muted);">Supports PNG, JPG, MP4 (Max 10MB)</span>
+                    <input type="file" id="banner-page-file-input" accept="image/*,video/*" style="display: none;">
+                  </div>
+                  <!-- Hidden input to store template URL or uploaded Base64 data -->
+                  <input type="hidden" id="banner-page-image" required>
+                  <div class="preset-links" style="margin-top: 0.75rem;">
+                    <span>Or Quick Presets: </span>
+                    <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=1200&auto=format&fit=crop&q=80">Coffee Deal</button>
+                    <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&auto=format&fit=crop&q=80">Pizza Feast</button>
+                  </div>
+                </div>
+
+                <h4 class="form-section-title">Configuration</h4>
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label for="banner-page-duration">Display Duration (s) *</label>
+                    <input type="number" id="banner-page-duration" class="form-control" min="3" max="60" value="5" required>
+                  </div>
+                  <div class="form-group col">
+                    <label for="banner-page-priority">Priority *</label>
+                    <input type="number" id="banner-page-priority" class="form-control" min="1" max="100" value="1" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label for="banner-page-start-date">Start Date *</label>
+                    <input type="date" id="banner-page-start-date" class="form-control" required>
+                  </div>
+                  <div class="form-group col">
+                    <label for="banner-page-start-time">Start Time *</label>
+                    <input type="time" id="banner-page-start-time" class="form-control" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label for="banner-page-end-date">End Date *</label>
+                    <input type="date" id="banner-page-end-date" class="form-control" required>
+                  </div>
+                  <div class="form-group col">
+                    <label for="banner-page-end-time">End Time *</label>
+                    <input type="time" id="banner-page-end-time" class="form-control" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Content Type</label>
+                  <input type="hidden" id="banner-page-content-type" value="image">
+                  <div id="banner-page-content-type-display" style="padding: 0.5rem 0; font-size: 0.85rem; color: var(--text-admin-main);">
+                    <span class="badge desktop-badge">IMAGE</span>
+                    <small style="color: var(--text-admin-muted); margin-left: 0.5rem;">Auto-detected from uploaded media</small>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                  <button type="button" class="btn btn-secondary btn-cancel-banner">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Banner</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- BANNER VIEW TAB -->
+        <section id="tab-banner-view" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3 id="banner-view-title-h3">Banner Details</h3>
+              <div style="background: #000; border-radius: var(--radius-md); overflow: hidden; height: 320px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                <img src="" id="banner-view-image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              </div>
+              <h4 class="form-section-title">Configuration</h4>
+              <div class="settings-grid" style="grid-template-columns: 1fr 1fr; font-size: 0.95rem; margin-bottom: 1.5rem; gap: 1rem;">
+                <div>
+                  <p style="margin-bottom: 0.6rem;"><strong>Type:</strong> <span id="banner-view-type">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Duration:</strong> <span id="banner-view-duration">-</span>s</p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Priority:</strong> <span id="banner-view-priority">-</span></p>
+                </div>
+                <div>
+                  <p style="margin-bottom: 0.6rem;"><strong>Schedule:</strong> <span id="banner-view-schedule">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Status:</strong> <span id="banner-view-status">-</span></p>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-cancel-banner">Go Back</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PLAYLIST FORM TAB -->
+        <section id="tab-playlist-form" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3 id="playlist-form-title-h3">Add Playlist</h3>
+              <form id="playlist-form-page">
+                <input type="hidden" id="playlist-page-id">
+                <h4 class="form-section-title">Basic Information</h4>
+                <div class="form-group">
+                  <label for="playlist-page-name">Playlist Name *</label>
+                  <input type="text" id="playlist-page-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Transition Animation</label>
+                  <select id="playlist-page-transition" class="form-select">
+                    <option value="fade">Fade Cross</option>
+                    <option value="slide">Slide Horizontal</option>
+                  </select>
+                </div>
+                <h4 class="form-section-title">Configuration</h4>
+                <div class="form-group">
+                  <label>Select Banners to Loop</label>
+                  <div class="checkbox-group" id="playlist-page-banners-checklist" style="max-height: 250px; overflow-y: auto; background-color: rgba(0,0,0,0.25); padding: 1rem; border-radius: var(--radius-sm); color: #fff;"></div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                  <button type="button" class="btn btn-secondary btn-cancel-playlist">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Playlist</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- PLAYLIST VIEW TAB -->
+        <section id="tab-playlist-view" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2; text-align: center;">
+              <h3>Playlist Signage Sequence</h3>
+              <div style="background-color:#000; border-radius: var(--radius-md); overflow:hidden; height:360px; display:flex; align-items:center; justify-content:center; position:relative; margin: 1.5rem 0;">
+                <img src="" id="playlist-page-view-image" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: opacity 0.5s ease-in-out;">
+                <span id="playlist-page-view-label" style="position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.75); padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 4px;">Slide 1</span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-cancel-playlist">Stop & Go Back</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TV FORM TAB -->
+        <section id="tab-tv-form" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3 id="tv-form-title-h3">Add TV</h3>
+              <form id="tv-form-page">
+                <input type="hidden" id="tv-page-id">
+                <h4 class="form-section-title">Basic Information</h4>
+                <div class="form-group">
+                  <label for="tv-page-name">TV Name *</label>
+                  <input type="text" id="tv-page-name" class="form-control" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label for="tv-page-location">Location Name *</label>
+                    <input type="text" id="tv-page-location" class="form-control" required>
+                  </div>
+                  <div class="form-group col">
+                    <label for="tv-page-group">TV Group</label>
+                    <input type="text" id="tv-page-group" class="form-control" placeholder="e.g. Lobby">
+                  </div>
+                </div>
+                <h4 class="form-section-title">Configuration</h4>
+                <div class="form-group">
+                  <label for="tv-page-playlist-select">Playlist *</label>
+                  <select id="tv-page-playlist-select" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="tv-page-status">Status</label>
+                  <select id="tv-page-status" class="form-select">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                  <button type="button" class="btn btn-secondary btn-cancel-tv">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save TV</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- TV VIEW TAB -->
+        <section id="tab-tv-view" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3 id="tv-view-title-h3">TV Screen Details</h3>
+              <h4 class="form-section-title">Summary</h4>
+              <div class="settings-grid" style="grid-template-columns: 1fr 1fr; font-size: 0.95rem; margin-bottom: 1.5rem; gap: 1rem;">
+                <div>
+                  <p style="margin-bottom: 0.6rem;"><strong>TV Name:</strong> <span id="tv-view-name">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>TV ID:</strong> <span id="tv-view-id">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Location:</strong> <span id="tv-view-loc">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>TV Group:</strong> <span id="tv-view-group">-</span></p>
+                </div>
+                <div>
+                  <p style="margin-bottom: 0.6rem;"><strong>Assigned Playlist:</strong> <span id="tv-view-playlist">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Current Status:</strong> <span id="tv-view-status">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Connection Status:</strong> <span id="tv-view-conn">-</span></p>
+                  <p style="margin-bottom: 0.6rem;"><strong>Last Active:</strong> <span id="tv-view-active">-</span></p>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-cancel-tv">Go Back</button>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 
-    <!-- FLOATING SIMULATOR DRAWER -->
-    <section class="simulation-drawer">
-      <div class="drawer-toggle" id="simulation-toggle">
-        <span class="toggle-icon" style="display: inline-flex; align-items: center;"><i data-lucide="triangle-alert" style="width: 16px; height: 16px; color: var(--danger);"></i></span>
-        <span class="toggle-text">Failure Simulations</span>
-      </div>
-      <div class="drawer-content">
-        <h3>Mock System Failure States</h3>
-        <div class="simulation-switch">
-          <span>Network Connection Down</span>
-          <label class="switch">
-            <input type="checkbox" id="sim-network">
-            <span class="slider round"></span>
-          </label>
-        </div>
-        <div class="simulation-switch">
-          <span>Backend Server Outage</span>
-          <label class="switch">
-            <input type="checkbox" id="sim-backend">
-            <span class="slider round"></span>
-          </label>
-        </div>
-        <div class="simulation-switch">
-          <span>Receipt Printer Failure</span>
-          <label class="switch">
-            <input type="checkbox" id="sim-printer">
-            <span class="slider round"></span>
-          </label>
-        </div>
-        <div class="simulation-switch">
-          <span>Card Terminal Outage</span>
-          <label class="switch">
-            <input type="checkbox" id="sim-card-term">
-            <span class="slider round"></span>
-          </label>
-        </div>
-        <div class="simulation-switch">
-          <span>TV Banner Loading Errors</span>
-          <label class="switch">
-            <input type="checkbox" id="sim-banner-fail">
-            <span class="slider round"></span>
-          </label>
-        </div>
-      </div>
-    </section>
   </div>
 
   <!-- MODALS -->
@@ -1403,6 +1793,26 @@
           ✓ Order logs tracking
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Reusable Filter Drawer Modal -->
+  <div class="modal" id="filter-drawer-modal">
+    <div class="customizer-drawer" style="width: 380px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card); border-bottom: 1px solid var(--border-admin);">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-admin-main);"><i data-lucide="list-filter"></i> Filter Options</h3>
+        <button class="modal-close" onclick="document.getElementById('filter-drawer-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 140px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;" id="filter-drawer-body">
+        <!-- Dynamic filters populated via JS based on the active tab context -->
+      </div>
+      <footer class="modal-footer" style="padding: 1rem 1.5rem; background-color: var(--bg-admin-card); border-top: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center; height: 70px;">
+        <button type="button" class="btn-clear-filters" id="btn-filter-clear-all" style="background: transparent; border: none; color: var(--danger); font-weight: 600; cursor: pointer;">Clear All</button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('filter-drawer-modal').classList.remove('visible')">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-filter-apply">Apply Filters</button>
+        </div>
+      </footer>
     </div>
   </div>
 

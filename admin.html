@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bistro Admin Dashboard Console</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <!-- Toast alerts -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ================= AUTHENTICATION CONTAINER ================= -->
+  <div class="auth-wrapper" id="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-left">
+        <span class="auth-logo-icon">🍕</span>
+        <h2>Bistro Signage & Ordering Suite</h2>
+        <p>Enterprise cloud portal to manage menus, kiosks, digital advertisement playlists, and track order fulfillment pipelines.</p>
+      </div>
+      
+      <div class="auth-right">
+        <!-- 1.1 Login Form -->
+        <div id="auth-view-login">
+          <h3>Admin Sign In</h3>
+          <p class="auth-subtitle">Please enter your administrative credentials</p>
+          <div class="auth-error-banner" id="login-error-msg">Invalid email address or password. Please try again.</div>
+          
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-email">Email Address / Username</label>
+              <input type="text" id="login-email" class="form-control" placeholder="admin@bistro.com" required value="admin@bistro.com">
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required value="admin123">
+                <button type="button" class="btn-toggle-pwd" id="btn-show-password">Show</button>
+              </div>
+            </div>
+            <div class="form-row-auth">
+              <label class="checkbox-label">
+                <input type="checkbox" id="login-remember"> Remember me
+              </label>
+              <a href="#forgot" class="btn-link" id="btn-forgot-password-link">Forgot Password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary auth-submit-btn" id="btn-auth-login">Login to Dashboard</button>
+          </form>
+        </div>
+
+        <!-- 1.2 Forgot Password Form -->
+        <div id="auth-view-forgot" style="display: none;">
+          <h3>Reset Password</h3>
+          <p class="auth-subtitle">Enter your email below to receive a password recovery link</p>
+          <div class="auth-success-banner" id="forgot-success-msg">Recovery instructions have been sent to your email.</div>
+          
+          <form id="forgot-form">
+            <div class="form-group">
+              <label for="forgot-email">Email Address / Username</label>
+              <input type="text" id="forgot-email" class="form-control" placeholder="admin@bistro.com" required>
+            </div>
+            <button type="submit" class="btn btn-primary auth-submit-btn">Send Recovery Link</button>
+            <div style="text-align: center; margin-top: 1rem;">
+              <a href="#login" class="btn-link" id="btn-back-to-login">&larr; Back to Login</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN SYSTEM WRAPPER ================= -->
+  <div class="admin-wrapper" id="main-admin-wrapper" style="display: none;">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-logo-icon">🍕</span>
+        <div>
+          <h2>Bistro Admin</h2>
+          <span class="system-tag">Enterprise SaaS</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <!-- Dashboard Section -->
+        <span class="nav-group-title">Dashboard</span>
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+
+        <!-- TV & Display Section -->
+        <span class="nav-group-title">TV & Display</span>
+        <a href="#banners" class="nav-item" data-tab="banners">
+          <span class="nav-icon">🖼️</span> Banners
+        </a>
+        <a href="#playlists" class="nav-item" data-tab="playlists">
+          <span class="nav-icon">📋</span> Playlists
+        </a>
+        <a href="#tvs" class="nav-item" data-tab="tvs">
+          <span class="nav-icon">📺</span> TVs
+        </a>
+        <a href="#fallback" class="nav-item" data-tab="fallback">
+          <span class="nav-icon">🔄</span> Default / Fallback
+        </a>
+
+        <!-- Product Catalog Section -->
+        <span class="nav-group-title">Product Catalog</span>
+        <a href="#categories" class="nav-item" data-tab="categories">
+          <span class="nav-icon">📁</span> Categories
+        </a>
+        <a href="#products" class="nav-item" data-tab="products">
+          <span class="nav-icon">🍔</span> Products
+        </a>
+        <a href="#customisation" class="nav-item" data-tab="customisation">
+          <span class="nav-icon">✏️</span> Customisation
+        </a>
+
+        <!-- Pricing Section -->
+        <span class="nav-group-title">Pricing & Promotions</span>
+        <a href="#taxes" class="nav-item" data-tab="taxes">
+          <span class="nav-icon">💵</span> Taxes
+        </a>
+        <a href="#discounts" class="nav-item" data-tab="discounts">
+          <span class="nav-icon">🏷️</span> Discounts
+        </a>
+
+        <!-- Kiosk Section -->
+        <span class="nav-group-title">Kiosk Management</span>
+        <a href="#kiosks" class="nav-item" data-tab="kiosks">
+          <span class="nav-icon">🖥️</span> Kiosks
+        </a>
+        <a href="#kiosk-config" class="nav-item" data-tab="kiosk-config">
+          <span class="nav-icon">⚙️</span> Kiosk Configuration
+        </a>
+
+        <!-- Payments Section -->
+        <span class="nav-group-title">Payment Configuration</span>
+        <a href="#payments" class="nav-item" data-tab="payments">
+          <span class="nav-icon">💳</span> Payment Methods
+        </a>
+
+        <!-- Orders Section -->
+        <span class="nav-group-title">Order Management</span>
+        <a href="#orders" class="nav-item" data-tab="orders">
+          <span class="nav-icon">🛍️</span> Orders
+        </a>
+
+        <!-- Devices Section -->
+        <span class="nav-group-title">Devices</span>
+        <a href="#devices" class="nav-item" data-tab="devices">
+          <span class="nav-icon">📡</span> Device Status
+        </a>
+
+        <!-- Access Section -->
+        <span class="nav-group-title">Access</span>
+        <a href="#roles" class="nav-item" data-tab="roles">
+          <span class="nav-icon">🔒</span> Roles & Access
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary" id="btn-auth-logout" style="width: 100%;">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="content-wrapper">
+      <header class="main-header">
+        <div class="breadcrumb-area">
+          <span class="breadcrumb-item">Admin Control</span> &gt; 
+          <span class="breadcrumb-item active" id="breadcrumb-current">Dashboard</span>
+        </div>
+        <h1 id="tab-title">Dashboard Overview</h1>
+        <p class="tab-desc" id="tab-description">Quick overview of system health and metrics.</p>
+      </header>
+
+      <main class="admin-main">
+        <!-- 2. DASHBOARD PANEL -->
+        <section id="tab-dashboard" class="tab-pane active">
+          <!-- 4 KPIs Grid -->
+          <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="metric-card">
+              <div class="metric-info">
+                <h3>Active TVs</h3>
+                <p class="metric-number" id="kpi-active-tvs">0</p>
+              </div>
+              <div class="metric-icon info-bg">📺</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-info">
+                <h3>Active Banners</h3>
+                <p class="metric-number" id="kpi-active-banners">0</p>
+              </div>
+              <div class="metric-icon success-bg">🖼️</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-info">
+                <h3>Active Kiosks</h3>
+                <p class="metric-number" id="kpi-active-kiosks">0</p>
+              </div>
+              <div class="metric-icon primary-bg">🖥️</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-info">
+                <h3>Today's Orders</h3>
+                <p class="metric-number" id="kpi-orders-count">0</p>
+              </div>
+              <div class="metric-icon warning-bg">🛍️</div>
+            </div>
+          </div>
+
+          <!-- Alert strip box -->
+          <div class="dashboard-alerts-bar" id="dashboard-alerts-bar"></div>
+
+          <div class="dashboard-details">
+            <!-- TV Status -->
+            <div class="details-card">
+              <h3>TV Status</h3>
+              <div class="table-container small-table">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>TV</th>
+                      <th>Location</th>
+                      <th>Playlist</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dash-tv-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Kiosk Status -->
+            <div class="details-card">
+              <h3>Kiosk Status</h3>
+              <div class="table-container small-table">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Kiosk</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dash-kiosk-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="details-card" style="grid-column: span 2;">
+              <h3>Recent Orders</h3>
+              <div class="table-container small-table">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Kiosk ID</th>
+                      <th>Amount</th>
+                      <th>Payment Status</th>
+                      <th>Order Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dash-orders-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3.1 BANNERS TAB -->
+        <section id="tab-banners" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-banner">+ Add Banner</button>
+          </div>
+          <div class="filter-panel">
+            <input type="text" id="banner-search" class="form-control inline-filter" placeholder="Search Banners...">
+            <select id="banner-filter-status" class="form-select inline-filter">
+              <option value="all">Status: All</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
+            <select id="banner-filter-type" class="form-select inline-filter">
+              <option value="all">Type: All</option>
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+            <select id="banner-filter-playlist" class="form-select inline-filter">
+              <option value="all">Playlist: All</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Banner Name</th>
+                  <th>Preview</th>
+                  <th>Type</th>
+                  <th>Duration</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="banners-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3.2 PLAYLISTS TAB -->
+        <section id="tab-playlists" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-playlist">+ Add Playlist</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Playlist Name</th>
+                  <th>Banner Count</th>
+                  <th>Assigned TVs</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="playlists-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3.3 TV TAB -->
+        <section id="tab-tvs" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-tv">+ Add TV</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>TV Name</th>
+                  <th>TV ID</th>
+                  <th>Location</th>
+                  <th>Assigned Playlist</th>
+                  <th>Status</th>
+                  <th>Connection</th>
+                  <th>Last Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tvs-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3.4 DEFAULT / FALLBACK TAB -->
+        <section id="tab-fallback" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card" style="grid-column: span 2;">
+              <h3>Fallback Content Configuration</h3>
+              <div class="fallback-preview-block" style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div class="fallback-preview-img-container" style="flex: 1; border: 1px solid var(--border-admin); border-radius: var(--radius-md); overflow: hidden; height: 180px;">
+                  <img src="" id="fallback-preview-image" style="width: 100%; height: 100%; object-fit: cover;" alt="Fallback">
+                </div>
+                <div style="flex: 2; display: flex; flex-direction: column; gap: 0.5rem;">
+                  <p><strong>Status:</strong> <span class="badge touch-badge">Active Default Fallback</span></p>
+                  <p><strong>Content Type:</strong> <span id="fallback-preview-type">-</span></p>
+                  <p><strong>Last Updated:</strong> <span id="fallback-preview-date">-</span></p>
+                </div>
+              </div>
+
+              <form id="fallback-form">
+                <div class="form-group">
+                  <label for="fallback-title">Default Signage Title</label>
+                  <input type="text" id="fallback-title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="fallback-desc">Default Signage Description</label>
+                  <textarea id="fallback-desc" class="form-control" style="min-height: 80px;" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="fallback-image">Default Signage Image URL</label>
+                  <input type="url" id="fallback-image" class="form-control" required>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                  <button type="submit" class="btn btn-primary">Replace Fallback</button>
+                  <button type="button" class="btn btn-secondary" id="btn-preview-fallback">Preview Fallback</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4.1 CATEGORIES TAB -->
+        <section id="tab-categories" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-category">+ Add Category</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Image Icon</th>
+                  <th>Product Count</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="categories-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4.2 PRODUCTS TAB -->
+        <section id="tab-products" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+          </div>
+          <div class="filter-panel">
+            <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
+            <select id="product-category-filter" class="form-select inline-filter">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Image</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Availability</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4.3 CUSTOMISATION TAB -->
+        <section id="tab-customisation" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-modifier">+ Add Modifier</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Modifier Name</th>
+                  <th>Type</th>
+                  <th>Price</th>
+                  <th>Required/Optional</th>
+                  <th>Applicable Products</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="modifiers-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5.1 TAXES TAB -->
+        <section id="tab-taxes" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tax Name</th>
+                  <th>Percentage</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="taxes-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5.2 DISCOUNTS TAB -->
+        <section id="tab-discounts" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Discount Name</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Applicable Products</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="discounts-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6.1 KIOSKS TAB -->
+        <section id="tab-kiosks" class="tab-pane">
+          <div class="pane-header-row">
+            <button class="btn btn-primary" id="btn-add-kiosk">+ Add Kiosk</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kiosk Name</th>
+                  <th>Kiosk ID</th>
+                  <th>Location</th>
+                  <th>Availability</th>
+                  <th>Status</th>
+                  <th>Last Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="kiosks-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6.2 KIOSK CONFIGURATION TAB -->
+        <section id="tab-kiosk-config" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>General Configuration</h3>
+              <div class="form-group">
+                <label for="set-kiosk-store-name">Store Name</label>
+                <input type="text" id="set-kiosk-store-name" class="form-control">
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <h3>Pricing & Session Timeout</h3>
+              <div class="form-group">
+                <label for="set-inactivity-time">Inactivity Timeout (seconds)</label>
+                <input type="number" id="set-inactivity-time" class="form-control" min="10" max="300">
+              </div>
+            </div>
+
+            <div class="settings-card" style="grid-column: span 2;">
+              <button class="btn btn-primary" id="btn-save-kiosk-config">Save Kiosk Configuration</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. PAYMENT METHODS CONFIG TAB -->
+        <section id="tab-payments" class="tab-pane">
+          <div class="settings-grid" id="payment-gateways-grid"></div>
+        </section>
+
+        <!-- 8. ORDER MANAGEMENT TAB -->
+        <section id="tab-orders" class="tab-pane">
+          <div class="filter-panel">
+            <input type="text" id="order-search" class="form-control inline-filter" placeholder="Search orders...">
+            <select id="order-filter-status" class="form-select inline-filter">
+              <option value="all">Order Status: All</option>
+              <option value="created">Created</option>
+              <option value="payment_successful">Paid</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select id="order-filter-kiosk" class="form-select inline-filter">
+              <option value="all">Kiosk ID: All</option>
+            </select>
+            <select id="order-filter-pay" class="form-select inline-filter">
+              <option value="all">Payment Status: All</option>
+              <option value="success">Success</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Order Number / Token</th>
+                  <th>Kiosk ID</th>
+                  <th>Date & Time</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Amount</th>
+                  <th>Payment Status</th>
+                  <th>Order Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 9. DEVICE STATUS TAB -->
+        <section id="tab-devices" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>Hardware Diagnostic Logs</h3>
+              <div class="device-list">
+                <div class="device-row">
+                  <span>Touchscreen</span>
+                  <span class="badge touch-badge" id="hw-touchscreen">ONLINE</span>
+                </div>
+                <div class="device-row">
+                  <span>Printer</span>
+                  <span class="badge touch-badge" id="hw-printer">ONLINE</span>
+                </div>
+                <div class="device-row">
+                  <span>QR/UPI Screen</span>
+                  <span class="badge touch-badge" id="hw-qr">ONLINE</span>
+                </div>
+                <div class="device-row">
+                  <span>Card Terminal</span>
+                  <span class="badge touch-badge" id="hw-card">ONLINE</span>
+                </div>
+                <div class="device-row">
+                  <span>Customer Display</span>
+                  <span class="badge touch-badge" id="hw-display">ONLINE</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="settings-card">
+              <h3>Live Screen Terminals</h3>
+              <div class="device-list" id="devices-live-screens"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. ROLES & ACCESS TAB -->
+        <section id="tab-roles" class="tab-pane">
+          <div class="details-card">
+            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1.5rem; border-radius: var(--radius-md); color: #fff; margin-bottom: 2rem;">
+              <strong>🔒 Client clarification required</strong><br>
+              <p style="margin-top: 0.5rem; color: var(--text-admin-muted); font-size: 0.9rem; line-height: 1.6;">
+                The client requirements do not specify access rules or authentication domains. This module serves as a placeholder.
+              </p>
+            </div>
+            <h3>Role List Matrix</h3>
+            <div class="table-container small-table" style="margin-top: 1rem;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Role Name</th>
+                    <th>Role Description</th>
+                    <th>Permissions Group</th>
+                    <th>Active Users</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Super Administrator</strong></td>
+                    <td>Complete configuration, pricing, and peripheral systems control.</td>
+                    <td><span class="badge desktop-badge">All Modules</span></td>
+                    <td>2 Users</td>
+                    <td><span class="badge touch-badge">Active</span></td>
+                    <td><button class="btn btn-secondary" disabled>Lock</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- FLOATING SIMULATOR DRAWER -->
+    <section class="simulation-drawer">
+      <div class="drawer-toggle" id="simulation-toggle">
+        <span class="toggle-icon">🚨</span>
+        <span class="toggle-text">Failure Simulations</span>
+      </div>
+      <div class="drawer-content">
+        <h3>Mock System Failure States</h3>
+        <div class="simulation-switch">
+          <span>Network Connection Down</span>
+          <label class="switch">
+            <input type="checkbox" id="sim-network">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="simulation-switch">
+          <span>Backend Server Outage</span>
+          <label class="switch">
+            <input type="checkbox" id="sim-backend">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="simulation-switch">
+          <span>Receipt Printer Failure</span>
+          <label class="switch">
+            <input type="checkbox" id="sim-printer">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="simulation-switch">
+          <span>Card Terminal Outage</span>
+          <label class="switch">
+            <input type="checkbox" id="sim-card-term">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="simulation-switch">
+          <span>TV Banner Loading Errors</span>
+          <label class="switch">
+            <input type="checkbox" id="sim-banner-fail">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- A. Banner Form Modal -->
+  <div class="modal" id="banner-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="banner-modal-title">Add Banner</h3>
+        <button class="modal-close" onclick="document.getElementById('banner-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="banner-form">
+        <input type="hidden" id="banner-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="banner-title">Banner Name *</label>
+          <input type="text" id="banner-title" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="banner-image">Image/Video URL *</label>
+          <input type="url" id="banner-image" class="form-control" required>
+          <div class="preset-links">
+            <span>Or Quick Presets: </span>
+            <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=1200&auto=format&fit=crop&q=80">Coffee Deal</button>
+            <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&auto=format&fit=crop&q=80">Pizza Feast</button>
+          </div>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="banner-duration">Display Duration (s) *</label>
+            <input type="number" id="banner-duration" class="form-control" min="3" max="60" value="5" required>
+          </div>
+          <div class="form-group col">
+            <label for="banner-priority">Priority *</label>
+            <input type="number" id="banner-priority" class="form-control" min="1" max="100" value="1" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="banner-start-date">Start Date *</label>
+            <input type="date" id="banner-start-date" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="banner-start-time">Start Time *</label>
+            <input type="time" id="banner-start-time" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="banner-end-date">End Date *</label>
+            <input type="date" id="banner-end-date" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="banner-end-time">End Time *</label>
+            <input type="time" id="banner-end-time" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="banner-content-type">Content Type</label>
+          <select id="banner-content-type" class="form-select">
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('banner-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-banner">Save</button>
+          <button type="button" class="btn btn-checkout" id="btn-save-activate-banner">Save & Activate</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- B. Banner View Modal -->
+  <div class="modal" id="banner-preview-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="preview-modal-title">Banner View</h3>
+        <button class="modal-close" onclick="document.getElementById('banner-preview-modal').classList.remove('visible')">&times;</button>
+      </header>
+      
+      <h4 class="form-section-title">Summary</h4>
+      <div style="background: #000; border-radius: var(--radius-md); overflow: hidden; height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+        <img src="" id="preview-modal-image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      </div>
+
+      <h4 class="form-section-title">Configuration</h4>
+      <div class="settings-grid" style="grid-template-columns: 1fr 1fr; font-size: 0.85rem;">
+        <div>
+          <p style="margin-bottom: 0.4rem;"><strong>Type:</strong> <span id="preview-modal-type">-</span></p>
+          <p style="margin-bottom: 0.4rem;"><strong>Duration:</strong> <span id="preview-modal-duration">-</span>s</p>
+          <p style="margin-bottom: 0.4rem;"><strong>Priority:</strong> <span id="preview-modal-priority">-</span></p>
+        </div>
+        <div>
+          <p style="margin-bottom: 0.4rem;"><strong>Schedule:</strong> <span id="preview-modal-schedule">-</span></p>
+          <p style="margin-bottom: 0.4rem;"><strong>Status:</strong> <span id="preview-modal-status">-</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C. Playlist Add/Edit Modal -->
+  <div class="modal" id="playlist-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="playlist-modal-title">Add Playlist</h3>
+        <button class="modal-close" onclick="document.getElementById('playlist-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="playlist-form">
+        <input type="hidden" id="playlist-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="playlist-name">Playlist Name *</label>
+          <input type="text" id="playlist-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Transition Animation</label>
+          <select id="playlist-transition" class="form-select">
+            <option value="fade">Fade Cross</option>
+            <option value="slide">Slide Horizontal</option>
+          </select>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label>Select Banners to Loop</label>
+          <div class="checkbox-group" id="playlist-banners-checklist" style="max-height: 150px; overflow-y: auto; background-color: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm);"></div>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('playlist-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- D. Playlist View / Sequence Playback Modal -->
+  <div class="modal" id="playlist-preview-modal">
+    <div class="modal-content" style="text-align: center;">
+      <header class="modal-header">
+        <h3>Playlist Signage Sequence</h3>
+        <button class="modal-close" onclick="clearInterval(window.playlistPreviewInterval); document.getElementById('playlist-preview-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <div style="background-color:#000; border-radius: var(--radius-md); overflow:hidden; height:240px; display:flex; align-items:center; justify-content:center; position:relative; margin-bottom: 1.5rem;">
+        <img src="" id="playlist-preview-image" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: opacity 0.5s ease-in-out;">
+        <span id="playlist-preview-label" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 4px;">Slide 1</span>
+      </div>
+      <button class="btn btn-secondary" onclick="clearInterval(window.playlistPreviewInterval); document.getElementById('playlist-preview-modal').classList.remove('visible')">Stop Sequence</button>
+    </div>
+  </div>
+
+  <!-- E. TV Form Modal -->
+  <div class="modal" id="tv-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="tv-modal-title">Add TV</h3>
+        <button class="modal-close" onclick="document.getElementById('tv-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="tv-form">
+        <input type="hidden" id="tv-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="tv-name">TV Name *</label>
+          <input type="text" id="tv-name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="tv-location">Location Name *</label>
+            <input type="text" id="tv-location" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="tv-group">TV Group</label>
+            <input type="text" id="tv-group" class="form-control" placeholder="e.g. Lobby">
+          </div>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label for="tv-playlist-select">Playlist *</label>
+          <select id="tv-playlist-select" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label for="tv-status">Status</label>
+          <select id="tv-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('tv-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- F. Category Form Modal -->
+  <div class="modal" id="category-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="category-modal-title">Add Category</h3>
+        <button class="modal-close" onclick="document.getElementById('category-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="category-form">
+        <input type="hidden" id="category-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="category-name">Category Name *</label>
+          <input type="text" id="category-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="category-icon">Image/Icon Emoji *</label>
+          <input type="text" id="category-icon" class="form-control" maxlength="2" required placeholder="🍔">
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label for="category-status">Status</label>
+          <select id="category-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('category-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- G. Product Form Modal -->
+  <div class="modal" id="product-modal">
+    <div class="modal-content" style="width: 600px;">
+      <header class="modal-header">
+        <h3 id="product-modal-title">Add Product</h3>
+        <button class="modal-close" onclick="document.getElementById('product-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="product-form">
+        <input type="hidden" id="product-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="product-name">Product Name *</label>
+            <input type="text" id="product-name" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="product-category">Category *</label>
+            <select id="product-category" class="form-select" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="product-price">Price ($) *</label>
+            <input type="number" id="product-price" class="form-control" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group col">
+            <label for="product-image">Product Image URL *</label>
+            <input type="url" id="product-image" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="product-desc">Description *</label>
+          <input type="text" id="product-desc" class="form-control" required>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="product-status">Status</label>
+            <select id="product-status" class="form-select">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label for="product-available">Availability</label>
+            <select id="product-available" class="form-select">
+              <option value="true">Available</option>
+              <option value="false">Out of stock</option>
+            </select>
+          </div>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('product-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- H. Product View / Customisation details drawer -->
+  <div class="modal" id="product-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-product-name">-</h3>
+        <button class="modal-close" onclick="document.getElementById('product-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto;">
+        
+        <h4 class="form-section-title">Summary</h4>
+        <img src="" id="details-product-image" style="width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+        <p style="margin-bottom: 0.6rem;"><strong style="color: #fff;">Description:</strong> <span id="details-product-desc">-</span></p>
+        <p style="margin-bottom: 0.6rem;"><strong style="color: #fff;">Category:</strong> <span id="details-product-category">-</span></p>
+        <p style="margin-bottom: 0.6rem;"><strong style="color: #fff;">Price:</strong> <span id="details-product-price">-</span></p>
+        <p style="margin-bottom: 0.6rem;"><strong style="color: #fff;">Availability:</strong> <span id="details-product-stock">-</span></p>
+        <p style="margin-bottom: 1.5rem;"><strong style="color: #fff;">Status:</strong> <span id="details-product-status">-</span></p>
+        
+        <h4 class="form-section-title">Configuration</h4>
+        <div id="details-product-customisation" style="font-size: 0.85rem; color: var(--text-admin-muted);">
+          <!-- Populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I. Customisation / Modifier Add/Edit Modal -->
+  <div class="modal" id="modifier-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="modifier-modal-title">Add Modifier</h3>
+        <button class="modal-close" onclick="document.getElementById('modifier-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="modifier-form">
+        <input type="hidden" id="modifier-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="modifier-name">Modifier Name *</label>
+          <input type="text" id="modifier-name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="modifier-type">Type</label>
+            <select id="modifier-type" class="form-select">
+              <option value="addon">Add-on</option>
+              <option value="variant">Variant</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label for="modifier-price">Price ($) *</label>
+            <input type="number" id="modifier-price" class="form-control" step="0.01" min="0" required>
+          </div>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label for="modifier-required">Mandatory/Optional</label>
+          <select id="modifier-required" class="form-select">
+            <option value="false">Optional</option>
+            <option value="true">Mandatory</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Applicable Products</label>
+          <div class="checkbox-group" id="modifier-products-checklist" style="max-height: 120px; overflow-y: auto; background-color: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm);"></div>
+        </div>
+        <div class="form-group">
+          <label for="modifier-status">Status</label>
+          <select id="modifier-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('modifier-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- J. Tax Add/Edit Modal -->
+  <div class="modal" id="tax-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="tax-modal-title">Add Tax Profile</h3>
+        <button class="modal-close" onclick="document.getElementById('tax-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="tax-form">
+        <input type="hidden" id="tax-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="tax-name">Tax Name *</label>
+          <input type="text" id="tax-name" class="form-control" required placeholder="e.g. Sales Tax">
+        </div>
+        <div class="form-group">
+          <label for="tax-percentage">Percentage (%) *</label>
+          <input type="number" id="tax-percentage" class="form-control" step="0.1" min="0" required>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label for="tax-status">Status</label>
+          <select id="tax-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('tax-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- K. Discount Add/Edit Modal -->
+  <div class="modal" id="discount-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="discount-modal-title">Add Discount</h3>
+        <button class="modal-close" onclick="document.getElementById('discount-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="discount-form">
+        <input type="hidden" id="discount-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="discount-name">Discount Name *</label>
+          <input type="text" id="discount-name" class="form-control" required placeholder="e.g. WELCOME10">
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="discount-type">Discount Type</label>
+            <select id="discount-type" class="form-select">
+              <option value="percentage">Percentage Off (%)</option>
+              <option value="fixed">Fixed Deduct ($)</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label for="discount-value">Value *</label>
+            <input type="number" id="discount-value" class="form-control" step="0.01" min="0.01" required>
+          </div>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-group">
+          <label for="discount-products">Applicable Products</label>
+          <input type="text" id="discount-products" class="form-control" value="All products" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="discount-start">Start Date *</label>
+            <input type="date" id="discount-start" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="discount-end">End Date *</label>
+            <input type="date" id="discount-end" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="discount-status">Status</label>
+          <select id="discount-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('discount-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- L. Kiosk Add/Edit Modal -->
+  <div class="modal" id="kiosk-modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="kiosk-modal-title">Add Kiosk</h3>
+        <button class="modal-close" onclick="document.getElementById('kiosk-modal').classList.remove('visible')">&times;</button>
+      </header>
+      <form id="kiosk-form">
+        <input type="hidden" id="kiosk-id">
+        
+        <h4 class="form-section-title">Basic Information</h4>
+        <div class="form-group">
+          <label for="kiosk-name">Kiosk Name *</label>
+          <input type="text" id="kiosk-name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="kiosk-id-val">Kiosk ID *</label>
+            <input type="text" id="kiosk-id-val" class="form-control" placeholder="kiosk-03" required>
+          </div>
+          <div class="form-group col">
+            <label for="kiosk-location">Location Name *</label>
+            <input type="text" id="kiosk-location" class="form-control" required>
+          </div>
+        </div>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="kiosk-status">Status</label>
+            <select id="kiosk-status" class="form-select">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label for="kiosk-availability">Availability</label>
+            <select id="kiosk-availability" class="form-select">
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+          </div>
+        </div>
+        
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('kiosk-modal').classList.remove('visible')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- M. Kiosk View details Drawer -->
+  <div class="modal" id="kiosk-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-kiosk-name">-</h3>
+        <button class="modal-close" onclick="document.getElementById('kiosk-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <h4 class="form-section-title">Kiosk Information</h4>
+        <p><strong>Kiosk Name:</strong> <span id="details-kiosk-lbl">-</span></p>
+        <p><strong>Kiosk ID:</strong> <span id="details-kiosk-id">-</span></p>
+        <p><strong>Location:</strong> <span id="details-kiosk-loc">-</span></p>
+        <p><strong>Availability:</strong> <span id="details-kiosk-avail">-</span></p>
+
+        <h4 class="form-section-title">Current Status</h4>
+        <p><strong>Status:</strong> <span id="details-kiosk-status">-</span></p>
+        <p><strong>Last Active Connection:</strong> <span id="details-kiosk-active">-</span></p>
+
+        <h4 class="form-section-title">Configuration</h4>
+        <p><strong>Product Configuration:</strong> Custom Catalog active</p>
+        <p><strong>Payment Methods:</strong> Card Terminals, UPI, Counter Cash</p>
+        <p><strong>Inactivity timeout:</strong> 30 seconds</p>
+
+        <h4 class="form-section-title">Hardware Status</h4>
+        <div id="details-kiosk-hardware-list">
+          <!-- Populated -->
+        </div>
+
+        <h4 class="form-section-title">Recent Orders</h4>
+        <div id="details-kiosk-orders" style="font-size: 0.85rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- N. Order View details drawer -->
+  <div class="modal" id="order-details-drawer">
+    <div class="customizer-drawer" style="width: 500px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3>Order details</h3>
+        <button class="modal-close" onclick="document.getElementById('order-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <h4 class="form-section-title">Order Information</h4>
+        <p><strong>Order ID:</strong> <span id="details-order-id" style="font-family: monospace;">-</span></p>
+        <p><strong>Token Number:</strong> <span id="details-order-token">-</span></p>
+        <p><strong>Date & Time:</strong> <span id="details-order-time">-</span></p>
+        <p><strong>Kiosk ID:</strong> <span id="details-order-kiosk">-</span></p>
+
+        <h4 class="form-section-title">Customer Details</h4>
+        <p><strong>Name:</strong> <span id="details-order-cust-name">-</span></p>
+        <p><strong>Mobile:</strong> <span id="details-order-cust-mobile">-</span></p>
+
+        <h4 class="form-section-title">Ordered Items</h4>
+        <div id="details-order-items-list" style="margin-bottom: 1rem;"></div>
+        <div style="border-top: 1px solid var(--border-admin); padding-top: 0.75rem; font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Subtotal:</span><span id="details-order-subtotal">$0.00</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--danger);"><span>Discount:</span><span id="details-order-discount">-$0.00</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Tax:</span><span id="details-order-tax">$0.00</span></div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; color: #fff;"><span>Grand Total:</span><span id="details-order-total">$0.00</span></div>
+        </div>
+
+        <h4 class="form-section-title">Payment & Status</h4>
+        <p><strong>Payment Status:</strong> <span id="details-order-payment">-</span></p>
+        <p><strong>Order Preparation Status:</strong> <span id="details-order-prep">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- O. Action Confirmation Dialog Modal -->
+  <div class="modal" id="confirm-modal">
+    <div class="modal-content" style="width: 400px; text-align: center;">
+      <div class="card-status-icon warning-icon" style="margin: 0 auto 1rem auto; background-color: rgba(239, 68, 68, 0.1); color: var(--danger); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">⚠️</div>
+      <h3 id="confirm-modal-title">Delete Action</h3>
+      <p id="confirm-modal-body" style="font-size: 0.85rem; color: var(--text-admin-muted); margin-top: 0.5rem; line-height: 1.5;">This action cannot be undone. Are you sure you want to proceed?</p>
+      <footer class="modal-footer" style="justify-content: center; gap: 1rem; border-top: none; padding-top: 0;">
+        <button class="btn btn-secondary" onclick="document.getElementById('confirm-modal').classList.remove('visible')">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-execute">Confirm Action</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Shared store scripts -->
+  <script src="js/mockData.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

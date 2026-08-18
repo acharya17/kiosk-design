@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Banner & Self-Order Kiosk - Phase 1 Launcher</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <div class="portal-container">
+    <header class="portal-header">
+      <div class="logo-area">
+        <span class="logo-icon">⚙️</span>
+        <h1>TV Banner & Self-Order Kiosk</h1>
+      </div>
+      <p class="subtitle">Phase 1: High-Fidelity Admin Panel Prototype</p>
+    </header>
+
+    <main class="portal-grid">
+      <!-- Admin Card (Active) -->
+      <a href="admin.html" class="portal-card admin-card" style="grid-column: span 3; border-color: rgba(99, 102, 241, 0.6); box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.3);">
+        <div class="card-icon">⚙️</div>
+        <div class="card-content">
+          <h2 style="display: flex; align-items: center; gap: 0.75rem;">
+            Admin Dashboard 
+            <span class="badge touch-badge" style="font-size: 0.65rem;">ACTIVE VIEW</span>
+          </h2>
+          <p>Explore the complete, polished Admin Panel. Switch through all 15+ navigation screens (KPIs, Banners CRUD, drag-reorder Playlists, Fallbacks, Category/Products CRUD, Taxes, Discounts, Kiosk Registers, Gateways, Order pipeline logs, and Diagnostics panels).</p>
+          <span class="badge desktop-badge">Desktop Layout</span>
+        </div>
+        <div class="card-footer">
+          <span>Open Panel &rarr;</span>
+        </div>
+      </a>
+
+      <!-- Kiosk Card (Disabled) -->
+      <div class="portal-card kiosk-card" style="opacity: 0.55; cursor: not-allowed;">
+        <div class="card-icon">🖥️</div>
+        <div class="card-content">
+          <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-admin-muted);">
+            Customer Kiosk 
+            <span class="badge warning-badge" style="font-size: 0.65rem;">PHASE 3 ROADMAP</span>
+          </h2>
+          <p>Touchscreen self-ordering experience. Browse products, customize options, checkout, and payments simulators. (Currently deactivated for Phase 1).</p>
+        </div>
+      </div>
+
+      <!-- TV Card (Disabled) -->
+      <div class="portal-card tv-card" style="opacity: 0.55; cursor: not-allowed;">
+        <div class="card-icon">📺</div>
+        <div class="card-content">
+          <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-admin-muted);">
+            Digital TV display 
+            <span class="badge warning-badge" style="font-size: 0.65rem;">PHASE 4 ROADMAP</span>
+          </h2>
+          <p>Widescreen billboard signage display loop based on active priorities and dates playlists. (Currently deactivated for Phase 1).</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Quick Stats & Control panel -->
+    <section class="portal-controls">
+      <div class="controls-card">
+        <h3>Prototype State & Simulation Controller</h3>
+        <p>This prototype utilizes `localStorage` for state management. Reset data below to boot initial categories, products, playlists, and device diagnostic states.</p>
+        
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-val" id="stat-kiosks">0</span>
+            <span class="stat-lbl">Registered Kiosks</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="stat-tvs">0</span>
+            <span class="stat-lbl">TV Screens Mapped</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="stat-orders">0</span>
+            <span class="stat-lbl">Mock Orders Placed</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="btn-reset" class="btn btn-reset">🔄 Reset Prototype Mock Data</button>
+          <span class="reset-toast" id="reset-toast">Mock data successfully restored!</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Shared store scripts -->
+  <script src="js/mockData.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    function updateStats() {
+      document.getElementById('stat-kiosks').textContent = KioskStore.getKiosks().length;
+      document.getElementById('stat-tvs').textContent = KioskStore.getTVs().length;
+      document.getElementById('stat-orders').textContent = KioskStore.getOrders().length;
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      KioskStore.resetAll();
+      updateStats();
+      const toast = document.getElementById('reset-toast');
+      toast.classList.add('visible');
+      setTimeout(() => toast.classList.remove('visible'), 2500);
+    });
+
+    updateStats();
+    KioskStore.subscribe(() => {
+      updateStats();
+    });
+  </script>
+</body>
+</html>

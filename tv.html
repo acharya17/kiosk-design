@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Digital Signage Banner Board</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/tv.css">
+</head>
+<body>
+  <div class="tv-canvas" id="tv-canvas">
+    
+    <!-- TV Indicator Badge -->
+    <header class="tv-hud-bar">
+      <div class="tv-identity">
+        <span class="hud-indicator">📺</span>
+        <div>
+          <span class="hud-title" id="hud-tv-name">Entrance Display TV</span>
+          <span class="hud-subtitle" id="hud-tv-id">ID: tv-entrance</span>
+        </div>
+      </div>
+      <div class="tv-hud-controls">
+        <button class="btn btn-hud" id="btn-toggle-fs">🖥️ Fullscreen</button>
+      </div>
+    </header>
+
+    <!-- Network / Server Interruption alert panel -->
+    <div class="tv-offline-overlay" id="tv-offline-overlay">
+      <div class="tv-offline-box">
+        <span class="offline-icon">📡</span>
+        <h2>Connection Interrupted</h2>
+        <p>Attempting to reconnect. Displaying cached digital menu billboard content...</p>
+      </div>
+    </div>
+
+    <!-- Banners Container for looping -->
+    <div class="banner-carousel-container" id="carousel-wrapper">
+      <!-- Banners will be rendered here dynamically as slides -->
+    </div>
+
+    <!-- Default Fallback Banner -->
+    <div class="fallback-banner-pane" id="fallback-pane">
+      <img src="" id="fallback-img" class="fallback-bg-img" alt="fallback background">
+      <div class="fallback-overlay-shade"></div>
+      <div class="fallback-hero-content">
+        <span class="fallback-hero-logo">🍔</span>
+        <h1 id="fallback-hero-title">Welcome to Bistro</h1>
+        <p id="fallback-hero-desc">Enjoy fresh ingredients, premium recipes and lightning fast checkouts on our lobby kiosk terminals.</p>
+        <div class="kiosk-cta-box">
+          <span>👇 ORDER NOW ON TOUCH TERMINAL 👇</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TV Footer Ticker tape -->
+    <footer class="tv-ticker-bar">
+      <div class="ticker-content" id="ticker-text-wrapper">
+        🔥 Gourmet Truffle Burger Launch &bull; Get 10% Off with Promo WELCOME10 &bull; Try our new Artisan Sourdough Honey Flame Pizza! &bull; Dine-In and Takeaway options available &bull;
+      </div>
+    </footer>
+  </div>
+
+  <!-- Shared store scripts -->
+  <script src="js/mockData.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/tv.js"></script>
+</body>
+</html>

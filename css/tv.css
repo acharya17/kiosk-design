@@ -1,0 +1,262 @@
+body {
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: var(--font-body);
+  color: #fff;
+}
+
+.tv-canvas {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TV HUD bar overlay (top) */
+.tv-hud-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+  z-index: 30;
+  pointer-events: none; /* Let clicks pass to control buttons */
+}
+
+.tv-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hud-indicator {
+  font-size: 2rem;
+}
+
+.hud-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  display: block;
+}
+
+.hud-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.tv-hud-controls {
+  pointer-events: auto; /* Enable hover/clicks on HUD controls */
+}
+
+.btn-hud {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+}
+.btn-hud:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Network Loss overlay */
+.tv-offline-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.tv-offline-overlay.active {
+  display: flex;
+}
+
+.tv-offline-box {
+  background-color: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2.5rem 3.5rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  box-shadow: var(--shadow-glow-danger);
+}
+
+.offline-icon {
+  font-size: 3.5rem;
+  display: block;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.tv-offline-box h2 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--danger);
+  margin-bottom: 0.75rem;
+}
+
+.tv-offline-box p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+/* Carousel and banner frames */
+.banner-carousel-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 10;
+}
+
+.banner-slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+}
+
+.banner-slide.active {
+  opacity: 1;
+}
+
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback Billboard styling */
+.fallback-banner-pane {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background-color: #111827;
+}
+
+.fallback-banner-pane.active {
+  display: flex;
+}
+
+.fallback-bg-img {
+  position: absolute;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0.25;
+}
+
+.fallback-overlay-shade {
+  position: absolute;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle, rgba(15,23,42,0.4) 0%, rgba(15,23,42,0.95) 90%);
+}
+
+.fallback-hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 800px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.fallback-hero-logo {
+  font-size: 5rem;
+  animation: bounce 3s infinite;
+}
+
+.fallback-hero-content h1 {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.fallback-hero-content p {
+  color: #d1d5db;
+  font-size: 1.35rem;
+  line-height: 1.6;
+}
+
+.kiosk-cta-box {
+  background: rgba(245, 158, 11, 0.15);
+  border: 2px dashed var(--warning);
+  color: var(--warning);
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 1rem 2rem;
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  animation: pulse 2.5s infinite;
+}
+
+/* Bottom Ticker Tape bar */
+.tv-ticker-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 50px;
+  background-color: #d97706; /* Dark gold Amber */
+  color: #fff;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.ticker-content {
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding-left: 100%;
+  animation: tickerPlay 25s linear infinite;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+}
+
+/* Keyframes */
+@keyframes tickerPlay {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.03); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}

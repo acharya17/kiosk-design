@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Self-Order Kiosk Terminal</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/kiosk.css">
+</head>
+<body>
+  <!-- Aspect ratio locked kiosk container -->
+  <div class="kiosk-frame">
+    <!-- Network Offline Shield -->
+    <div class="kiosk-shield" id="offline-shield">
+      <div class="shield-content">
+        <span class="shield-icon">⚠️</span>
+        <h2>Terminal Offline</h2>
+        <p>This self-ordering terminal is temporarily undergoing a routine system update or network refresh. Please use another kiosk or order at the counter.</p>
+        <div class="spinner"></div>
+        <small>Auto-reconnecting when backend is online...</small>
+      </div>
+    </div>
+
+    <!-- Screen 1: Welcome Splash -->
+    <section id="screen-welcome" class="kiosk-screen active">
+      <div class="welcome-overlay">
+        <div class="brand-header">
+          <span class="brand-icon">🍔</span>
+          <h1 id="welcome-store-name">Antigravity Bistro</h1>
+          <p>Fresh &bull; Fast &bull; Gourmet</p>
+        </div>
+
+        <div class="welcome-body">
+          <div class="touch-cta" id="btn-start-order">
+            <div class="ripple-circle"></div>
+            <span class="touch-icon">👆</span>
+            <h2>Tap to Order</h2>
+            <p>Start your gourmet experience</p>
+          </div>
+        </div>
+
+        <div class="welcome-footer">
+          <div class="language-selector">
+            <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 Español</button>
+            <button class="lang-btn" data-lang="fr">🇫🇷 Français</button>
+          </div>
+          <p class="footer-tag">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Dine In / Takeaway Selection -->
+    <section id="screen-order-type" class="kiosk-screen">
+      <div class="kiosk-header">
+        <button class="back-btn btn-to-welcome">&larr; Home</button>
+        <span class="header-logo">🍔</span>
+        <span></span>
+      </div>
+      <div class="screen-content flex-center">
+        <h2 class="title-prompt">Where will you be eating today?</h2>
+        <div class="order-type-grid">
+          <button class="type-card" id="btn-type-dinein">
+            <span class="type-icon">🍽️</span>
+            <h3>Dine In</h3>
+            <p>Enjoy your meal warm inside our cozy dining hall</p>
+          </button>
+          <button class="type-card" id="btn-type-takeaway">
+            <span class="type-icon">🛍️</span>
+            <h3>Takeaway</h3>
+            <p>Freshly packed to go in eco-friendly packaging</p>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Main Browsing Experience -->
+    <section id="screen-browse" class="kiosk-screen">
+      <!-- Top Bar -->
+      <header class="kiosk-top-bar">
+        <button class="back-btn" id="btn-browse-back">&larr; Change Type</button>
+        <div class="order-type-badge" id="browse-type-badge">Dine In</div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="product-search" placeholder="Search menu...">
+        </div>
+      </header>
+
+      <!-- Grid layout with Sidebar -->
+      <div class="browse-layout">
+        <aside class="category-sidebar">
+          <div class="category-list" id="kiosk-category-list">
+            <!-- Dynamically populated -->
+          </div>
+        </aside>
+        
+        <main class="product-grid-container">
+          <h2 class="category-title" id="current-category-title">Burgers</h2>
+          <div class="products-grid" id="kiosk-products-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </main>
+      </div>
+
+      <!-- Bottom Cart Summary Bar -->
+      <footer class="cart-summary-bar" id="cart-summary-bar">
+        <div class="cart-info">
+          <span class="cart-count-badge" id="summary-cart-count">0</span>
+          <div>
+            <span class="cart-total-price" id="summary-cart-total">$0.00</span>
+            <small>Includes taxes & discounts</small>
+          </div>
+        </div>
+        <button class="btn btn-checkout" id="btn-view-cart">View Cart / Order &rarr;</button>
+      </footer>
+    </section>
+
+    <!-- Screen 4: Cart and Checkout Details -->
+    <section id="screen-cart" class="kiosk-screen">
+      <header class="kiosk-top-bar">
+        <button class="back-btn" id="btn-cart-back">&larr; Back to Menu</button>
+        <h2>Your Order Summary</h2>
+        <span></span>
+      </header>
+
+      <div class="cart-layout">
+        <!-- Scrollable items list -->
+        <div class="cart-items-panel">
+          <div class="items-list" id="cart-items-list">
+            <!-- Dynamically populated -->
+          </div>
+          
+          <!-- Promo Code area -->
+          <div class="promo-box">
+            <input type="text" id="promo-input" placeholder="Enter coupon (e.g. WELCOME10)">
+            <button class="btn" id="btn-apply-promo">Apply</button>
+          </div>
+          <small class="promo-msg" id="promo-msg"></small>
+        </div>
+
+        <!-- Checkout & Totals Summary Panel -->
+        <div class="cart-checkout-panel">
+          <div class="totals-breakdown">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span id="calc-subtotal">$0.00</span>
+            </div>
+            <div class="total-row discount-row" id="calc-discount-row" style="display: none;">
+              <span>Discount</span>
+              <span id="calc-discount">-$0.00</span>
+            </div>
+            <div class="total-row">
+              <span>Taxes (<span id="calc-tax-percent">0</span>%)</span>
+              <span id="calc-tax">$0.00</span>
+            </div>
+            <div class="total-row grand-total">
+              <span>Grand Total</span>
+              <span id="calc-grand-total">$0.00</span>
+            </div>
+          </div>
+
+          <form id="checkout-form" class="checkout-form">
+            <h3>Dine-in Information</h3>
+            <div class="form-group" id="table-number-group">
+              <label for="check-table">Table Number (1-50) *</label>
+              <input type="number" id="check-table" class="form-control" min="1" max="50" placeholder="e.g. 12">
+            </div>
+            <div class="form-group">
+              <label for="check-name">Customer Name *</label>
+              <input type="text" id="check-name" class="form-control" required placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+              <label for="check-mobile">Mobile Number *</label>
+              <input type="tel" id="check-mobile" class="form-control" required placeholder="e.g. 9876543210">
+            </div>
+            <button type="submit" class="btn btn-checkout-submit" id="btn-pay-now">Proceed to Payment</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 5: Simulated Payment Steps -->
+    <section id="screen-payment" class="kiosk-screen">
+      <div class="payment-wrapper">
+        <h2 class="title-prompt">Choose Your Payment Method</h2>
+        <p class="payable-indicator">Total Payable: <strong id="payment-grand-total">$0.00</strong></p>
+
+        <div class="payment-options-grid" id="payment-options-container">
+          <button class="payment-card" data-method="upi" id="pay-opt-upi">
+            <span class="pay-icon">📱</span>
+            <h3>UPI / Scan QR</h3>
+            <p>Scan & pay securely with GPay, PhonePe, or BHIM</p>
+          </button>
+          <button class="payment-card" data-method="card" id="pay-opt-card">
+            <span class="pay-icon">💳</span>
+            <h3>Card Terminal</h3>
+            <p>Insert or Tap credit/debit card on terminal</p>
+          </button>
+          <button class="payment-card" data-method="cash" id="pay-opt-cash">
+            <span class="pay-icon">💵</span>
+            <h3>Pay Cash at Counter</h3>
+            <p>Order is sent to queue. Pay cashier directly</p>
+          </button>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-cancel-payment">Cancel Order & Return</button>
+      </div>
+    </section>
+
+    <!-- Screen 6: Order Confirmation & Receipt -->
+    <section id="screen-confirmation" class="kiosk-screen">
+      <div class="confirmation-wrapper">
+        <div class="conf-stamp">✓</div>
+        <h2>Order Confirmed!</h2>
+        <p class="subtitle">Thank you for ordering. Your food is being prepared fresh.</p>
+
+        <div class="token-banner">
+          <span>YOUR TOKEN NUMBER</span>
+          <h1 id="conf-token-number">#102</h1>
+        </div>
+
+        <div class="order-details-box">
+          <p>Order ID: <span id="conf-order-id" style="font-family: monospace;">-</span></p>
+          <p>Payment: <span id="conf-payment-status" class="badge">SUCCESS</span></p>
+          <p>Est. Preparation Time: <strong id="conf-prep-time">12-15 Mins</strong></p>
+        </div>
+
+        <!-- Receipt Print Simulation -->
+        <div class="receipt-printer-box">
+          <div class="printer-mouth"></div>
+          <div class="paper-receipt" id="paper-receipt">
+            <div class="receipt-header">
+              <h3>ANTIGRAVITY BISTRO</h3>
+              <p>Self-Order Kiosk Terminal</p>
+              <p id="receipt-date">Date: 2026-08-18</p>
+            </div>
+            <div class="receipt-divider">--------------------------------</div>
+            <div class="receipt-items" id="receipt-items-list">
+              <!-- items populated dynamically -->
+            </div>
+            <div class="receipt-divider">--------------------------------</div>
+            <div class="receipt-totals">
+              <p>Subtotal: <span id="receipt-subtotal">$0.00</span></p>
+              <p>Tax: <span id="receipt-tax">$0.00</span></p>
+              <p>Discount: <span id="receipt-discount">-$0.00</span></p>
+              <p><strong>Grand Total: <span id="receipt-total">$0.00</span></strong></p>
+            </div>
+            <div class="receipt-footer">
+              <p>Table: <span id="receipt-table">-</span></p>
+              <p>Token Number: <span id="receipt-token">#102</span></p>
+              <p>Thank you! Visit again.</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-checkout" id="btn-finish-order">Complete & Return Home (15s)</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- PRODUCT DETAILS & CUSTOMIZER MODAL DRAWER -->
+  <div class="modal" id="customizer-modal">
+    <div class="customizer-drawer">
+      <div class="customizer-header">
+        <h3 id="cust-product-name">Product Name</h3>
+        <button class="modal-close" id="btn-close-customizer">&times;</button>
+      </div>
+      
+      <div class="customizer-body">
+        <img src="" id="cust-product-image" class="customizer-img" alt="product">
+        <p id="cust-product-desc" class="customizer-desc">Product description goes here.</p>
+
+        <!-- Variants Container -->
+        <div class="customizer-section" id="cust-variants-section">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Addons Container -->
+        <div class="customizer-section" id="cust-addons-section">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Special Instructions -->
+        <div class="customizer-section">
+          <h4>Special Instructions</h4>
+          <textarea id="cust-instructions" class="form-control text-area" placeholder="e.g. No onions, sauce on the side..."></textarea>
+        </div>
+      </div>
+
+      <div class="customizer-footer">
+        <div class="quantity-controller">
+          <button class="qty-btn" id="btn-cust-minus">-</button>
+          <span class="qty-val" id="cust-qty-val">1</span>
+          <button class="qty-btn" id="btn-cust-plus">+</button>
+        </div>
+        <button class="btn btn-add-to-cart" id="btn-cust-add-cart">
+          Add to Cart &bull; <span id="cust-total-price">$0.00</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT STATUS MODAL OVERLAY -->
+  <div class="modal" id="payment-status-modal">
+    <!-- Processing State -->
+    <div class="payment-popup-card active" id="pay-state-processing">
+      <div class="spinner spinner-large"></div>
+      <h3>Processing Payment</h3>
+      <p>Simulating card transaction or waiting for UPI payment receipt...</p>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="pay-progress-bar"></div>
+      </div>
+      <small>Do not remove card or refresh screen.</small>
+    </div>
+
+    <!-- Failed / Retry State -->
+    <div class="payment-popup-card" id="pay-state-failed">
+      <div class="card-status-icon fail-icon">✕</div>
+      <h3>Payment Transaction Failed</h3>
+      <p id="payment-fail-reason">The transaction timed out or was rejected by your financial institution.</p>
+      <div class="card-buttons">
+        <button class="btn btn-primary" id="btn-payment-retry">Retry Payment</button>
+        <button class="btn btn-secondary" id="btn-payment-cancel-failed">Cancel & Edit Cart</button>
+      </div>
+    </div>
+
+    <!-- Timeout Alert State -->
+    <div class="payment-popup-card" id="pay-state-timeout">
+      <div class="card-status-icon warning-icon">⏳</div>
+      <h3>Verification In Progress</h3>
+      <p>Payment signal did not arrive in time. Verifying payment status on our terminal system before permitting retries...</p>
+      <div class="spinner"></div>
+      <button class="btn btn-primary" id="btn-payment-check-status">Verify and Complete</button>
+    </div>
+  </div>
+
+  <!-- INACTIVITY TIMEOUT MODAL WARNING -->
+  <div class="modal" id="inactivity-modal">
+    <div class="payment-popup-card">
+      <div class="card-status-icon warning-icon">⏳</div>
+      <h3>Are you still there?</h3>
+      <p>Your session is about to expire due to inactivity. We will clear the cart and return to home in:</p>
+      <div class="inactivity-countdown" id="inactivity-countdown-number">10</div>
+      <div class="card-buttons">
+        <button class="btn btn-primary" id="btn-inactivity-continue">Yes, Continue Ordering</button>
+        <button class="btn btn-secondary" id="btn-inactivity-exit">Cancel & Start Over</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared store scripts -->
+  <script src="js/mockData.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/kiosk.js"></script>
+</body>
+</html>

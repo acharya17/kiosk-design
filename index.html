@@ -3,113 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TV Banner & Self-Order Kiosk - Phase 1 Launcher</title>
+  <title>Bistro Portal Sign In</title>
   <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-  <div class="portal-container">
-    <header class="portal-header">
-      <div class="logo-area">
-        <span class="logo-icon">⚙️</span>
-        <h1>TV Banner & Self-Order Kiosk</h1>
+<body style="background: radial-gradient(circle at 10% 20%, rgb(18, 16, 42) 0%, rgb(9, 8, 20) 90%);">
+  <div class="toast-container" id="toast-container"></div>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-left">
+        <span class="auth-logo-icon" style="color: var(--primary);"><i data-lucide="package" style="width: 48px; height: 48px;"></i></span>
+        <h2>Bistro Signage & Ordering Suite</h2>
+        <p>A unified cloud prototype to manage restaurant advertising loops, custom modifiers catalogs, and live self-ordering kiosks.</p>
       </div>
-      <p class="subtitle">Phase 1: High-Fidelity Admin Panel Prototype</p>
-    </header>
+      
+      <div class="auth-right">
+        <div>
+          <h3>System Sign In</h3>
+          <p class="auth-subtitle">Choose your destination module and log in.</p>
+          
+          <div class="auth-error-banner" id="login-error-msg">Invalid credentials or incorrect module selection.</div>
+          
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-email">Username / Email Address</label>
+              <input type="text" id="login-email" class="form-control" placeholder="e.g. admin@kiosk.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                <button type="button" class="btn-toggle-pwd" id="btn-show-password">Show</button>
+              </div>
+            </div>
 
-    <main class="portal-grid">
-      <!-- Admin Card (Active) -->
-      <a href="admin.html" class="portal-card admin-card" style="grid-column: span 3; border-color: rgba(99, 102, 241, 0.6); box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.3);">
-        <div class="card-icon">⚙️</div>
-        <div class="card-content">
-          <h2 style="display: flex; align-items: center; gap: 0.75rem;">
-            Admin Dashboard 
-            <span class="badge touch-badge" style="font-size: 0.65rem;">ACTIVE VIEW</span>
-          </h2>
-          <p>Explore the complete, polished Admin Panel. Switch through all 15+ navigation screens (KPIs, Banners CRUD, drag-reorder Playlists, Fallbacks, Category/Products CRUD, Taxes, Discounts, Kiosk Registers, Gateways, Order pipeline logs, and Diagnostics panels).</p>
-          <span class="badge desktop-badge">Desktop Layout</span>
-        </div>
-        <div class="card-footer">
-          <span>Open Panel &rarr;</span>
-        </div>
-      </a>
+            <div class="form-group">
+              <label for="login-module">Module / Application Type</label>
+              <select id="login-module" class="form-select" required>
+                <option value="" disabled selected>-- Select target module --</option>
+                <option value="admin">Admin panel</option>
+                <option value="kiosk">Kiosk Touchscreen</option>
+                <option value="display">Signage Display TV</option>
+              </select>
+            </div>
 
-      <!-- Kiosk Card (Disabled) -->
-      <div class="portal-card kiosk-card" style="opacity: 0.55; cursor: not-allowed;">
-        <div class="card-icon">🖥️</div>
-        <div class="card-content">
-          <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-admin-muted);">
-            Customer Kiosk 
-            <span class="badge warning-badge" style="font-size: 0.65rem;">PHASE 3 ROADMAP</span>
-          </h2>
-          <p>Touchscreen self-ordering experience. Browse products, customize options, checkout, and payments simulators. (Currently deactivated for Phase 1).</p>
-        </div>
-      </div>
+            <button type="submit" class="btn btn-primary auth-submit-btn" style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center;"><i data-lucide="log-in" style="margin-right: 0.5rem;"></i> Login</button>
+          </form>
 
-      <!-- TV Card (Disabled) -->
-      <div class="portal-card tv-card" style="opacity: 0.55; cursor: not-allowed;">
-        <div class="card-icon">📺</div>
-        <div class="card-content">
-          <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-admin-muted);">
-            Digital TV display 
-            <span class="badge warning-badge" style="font-size: 0.65rem;">PHASE 4 ROADMAP</span>
-          </h2>
-          <p>Widescreen billboard signage display loop based on active priorities and dates playlists. (Currently deactivated for Phase 1).</p>
-        </div>
-      </div>
-    </main>
-
-    <!-- Quick Stats & Control panel -->
-    <section class="portal-controls">
-      <div class="controls-card">
-        <h3>Prototype State & Simulation Controller</h3>
-        <p>This prototype utilizes `localStorage` for state management. Reset data below to boot initial categories, products, playlists, and device diagnostic states.</p>
-        
-        <div class="stats-row">
-          <div class="stat-box">
-            <span class="stat-val" id="stat-kiosks">0</span>
-            <span class="stat-lbl">Registered Kiosks</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-val" id="stat-tvs">0</span>
-            <span class="stat-lbl">TV Screens Mapped</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-val" id="stat-orders">0</span>
-            <span class="stat-lbl">Mock Orders Placed</span>
+          <div style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-admin-muted); border-top: 1px solid var(--border-admin); padding-top: 1rem;">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>• Admin: <code>admin@kiosk.com</code> / <code>Admin@123</code></p>
+            <p>• Kiosk: <code>kiosk01</code> / <code>Kiosk@123</code></p>
+            <p>• Display: <code>display01</code> / <code>Display@123</code></p>
           </div>
         </div>
-
-        <div class="action-buttons">
-          <button id="btn-reset" class="btn btn-reset">🔄 Reset Prototype Mock Data</button>
-          <span class="reset-toast" id="reset-toast">Mock data successfully restored!</span>
-        </div>
       </div>
-    </section>
+    </div>
   </div>
 
-  <!-- Shared store scripts -->
-  <script src="js/mockData.js"></script>
-  <script src="js/store.js"></script>
   <script>
-    function updateStats() {
-      document.getElementById('stat-kiosks').textContent = KioskStore.getKiosks().length;
-      document.getElementById('stat-tvs').textContent = KioskStore.getTVs().length;
-      document.getElementById('stat-orders').textContent = KioskStore.getOrders().length;
-    }
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const moduleSelect = document.getElementById('login-module');
+    const errorBanner = document.getElementById('login-error-msg');
+    const btnShowPassword = document.getElementById('btn-show-password');
 
-    document.getElementById('btn-reset').addEventListener('click', () => {
-      KioskStore.resetAll();
-      updateStats();
-      const toast = document.getElementById('reset-toast');
-      toast.classList.add('visible');
-      setTimeout(() => toast.classList.remove('visible'), 2500);
+    // Show/hide password
+    btnShowPassword.addEventListener('click', () => {
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        btnShowPassword.textContent = 'Hide';
+      } else {
+        passwordInput.type = 'password';
+        btnShowPassword.textContent = 'Show';
+      }
     });
 
-    updateStats();
-    KioskStore.subscribe(() => {
-      updateStats();
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const pass = passwordInput.value.trim();
+      const mod = moduleSelect.value;
+
+      let valid = false;
+
+      if (mod === 'admin' && email === 'admin@kiosk.com' && pass === 'Admin@123') {
+        valid = true;
+        sessionStorage.setItem('kiosk_auth', 'admin');
+        window.location.href = 'admin.html?auth=true';
+      } else if (mod === 'kiosk' && email === 'kiosk01' && pass === 'Kiosk@123') {
+        valid = true;
+        sessionStorage.setItem('kiosk_auth', 'kiosk');
+        window.location.href = 'kiosk.html?auth=true';
+      } else if (mod === 'display' && email === 'display01' && pass === 'Display@123') {
+        valid = true;
+        sessionStorage.setItem('kiosk_auth', 'display');
+        window.location.href = 'tv.html?auth=true';
+      }
+
+      if (!valid) {
+        errorBanner.style.display = 'block';
+        passwordInput.value = '';
+      } else {
+        errorBanner.style.display = 'none';
+      }
     });
+
+    // Compile SVG outlines
+    lucide.createIcons();
   </script>
 </body>
 </html>

@@ -6,6 +6,11 @@
   <title>Customer Self-Order Kiosk Terminal</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/kiosk.css">
+  <script>
+    if (sessionStorage.getItem('kiosk_auth') !== 'kiosk' && !window.location.search.includes('auth=true')) {
+      window.location.href = 'index.html';
+    }
+  </script>
 </head>
 <body>
   <!-- Aspect ratio locked kiosk container -->
@@ -45,7 +50,7 @@
             <button class="lang-btn" data-lang="es">🇪🇸 Español</button>
             <button class="lang-btn" data-lang="fr">🇫🇷 Français</button>
           </div>
-          <p class="footer-tag">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span></p>
+          <p class="footer-tag">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span> | <a href="#" id="btn-kiosk-logout" style="color: rgba(255,255,255,0.4); text-decoration: underline; font-size: 0.8rem; margin-left: 0.25rem;">Exit Kiosk</a></p>
         </div>
       </div>
     </section>

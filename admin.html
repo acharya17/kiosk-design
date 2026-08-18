@@ -6,76 +6,23 @@
   <title>Bistro Admin Dashboard Console</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (sessionStorage.getItem('kiosk_auth') !== 'admin' && !window.location.search.includes('auth=true')) {
+      window.location.href = 'index.html';
+    }
+  </script>
 </head>
 <body>
   <!-- Toast alerts -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- ================= AUTHENTICATION CONTAINER ================= -->
-  <div class="auth-wrapper" id="auth-wrapper">
-    <div class="auth-card">
-      <div class="auth-left">
-        <span class="auth-logo-icon">🍕</span>
-        <h2>Bistro Signage & Ordering Suite</h2>
-        <p>Enterprise cloud portal to manage menus, kiosks, digital advertisement playlists, and track order fulfillment pipelines.</p>
-      </div>
-      
-      <div class="auth-right">
-        <!-- 1.1 Login Form -->
-        <div id="auth-view-login">
-          <h3>Admin Sign In</h3>
-          <p class="auth-subtitle">Please enter your administrative credentials</p>
-          <div class="auth-error-banner" id="login-error-msg">Invalid email address or password. Please try again.</div>
-          
-          <form id="login-form">
-            <div class="form-group">
-              <label for="login-email">Email Address / Username</label>
-              <input type="text" id="login-email" class="form-control" placeholder="admin@bistro.com" required value="admin@bistro.com">
-            </div>
-            <div class="form-group">
-              <label for="login-password">Password</label>
-              <div class="password-input-wrapper">
-                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required value="admin123">
-                <button type="button" class="btn-toggle-pwd" id="btn-show-password">Show</button>
-              </div>
-            </div>
-            <div class="form-row-auth">
-              <label class="checkbox-label">
-                <input type="checkbox" id="login-remember"> Remember me
-              </label>
-              <a href="#forgot" class="btn-link" id="btn-forgot-password-link">Forgot Password?</a>
-            </div>
-            <button type="submit" class="btn btn-primary auth-submit-btn" id="btn-auth-login">Login to Dashboard</button>
-          </form>
-        </div>
-
-        <!-- 1.2 Forgot Password Form -->
-        <div id="auth-view-forgot" style="display: none;">
-          <h3>Reset Password</h3>
-          <p class="auth-subtitle">Enter your email below to receive a password recovery link</p>
-          <div class="auth-success-banner" id="forgot-success-msg">Recovery instructions have been sent to your email.</div>
-          
-          <form id="forgot-form">
-            <div class="form-group">
-              <label for="forgot-email">Email Address / Username</label>
-              <input type="text" id="forgot-email" class="form-control" placeholder="admin@bistro.com" required>
-            </div>
-            <button type="submit" class="btn btn-primary auth-submit-btn">Send Recovery Link</button>
-            <div style="text-align: center; margin-top: 1rem;">
-              <a href="#login" class="btn-link" id="btn-back-to-login">&larr; Back to Login</a>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ================= ADMIN SYSTEM WRAPPER ================= -->
-  <div class="admin-wrapper" id="main-admin-wrapper" style="display: none;">
+  <div class="admin-wrapper" id="main-admin-wrapper">
     <!-- Sidebar Navigation -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
-        <span class="sidebar-logo-icon">🍕</span>
+        <span class="sidebar-logo-icon" style="color: var(--primary); display: flex;"><i data-lucide="package" style="width: 28px; height: 28px;"></i></span>
         <div>
           <h2>Bistro Admin</h2>
           <span class="system-tag">Enterprise SaaS</span>
@@ -85,80 +32,59 @@
         <!-- Dashboard Section -->
         <span class="nav-group-title">Dashboard</span>
         <a href="#dashboard" class="nav-item active" data-tab="dashboard">
-          <span class="nav-icon">📊</span> Dashboard
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
         </a>
 
-        <!-- TV & Display Section -->
-        <span class="nav-group-title">TV & Display</span>
+        <!-- Content Section -->
+        <span class="nav-group-title">Content</span>
         <a href="#banners" class="nav-item" data-tab="banners">
-          <span class="nav-icon">🖼️</span> Banners
+          <span class="nav-icon"><i data-lucide="image"></i></span> Banners
         </a>
         <a href="#playlists" class="nav-item" data-tab="playlists">
-          <span class="nav-icon">📋</span> Playlists
+          <span class="nav-icon"><i data-lucide="list-video"></i></span> Playlists
         </a>
         <a href="#tvs" class="nav-item" data-tab="tvs">
-          <span class="nav-icon">📺</span> TVs
-        </a>
-        <a href="#fallback" class="nav-item" data-tab="fallback">
-          <span class="nav-icon">🔄</span> Default / Fallback
+          <span class="nav-icon"><i data-lucide="monitor"></i></span> TV Displays
         </a>
 
-        <!-- Product Catalog Section -->
-        <span class="nav-group-title">Product Catalog</span>
+        <!-- Catalog Section -->
+        <span class="nav-group-title">Catalog</span>
         <a href="#categories" class="nav-item" data-tab="categories">
-          <span class="nav-icon">📁</span> Categories
+          <span class="nav-icon"><i data-lucide="folder"></i></span> Categories
         </a>
         <a href="#products" class="nav-item" data-tab="products">
-          <span class="nav-icon">🍔</span> Products
+          <span class="nav-icon"><i data-lucide="package"></i></span> Products
         </a>
         <a href="#customisation" class="nav-item" data-tab="customisation">
-          <span class="nav-icon">✏️</span> Customisation
+          <span class="nav-icon"><i data-lucide="sliders-horizontal"></i></span> Customisation
         </a>
 
-        <!-- Pricing Section -->
-        <span class="nav-group-title">Pricing & Promotions</span>
-        <a href="#taxes" class="nav-item" data-tab="taxes">
-          <span class="nav-icon">💵</span> Taxes
-        </a>
-        <a href="#discounts" class="nav-item" data-tab="discounts">
-          <span class="nav-icon">🏷️</span> Discounts
-        </a>
-
-        <!-- Kiosk Section -->
-        <span class="nav-group-title">Kiosk Management</span>
+        <!-- Operations Section -->
+        <span class="nav-group-title">Operations</span>
         <a href="#kiosks" class="nav-item" data-tab="kiosks">
-          <span class="nav-icon">🖥️</span> Kiosks
+          <span class="nav-icon"><i data-lucide="monitor-smartphone"></i></span> Kiosks
         </a>
-        <a href="#kiosk-config" class="nav-item" data-tab="kiosk-config">
-          <span class="nav-icon">⚙️</span> Kiosk Configuration
-        </a>
-
-        <!-- Payments Section -->
-        <span class="nav-group-title">Payment Configuration</span>
-        <a href="#payments" class="nav-item" data-tab="payments">
-          <span class="nav-icon">💳</span> Payment Methods
-        </a>
-
-        <!-- Orders Section -->
-        <span class="nav-group-title">Order Management</span>
         <a href="#orders" class="nav-item" data-tab="orders">
-          <span class="nav-icon">🛍️</span> Orders
+          <span class="nav-icon"><i data-lucide="clipboard-list"></i></span> Orders
+        </a>
+        <a href="#payments" class="nav-item" data-tab="payments">
+          <span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments
         </a>
 
         <!-- Devices Section -->
         <span class="nav-group-title">Devices</span>
         <a href="#devices" class="nav-item" data-tab="devices">
-          <span class="nav-icon">📡</span> Device Status
+          <span class="nav-icon"><i data-lucide="activity"></i></span> Device Status
         </a>
 
         <!-- Access Section -->
         <span class="nav-group-title">Access</span>
         <a href="#roles" class="nav-item" data-tab="roles">
-          <span class="nav-icon">🔒</span> Roles & Access
+          <span class="nav-icon"><i data-lucide="user-cog"></i></span> Roles & Access
         </a>
       </nav>
       <div class="sidebar-footer">
-        <button class="btn btn-secondary" id="btn-auth-logout" style="width: 100%;">🚪 Logout</button>
+        <button class="btn btn-secondary" id="btn-auth-logout" style="width: 100%; display: flex; align-items: center; justify-content: center;"><i data-lucide="log-out"></i> Logout</button>
       </div>
     </aside>
 
@@ -183,28 +109,28 @@
                 <h3>Active TVs</h3>
                 <p class="metric-number" id="kpi-active-tvs">0</p>
               </div>
-              <div class="metric-icon info-bg">📺</div>
+              <div class="metric-icon info-bg" style="display: flex;"><i data-lucide="monitor"></i></div>
             </div>
             <div class="metric-card">
               <div class="metric-info">
                 <h3>Active Banners</h3>
                 <p class="metric-number" id="kpi-active-banners">0</p>
               </div>
-              <div class="metric-icon success-bg">🖼️</div>
+              <div class="metric-icon success-bg" style="display: flex;"><i data-lucide="image"></i></div>
             </div>
             <div class="metric-card">
               <div class="metric-info">
                 <h3>Active Kiosks</h3>
                 <p class="metric-number" id="kpi-active-kiosks">0</p>
               </div>
-              <div class="metric-icon primary-bg">🖥️</div>
+              <div class="metric-icon primary-bg" style="display: flex;"><i data-lucide="monitor-smartphone"></i></div>
             </div>
             <div class="metric-card">
               <div class="metric-info">
                 <h3>Today's Orders</h3>
                 <p class="metric-number" id="kpi-orders-count">0</p>
               </div>
-              <div class="metric-icon warning-bg">🛍️</div>
+              <div class="metric-icon warning-bg" style="display: flex;"><i data-lucide="clipboard-list"></i></div>
             </div>
           </div>
 
@@ -353,11 +279,8 @@
               <tbody id="tvs-tbody"></tbody>
             </table>
           </div>
-        </section>
 
-        <!-- 3.4 DEFAULT / FALLBACK TAB -->
-        <section id="tab-fallback" class="tab-pane">
-          <div class="settings-grid">
+          <div class="settings-grid" style="margin-top: 2rem;">
             <div class="settings-card" style="grid-column: span 2;">
               <h3>Fallback Content Configuration</h3>
               <div class="fallback-preview-block" style="display: flex; gap: 2rem; margin-bottom: 2rem;">
@@ -417,29 +340,85 @@
         <!-- 4.2 PRODUCTS TAB -->
         <section id="tab-products" class="tab-pane">
           <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+        <!-- 4.2 PRODUCTS TAB -->
+        <section id="tab-products" class="tab-pane">
+          <div class="filter-panel" style="border-bottom: 1px solid var(--border-admin); padding-bottom: 0.75rem; margin-bottom: 1.5rem; gap: 1.5rem; width: 100%;">
+            <button class="subtab-link active-subtab" data-subtab="products-grid" style="border: none; background: transparent; color: var(--primary); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; transition: all 0.2s;">Products</button>
+            <button class="subtab-link" data-subtab="taxes-grid" style="border: none; background: transparent; color: var(--text-admin-muted); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; padding-bottom: 0.5rem; transition: all 0.2s;">Taxes Profile</button>
+            <button class="subtab-link" data-subtab="discounts-grid" style="border: none; background: transparent; color: var(--text-admin-muted); font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; cursor: pointer; padding-bottom: 0.5rem; transition: all 0.2s;">Promotional Discounts</button>
           </div>
-          <div class="filter-panel">
-            <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
-            <select id="product-category-filter" class="form-select inline-filter">
-              <option value="all">All Categories</option>
-            </select>
+
+          <!-- A. PRODUCTS SUBTAB -->
+          <div class="subtab-content" id="subtab-products-grid">
+            <div class="pane-header-row">
+              <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+            </div>
+            <div class="filter-panel">
+              <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
+              <select id="product-category-filter" class="form-select inline-filter">
+                <option value="all">All Categories</option>
+              </select>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Image</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Image</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  <th>Availability</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="products-tbody"></tbody>
-            </table>
+
+          <!-- B. TAXES SUBTAB -->
+          <div class="subtab-content" id="subtab-taxes-grid" style="display: none;">
+            <div class="pane-header-row">
+              <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Tax Name</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="taxes-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- C. DISCOUNTS SUBTAB -->
+          <div class="subtab-content" id="subtab-discounts-grid" style="display: none;">
+            <div class="pane-header-row">
+              <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Discount Name</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Applicable Products</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="discounts-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -466,50 +445,6 @@
           </div>
         </section>
 
-        <!-- 5.1 TAXES TAB -->
-        <section id="tab-taxes" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-tax">+ Add Tax Profile</button>
-          </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Tax Name</th>
-                  <th>Percentage</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="taxes-tbody"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 5.2 DISCOUNTS TAB -->
-        <section id="tab-discounts" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-discount">+ Add Discount Campaign</button>
-          </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Discount Name</th>
-                  <th>Type</th>
-                  <th>Value</th>
-                  <th>Applicable Products</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="discounts-tbody"></tbody>
-            </table>
-          </div>
-        </section>
-
         <!-- 6.1 KIOSKS TAB -->
         <section id="tab-kiosks" class="tab-pane">
           <div class="pane-header-row">
@@ -531,11 +466,8 @@
               <tbody id="kiosks-tbody"></tbody>
             </table>
           </div>
-        </section>
 
-        <!-- 6.2 KIOSK CONFIGURATION TAB -->
-        <section id="tab-kiosk-config" class="tab-pane">
-          <div class="settings-grid">
+          <div class="settings-grid" style="margin-top: 2rem;">
             <div class="settings-card">
               <h3>General Configuration</h3>
               <div class="form-group">
@@ -668,7 +600,10 @@
                     <td><span class="badge desktop-badge">All Modules</span></td>
                     <td>2 Users</td>
                     <td><span class="badge touch-badge">Active</span></td>
-                    <td><button class="btn btn-secondary" disabled>Lock</button></td>
+                    <td>
+                      <button class="btn btn-secondary btn-view-role">View</button>
+                      <button class="btn btn-secondary" disabled>Lock</button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -681,7 +616,7 @@
     <!-- FLOATING SIMULATOR DRAWER -->
     <section class="simulation-drawer">
       <div class="drawer-toggle" id="simulation-toggle">
-        <span class="toggle-icon">🚨</span>
+        <span class="toggle-icon" style="display: inline-flex; align-items: center;"><i data-lucide="triangle-alert" style="width: 16px; height: 16px; color: var(--danger);"></i></span>
         <span class="toggle-text">Failure Simulations</span>
       </div>
       <div class="drawer-content">
@@ -1271,21 +1206,21 @@
         <p><strong>Kiosk ID:</strong> <span id="details-kiosk-id">-</span></p>
         <p><strong>Location:</strong> <span id="details-kiosk-loc">-</span></p>
         <p><strong>Availability:</strong> <span id="details-kiosk-avail">-</span></p>
-
+ 
         <h4 class="form-section-title">Current Status</h4>
         <p><strong>Status:</strong> <span id="details-kiosk-status">-</span></p>
         <p><strong>Last Active Connection:</strong> <span id="details-kiosk-active">-</span></p>
-
+ 
         <h4 class="form-section-title">Configuration</h4>
         <p><strong>Product Configuration:</strong> Custom Catalog active</p>
         <p><strong>Payment Methods:</strong> Card Terminals, UPI, Counter Cash</p>
         <p><strong>Inactivity timeout:</strong> 30 seconds</p>
-
+ 
         <h4 class="form-section-title">Hardware Status</h4>
         <div id="details-kiosk-hardware-list">
           <!-- Populated -->
         </div>
-
+ 
         <h4 class="form-section-title">Recent Orders</h4>
         <div id="details-kiosk-orders" style="font-size: 0.85rem;"></div>
       </div>
@@ -1306,11 +1241,11 @@
         <p><strong>Token Number:</strong> <span id="details-order-token">-</span></p>
         <p><strong>Date & Time:</strong> <span id="details-order-time">-</span></p>
         <p><strong>Kiosk ID:</strong> <span id="details-order-kiosk">-</span></p>
-
+ 
         <h4 class="form-section-title">Customer Details</h4>
         <p><strong>Name:</strong> <span id="details-order-cust-name">-</span></p>
         <p><strong>Mobile:</strong> <span id="details-order-cust-mobile">-</span></p>
-
+ 
         <h4 class="form-section-title">Ordered Items</h4>
         <div id="details-order-items-list" style="margin-bottom: 1rem;"></div>
         <div style="border-top: 1px solid var(--border-admin); padding-top: 0.75rem; font-size: 0.85rem;">
@@ -1319,7 +1254,7 @@
           <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;"><span>Tax:</span><span id="details-order-tax">$0.00</span></div>
           <div style="display: flex; justify-content: space-between; font-weight: bold; color: #fff;"><span>Grand Total:</span><span id="details-order-total">$0.00</span></div>
         </div>
-
+ 
         <h4 class="form-section-title">Payment & Status</h4>
         <p><strong>Payment Status:</strong> <span id="details-order-payment">-</span></p>
         <p><strong>Order Preparation Status:</strong> <span id="details-order-prep">-</span></p>
@@ -1327,10 +1262,9 @@
     </div>
   </div>
 
-  <!-- O. Action Confirmation Dialog Modal -->
+  <!-- Action Confirmation Dialog Modal -->
   <div class="modal" id="confirm-modal">
-    <div class="modal-content" style="width: 400px; text-align: center;">
-      <div class="card-status-icon warning-icon" style="margin: 0 auto 1rem auto; background-color: rgba(239, 68, 68, 0.1); color: var(--danger); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">⚠️</div>
+    <div class="modal-content" style="width: 400px; text-align: cent      <div class="card-status-icon warning-icon" style="margin: 0 auto 1rem auto; background-color: rgba(239, 68, 68, 0.1); color: var(--danger); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="triangle-alert" style="width: 24px; height: 24px;"></i></div>
       <h3 id="confirm-modal-title">Delete Action</h3>
       <p id="confirm-modal-body" style="font-size: 0.85rem; color: var(--text-admin-muted); margin-top: 0.5rem; line-height: 1.5;">This action cannot be undone. Are you sure you want to proceed?</p>
       <footer class="modal-footer" style="justify-content: center; gap: 1rem; border-top: none; padding-top: 0;">
@@ -1340,9 +1274,146 @@
     </div>
   </div>
 
+  <!-- P. TV details view drawer -->
+  <div class="modal" id="tv-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-tv-name-header">-</h3>
+        <button class="modal-close" onclick="document.getElementById('tv-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>TV Name:</strong> <span id="details-tv-name">-</span></p>
+        <p><strong>TV ID:</strong> <span id="details-tv-id">-</span></p>
+        <p><strong>Location:</strong> <span id="details-tv-loc">-</span></p>
+        <p><strong>TV Group:</strong> <span id="details-tv-group">-</span></p>
+        
+        <h4 class="form-section-title">Configuration</h4>
+        <p><strong>Assigned Playlist:</strong> <span id="details-tv-playlist">-</span></p>
+        <p><strong>Current Status:</strong> <span id="details-tv-status">-</span></p>
+        <p><strong>Connection Status:</strong> <span id="details-tv-conn">-</span></p>
+        <p><strong>Last Active:</strong> <span id="details-tv-active">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q. Category details view drawer -->
+  <div class="modal" id="category-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-cat-name-header">-</h3>
+        <button class="modal-close" onclick="document.getElementById('category-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>Category Name:</strong> <span id="details-cat-name">-</span></p>
+        <p><strong>Image Icon:</strong> <span id="details-cat-icon" style="font-size: 1.5rem;">-</span></p>
+        <p><strong>Product Count:</strong> <span id="details-cat-count">-</span></p>
+        <p><strong>Status:</strong> <span id="details-cat-status">-</span></p>
+ 
+        <h4 class="form-section-title">Related Data</h4>
+        <div id="details-cat-products-list" style="font-size: 0.85rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- R. Modifier details view drawer -->
+  <div class="modal" id="modifier-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-mod-name-header">-</h3>
+        <button class="modal-close" onclick="document.getElementById('modifier-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>Modifier Name:</strong> <span id="details-mod-name">-</span></p>
+        <p><strong>Type:</strong> <span id="details-mod-type">-</span></p>
+        <p><strong>Price Addition:</strong> <span id="details-mod-price">-</span></p>
+        <p><strong>Requirement:</strong> <span id="details-mod-required">-</span></p>
+ 
+        <h4 class="form-section-title">Related Data</h4>
+        <p><strong>Applicable Products:</strong></p>
+        <div id="details-mod-products-list" style="font-size: 0.85rem; color: var(--text-admin-muted);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S. Tax details view drawer -->
+  <div class="modal" id="tax-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-tax-name-header">-</h3>
+        <button class="modal-close" onclick="document.getElementById('tax-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>Tax Profile Name:</strong> <span id="details-tax-name">-</span></p>
+        <p><strong>Tax Percentage:</strong> <span id="details-tax-percentage">-</span></p>
+        <p><strong>Status:</strong> <span id="details-tax-status">-</span></p>
+ 
+        <h4 class="form-section-title">Configuration</h4>
+        <p><strong>Applicable:</strong> Global scope (applied at kiosk sub-invoice total calculation)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- T. Discount details view drawer -->
+  <div class="modal" id="discount-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3 id="details-disc-name-header">-</h3>
+        <button class="modal-close" onclick="document.getElementById('discount-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>Discount Name:</strong> <span id="details-disc-name">-</span></p>
+        <p><strong>Type:</strong> <span id="details-disc-type">-</span></p>
+        <p><strong>Value:</strong> <span id="details-disc-value">-</span></p>
+        <p><strong>Applicable Products:</strong> <span id="details-disc-products">-</span></p>
+ 
+        <h4 class="form-section-title">Configuration</h4>
+        <p><strong>Start Date:</strong> <span id="details-disc-start">-</span></p>
+        <p><strong>End Date:</strong> <span id="details-disc-end">-</span></p>
+        <p><strong>Status:</strong> <span id="details-disc-status">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- U. Role details view drawer -->
+  <div class="modal" id="role-details-drawer">
+    <div class="customizer-drawer" style="width: 480px; right: 0; left: auto; border-top-left-radius: var(--radius-lg); border-top-right-radius: 0; max-height: 100%; height: 100vh;">
+      <header class="customizer-header" style="background-color: var(--bg-admin-card);">
+        <h3>Super Administrator Details</h3>
+        <button class="modal-close" onclick="document.getElementById('role-details-drawer').classList.remove('visible')">&times;</button>
+      </header>
+      <div class="customizer-body" style="padding: 1.5rem; background-color: var(--bg-admin-dark); height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <h4 class="form-section-title">Summary</h4>
+        <p><strong>Role Name:</strong> Super Administrator</p>
+        <p><strong>Active Users:</strong> 2 Users</p>
+        <p><strong>Status:</strong> Active</p>
+ 
+        <h4 class="form-section-title">Configuration</h4>
+        <p><strong>Enabled Permissions:</strong></p>
+        <div style="font-size: 0.85rem; color: var(--text-admin-muted);">
+          ✓ Dashboard View<br>
+          ✓ TV Playlist Loop Controller<br>
+          ✓ Menu Product Catalog CRUD<br>
+          ✓ Taxes & Pricing Configs<br>
+          ✓ Kiosk Terminals diagnostics<br>
+          ✓ Order logs tracking
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Shared store scripts -->
   <script src="js/mockData.js"></script>
   <script src="js/store.js"></script>
   <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
 </body>
 </html>

@@ -1,87 +1,11 @@
 (function() {
   // Authentication State
-  let isAuthenticated = false;
-
-  // DOM Elements
-  const authWrapper = document.getElementById('auth-wrapper');
-  const mainAdminWrapper = document.getElementById('main-admin-wrapper');
-  
-  const authViewLogin = document.getElementById('auth-view-login');
-  const authViewForgot = document.getElementById('auth-view-forgot');
-  const loginErrorMsg = document.getElementById('login-error-msg');
-  const forgotSuccessMsg = document.getElementById('forgot-success-msg');
-  
-  const btnShowPassword = document.getElementById('btn-show-password');
-  const loginPassword = document.getElementById('login-password');
-
-  // --- 1. AUTHENTICATION FLOWS ---
-
-  // Password visibility
-  btnShowPassword.addEventListener('click', () => {
-    if (loginPassword.type === 'password') {
-      loginPassword.type = 'text';
-      btnShowPassword.textContent = 'Hide';
-    } else {
-      loginPassword.type = 'password';
-      btnShowPassword.textContent = 'Show';
-    }
-  });
-
-  // Switch to Forgot View
-  document.getElementById('btn-forgot-password-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    authViewLogin.style.display = 'none';
-    authViewForgot.style.display = 'block';
-    forgotSuccessMsg.style.display = 'none';
-  });
-
-  // Back to login
-  document.getElementById('btn-back-to-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    authViewForgot.style.display = 'none';
-    authViewLogin.style.display = 'block';
-    loginErrorMsg.style.display = 'none';
-  });
-
-  // Login execution
-  document.getElementById('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
-    const pass = loginPassword.value.trim();
-
-    if (email === 'admin@bistro.com' && pass === 'admin123') {
-      isAuthenticated = true;
-      loginErrorMsg.style.display = 'none';
-      
-      // Load Workspace
-      authWrapper.style.display = 'none';
-      mainAdminWrapper.style.style = 'flex';
-      mainAdminWrapper.style.display = 'flex';
-      
-      showToast('Successfully logged in as Administrator.');
-      
-      // Auto-trigger dashboard pane
-      document.querySelector('[data-tab="dashboard"]').click();
-      refreshAll();
-    } else {
-      loginErrorMsg.style.display = 'block';
-    }
-  });
-
-  // Forgot password execution
-  document.getElementById('forgot-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    forgotSuccessMsg.style.display = 'block';
-  });
+  let isAuthenticated = true;
 
   // Logout trigger
   document.getElementById('btn-auth-logout').addEventListener('click', () => {
-    isAuthenticated = false;
-    mainAdminWrapper.style.display = 'none';
-    authWrapper.style.display = 'flex';
-    authViewForgot.style.display = 'none';
-    authViewLogin.style.display = 'block';
-    showToast('Logged out of session.', 'error');
+    sessionStorage.removeItem('kiosk_auth');
+    window.location.href = 'index.html';
   });
 
 
@@ -97,17 +21,13 @@
     'dashboard': { title: 'Dashboard', desc: 'Overview of system status and performance.' },
     'banners': { title: 'Banners', desc: 'Manage promotional banners and media.' },
     'playlists': { title: 'Playlists', desc: 'Create and configure media loops.' },
-    'tvs': { title: 'TVs', desc: 'Assign and map signage loop schedules.' },
-    'fallback': { title: 'Default / Fallback Content', desc: 'Manage screens running when no schedule matches.' },
+    'tvs': { title: 'TV Displays', desc: 'Assign signage schedules and configure fallback contents.' },
     'categories': { title: 'Categories', desc: 'Browse and edit catalog menu partitions.' },
-    'products': { title: 'Products', desc: 'Manage products prices and menu listings.' },
+    'products': { title: 'Products', desc: 'Manage menu items, taxes, and promotional discount campaigns.' },
     'customisation': { title: 'Customisation', desc: 'Configure product modifications and addon matrix.' },
-    'taxes': { title: 'Taxes', desc: 'Manage VAT and local service cess tax configs.' },
-    'discounts': { title: 'Discounts', desc: 'Configure promotional coupon campaigns.' },
-    'kiosks': { title: 'Kiosks', desc: 'Register self-order customer terminals.' },
-    'kiosk-config': { title: 'Kiosk Configuration', desc: 'Global settings profiles for kiosks.' },
-    'payments': { title: 'Payment Configuration', desc: 'Manage UPI, Card, and Cash gateway settings.' },
-    'orders': { title: 'Order Management', desc: 'Monitor kiosk generated orders logs.' },
+    'kiosks': { title: 'Kiosks', desc: 'Register self-order customer terminals and apply configurations.' },
+    'payments': { title: 'Payments', desc: 'Manage UPI, Card, and Cash gateway settings.' },
+    'orders': { title: 'Orders', desc: 'Monitor kiosk generated orders logs.' },
     'devices': { title: 'Device Status', desc: 'Hardware peripheral diagnostic logs.' },
     'roles': { title: 'Roles & Access', desc: 'Pending clarification. Placeholders active.' }
   };
@@ -132,6 +52,33 @@
       tabDescription.textContent = meta.desc;
       breadcrumbCurrent.textContent = meta.title;
     });
+  });
+
+  // Products Inner Sub-Tabs Switcher
+  document.addEventListener('click', (e) => {
+    const subtabBtn = e.target.closest('.subtab-link');
+    if (subtabBtn) {
+      const targetSubtab = subtabBtn.getAttribute('data-subtab');
+      const parent = subtabBtn.parentElement;
+      
+      parent.querySelectorAll('.subtab-link').forEach(btn => {
+        btn.classList.remove('active-subtab');
+        btn.style.color = 'var(--text-admin-muted)';
+        btn.style.borderBottom = 'none';
+      });
+      subtabBtn.classList.add('active-subtab');
+      subtabBtn.style.color = 'var(--primary)';
+      subtabBtn.style.borderBottom = '2px solid var(--primary)';
+
+      const container = parent.parentElement;
+      container.querySelectorAll('.subtab-content').forEach(pane => {
+        pane.style.display = 'none';
+      });
+      const targetPane = document.getElementById(`subtab-${targetSubtab}`);
+      if (targetPane) {
+        targetPane.style.display = 'block';
+      }
+    }
   });
 
   // Simulator Drawer
@@ -362,6 +309,7 @@
           <td><span class="badge ${t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${t.connectionStatus.toUpperCase()}</span></td>
           <td>${t.lastActive}</td>
           <td>
+            <button class="btn btn-secondary btn-view-tv" data-id="${t.id}">View</button>
             <button class="btn btn-secondary btn-edit-tv" data-id="${t.id}">Edit</button>
             <button class="btn btn-danger btn-delete-tv" data-id="${t.id}">Delete</button>
           </td>
@@ -369,6 +317,7 @@
       `;
     });
 
+    bindEvents('.btn-view-tv', showTVDetails);
     bindEvents('.btn-edit-tv', editTV);
     bindEvents('.btn-delete-tv', deleteTV);
   }
@@ -402,6 +351,7 @@
           <td>${c.count || 0} Items</td>
           <td><span class="badge touch-badge">${c.status.toUpperCase()}</span></td>
           <td>
+            <button class="btn btn-secondary btn-view-category" data-id="${c.id}">View</button>
             <button class="btn btn-secondary btn-edit-category" data-id="${c.id}">Edit</button>
             <button class="btn btn-danger btn-delete-category" data-id="${c.id}">Delete</button>
           </td>
@@ -409,6 +359,7 @@
       `;
     });
 
+    bindEvents('.btn-view-category', showCategoryDetails);
     bindEvents('.btn-edit-category', editCategory);
     bindEvents('.btn-delete-category', deleteCategory);
   }
@@ -485,6 +436,7 @@
           <td style="font-size:0.8rem; max-width: 150px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${linked || 'None'}</td>
           <td><span class="badge touch-badge">${m.status.toUpperCase()}</span></td>
           <td>
+            <button class="btn btn-secondary btn-view-modifier" data-id="${m.id}">View</button>
             <button class="btn btn-secondary btn-edit-modifier" data-id="${m.id}">Edit</button>
             <button class="btn btn-danger btn-delete-modifier" data-id="${m.id}">Delete</button>
           </td>
@@ -492,6 +444,7 @@
       `;
     });
 
+    bindEvents('.btn-view-modifier', showModifierDetails);
     bindEvents('.btn-edit-modifier', editModifier);
     bindEvents('.btn-delete-modifier', deleteModifier);
   }
@@ -509,6 +462,7 @@
           <td>${t.percentage}%</td>
           <td><span class="badge touch-badge">${t.status.toUpperCase()}</span></td>
           <td>
+            <button class="btn btn-secondary btn-view-tax" data-id="${t.id}">View</button>
             <button class="btn btn-secondary btn-edit-tax" data-id="${t.id}">Edit</button>
             <button class="btn btn-danger btn-delete-tax" data-id="${t.id}">Delete</button>
           </td>
@@ -516,6 +470,7 @@
       `;
     });
 
+    bindEvents('.btn-view-tax', showTaxDetails);
     bindEvents('.btn-edit-tax', editTax);
     bindEvents('.btn-delete-tax', deleteTax);
   }
@@ -537,6 +492,7 @@
           <td>${d.endDate}</td>
           <td><span class="badge touch-badge">${d.status.toUpperCase()}</span></td>
           <td>
+            <button class="btn btn-secondary btn-view-discount" data-id="${d.id}">View</button>
             <button class="btn btn-secondary btn-edit-discount" data-id="${d.id}">Edit</button>
             <button class="btn btn-danger btn-delete-discount" data-id="${d.id}">Delete</button>
           </td>
@@ -544,6 +500,7 @@
       `;
     });
 
+    bindEvents('.btn-view-discount', showDiscountDetails);
     bindEvents('.btn-edit-discount', editDiscount);
     bindEvents('.btn-delete-discount', deleteDiscount);
   }
@@ -1540,6 +1497,112 @@
     document.getElementById('order-details-drawer').classList.add('visible');
   }
 
+  function showTVDetails(id) {
+    const tvs = KioskStore.getTVs() || [];
+    const playlists = KioskStore.getPlaylists() || [];
+    const t = tvs.find(item => item.id === id);
+    if (!t) return;
+
+    const pl = playlists.find(p => p.id === t.assignedPlaylistId)?.name || 'None';
+    document.getElementById('details-tv-name-header').textContent = t.name;
+    document.getElementById('details-tv-name').textContent = t.name;
+    document.getElementById('details-tv-id').textContent = t.id;
+    document.getElementById('details-tv-loc').textContent = t.location || 'Counter';
+    document.getElementById('details-tv-group').textContent = t.tvGroup || 'None';
+    document.getElementById('details-tv-playlist').textContent = pl;
+    document.getElementById('details-tv-status').textContent = t.status.toUpperCase();
+    document.getElementById('details-tv-conn').textContent = t.connectionStatus.toUpperCase();
+    document.getElementById('details-tv-active').textContent = t.lastActive;
+
+    document.getElementById('tv-details-drawer').classList.add('visible');
+  }
+
+  function showCategoryDetails(id) {
+    const cats = KioskStore.getCategories() || [];
+    const products = KioskStore.getProducts() || [];
+    const c = cats.find(item => item.id === id);
+    if (!c) return;
+
+    document.getElementById('details-cat-name-header').textContent = c.name;
+    document.getElementById('details-cat-name').textContent = c.name;
+    document.getElementById('details-cat-icon').textContent = c.icon;
+    document.getElementById('details-cat-count').textContent = c.count || 0;
+    document.getElementById('details-cat-status').textContent = c.status.toUpperCase();
+
+    const related = products.filter(p => p.categoryId === c.id);
+    const container = document.getElementById('details-cat-products-list');
+    container.innerHTML = '<strong>Products in this category:</strong>';
+    if (related.length === 0) {
+      container.innerHTML += '<p>No products linked.</p>';
+    } else {
+      related.forEach(p => {
+        container.innerHTML += `<div style="margin-top:0.25rem;">• ${p.name} ($${p.price.toFixed(2)})</div>`;
+      });
+    }
+
+    document.getElementById('category-details-drawer').classList.add('visible');
+  }
+
+  function showModifierDetails(id) {
+    const modifiers = KioskStore.get('kiosk_modifiers') || [];
+    const products = KioskStore.getProducts() || [];
+    const m = modifiers.find(item => item.id === id);
+    if (!m) return;
+
+    document.getElementById('details-mod-name-header').textContent = m.name;
+    document.getElementById('details-mod-name').textContent = m.name;
+    document.getElementById('details-mod-type').textContent = m.type.toUpperCase();
+    document.getElementById('details-mod-price').textContent = `+$${m.price.toFixed(2)}`;
+    document.getElementById('details-mod-required').textContent = m.required ? 'Mandatory' : 'Optional';
+
+    const linked = m.productIds.map(pid => products.find(p => p.id === pid)?.name || pid);
+    const container = document.getElementById('details-mod-products-list');
+    container.innerHTML = '';
+    if (linked.length === 0) {
+      container.innerHTML = 'No products linked.';
+    } else {
+      linked.forEach(name => {
+        container.innerHTML += `<div style="margin-top:0.25rem;">• ${name}</div>`;
+      });
+    }
+
+    document.getElementById('modifier-details-drawer').classList.add('visible');
+  }
+
+  function showTaxDetails(id) {
+    const taxes = KioskStore.getTaxes() || [];
+    const t = taxes.find(item => item.id === id);
+    if (!t) return;
+
+    document.getElementById('details-tax-name-header').textContent = t.name;
+    document.getElementById('details-tax-name').textContent = t.name;
+    document.getElementById('details-tax-percentage').textContent = `${t.percentage}%`;
+    document.getElementById('details-tax-status').textContent = t.status.toUpperCase();
+
+    document.getElementById('tax-details-drawer').classList.add('visible');
+  }
+
+  function showDiscountDetails(id) {
+    const discounts = KioskStore.getDiscounts() || [];
+    const d = discounts.find(item => item.id === id);
+    if (!d) return;
+
+    document.getElementById('details-disc-name-header').textContent = d.name;
+    document.getElementById('details-disc-name').textContent = d.name;
+    document.getElementById('details-disc-type').textContent = d.type.toUpperCase();
+    document.getElementById('details-disc-value').textContent = d.type === 'percentage' ? `${d.value}%` : `$${d.value.toFixed(2)}`;
+    document.getElementById('details-disc-products').textContent = d.applicableProducts;
+    document.getElementById('details-disc-start').textContent = d.startDate;
+    document.getElementById('details-disc-end').textContent = d.endDate;
+    document.getElementById('details-disc-status').textContent = d.status.toUpperCase();
+
+    document.getElementById('discount-details-drawer').classList.add('visible');
+  }
+
+  function showRoleDetails() {
+    document.getElementById('role-details-drawer').classList.add('visible');
+  }
+
   // Bind key inputs filter render loops
   document.getElementById('banner-search').addEventListener('input', renderBanners);
   document.getElementById('banner-filter-status').addEventListener('change', renderBanners);
@@ -1580,6 +1643,44 @@
   });
 
 
+  function decorateDynamicIcons() {
+    // 1. View actions
+    document.querySelectorAll('.btn-view-banner, .btn-view-playlist, .btn-view-tv, .btn-view-category, .btn-view-product, .btn-view-modifier, .btn-view-tax, .btn-view-discount, .btn-view-kiosk, .btn-view-order, .btn-view-role').forEach(btn => {
+      if (!btn.querySelector('.lucide')) {
+        const text = btn.textContent.trim();
+        btn.innerHTML = `<i data-lucide="eye"></i> <span>${text}</span>`;
+      }
+    });
+
+    // 2. Edit actions
+    document.querySelectorAll('.btn-edit-banner, .btn-edit-playlist, .btn-edit-tv, .btn-edit-category, .btn-edit-product, .btn-edit-modifier, .btn-edit-tax, .btn-edit-discount, .btn-edit-kiosk').forEach(btn => {
+      if (!btn.querySelector('.lucide')) {
+        const text = btn.textContent.trim();
+        btn.innerHTML = `<i data-lucide="pencil"></i> <span>${text}</span>`;
+      }
+    });
+
+    // 3. Delete actions
+    document.querySelectorAll('.btn-delete-banner, .btn-delete-playlist, .btn-delete-tv, .btn-delete-category, .btn-delete-product, .btn-delete-modifier, .btn-delete-tax, .btn-delete-discount, .btn-delete-kiosk').forEach(btn => {
+      if (!btn.querySelector('.lucide')) {
+        const text = btn.textContent.trim();
+        btn.innerHTML = `<i data-lucide="trash-2"></i> <span>${text}</span>`;
+      }
+    });
+
+    // 4. Primary add action buttons
+    document.querySelectorAll('.pane-header-row .btn-primary').forEach(btn => {
+      if (!btn.querySelector('.lucide') && btn.id !== 'btn-preview-fallback') {
+        const text = btn.textContent.trim().replace('+', '').trim();
+        btn.innerHTML = `<i data-lucide="plus"></i> <span>${text}</span>`;
+      }
+    });
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
   // --- 7. WORKSPACE REFRESH ---
 
   function refreshAll() {
@@ -1598,6 +1699,8 @@
     renderPayments();
     renderOrders();
     renderDevices();
+
+    decorateDynamicIcons();
   }
 
   // Subscribe state syncing
@@ -1605,6 +1708,13 @@
     refreshAll();
     if (key === KioskStore.KEYS.CONFIG || key === 'reset') {
       loadKioskConfigs();
+    }
+  });
+
+  // Delegated event for static role views
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-view-role')) {
+      showRoleDetails();
     }
   });
 

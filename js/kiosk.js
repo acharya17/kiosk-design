@@ -808,6 +808,13 @@
     }
   }
 
+  // Exit Kiosk Logout hook
+  document.getElementById('btn-kiosk-logout').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('kiosk_auth');
+    window.location.href = 'index.html';
+  });
+
   // Initialize
   renderMenuCategories();
   renderProductsGrid();

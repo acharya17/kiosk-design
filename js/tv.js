@@ -2,19 +2,63 @@
   let activeBannersList = [];
   let currentSlideIndex = 0;
   let playbackTimeout = null;
-
-  // Retrieve TV identity from URL parameter (e.g. tv.html?id=tv-entrance) or default
-  const urlParams = new URLSearchParams(window.location.search);
-  let tvId = urlParams.get('id') || 'tv-entrance';
+  let tvId = 'tv-entrance';
 
   // DOM Elements
+  const tvSetupOverlay = document.getElementById('tv-setup-overlay');
+  const tvSelectDropdown = document.getElementById('setup-tv-select');
+  const btnStartDisplay = document.getElementById('btn-start-display');
+  const btnSetupLogout = document.getElementById('btn-setup-logout');
+  
   const carouselWrapper = document.getElementById('carousel-wrapper');
   const fallbackPane = document.getElementById('fallback-pane');
   const offlineOverlay = document.getElementById('tv-offline-overlay');
   const fsBtn = document.getElementById('btn-toggle-fs');
+  const btnExitLoop = document.getElementById('btn-exit-loop');
   const tvCanvas = document.getElementById('tv-canvas');
 
-  // --- PLAYLIST CONFIG & LOOPER ---
+  // --- 1. TV DISPLAY SETUP FLOW ---
+
+  function initSetupScreen() {
+    const tvs = KioskStore.getTVs() || [];
+    tvSelectDropdown.innerHTML = '';
+    
+    tvs.forEach(tv => {
+      const option = document.createElement('option');
+      option.value = tv.id;
+      option.textContent = `${tv.name} (${tv.location || 'Default Location'})`;
+      tvSelectDropdown.appendChild(option);
+    });
+
+    if (tvs.length === 0) {
+      const option = document.createElement('option');
+      option.value = 'tv-entrance';
+      option.textContent = 'Entrance Display TV (tv-entrance)';
+      tvSelectDropdown.appendChild(option);
+    }
+  }
+
+  btnStartDisplay.addEventListener('click', () => {
+    tvId = tvSelectDropdown.value;
+    tvSetupOverlay.style.display = 'none';
+    tvCanvas.style.display = 'block';
+    
+    loadPlaylist();
+    updateStatusAlerts();
+  });
+
+  btnExitLoop.addEventListener('click', () => {
+    clearTimeout(playbackTimeout);
+    tvCanvas.style.display = 'none';
+    tvSetupOverlay.style.display = 'flex';
+  });
+
+  btnSetupLogout.addEventListener('click', () => {
+    sessionStorage.removeItem('kiosk_auth');
+    window.location.href = 'index.html';
+  });
+
+  // --- 2. PLAYLIST CONFIG & LOOPER ---
 
   function loadPlaylist() {
     const tvs = KioskStore.getTVs() || [];
@@ -24,7 +68,6 @@
     // Find self config
     let selfTV = tvs.find(t => t.id === tvId);
     if (!selfTV && tvs.length > 0) {
-      // Fallback to first registered TV
       selfTV = tvs[0];
       tvId = selfTV.id;
     }
@@ -33,11 +76,9 @@
       document.getElementById('hud-tv-name').textContent = selfTV.name;
       document.getElementById('hud-tv-id').textContent = `ID: ${selfTV.id}`;
 
-      // Load mapped playlist
       const playlist = playlists.find(p => p.id === selfTV.assignedPlaylistId);
       if (playlist) {
         const now = new Date();
-        // Extract banners linked in this playlist
         activeBannersList = allBanners.filter(b => {
           if (!b.active) return false;
           if (!playlist.bannerIds.includes(b.id)) return false;
@@ -53,10 +94,7 @@
       activeBannersList = [];
     }
 
-    // Sort by priority ascending
     activeBannersList.sort((a, b) => a.priority - b.priority);
-
-    // Stop current playback
     clearTimeout(playbackTimeout);
 
     if (activeBannersList.length === 0) {
@@ -95,7 +133,6 @@
       img.className = 'banner-img';
       img.alt = b.title;
 
-      // Handle image failure
       img.onerror = () => {
         console.warn(`Signage image load error: "${b.title}". Skipping slide.`);
         handleSlideLoadError(idx);
@@ -146,7 +183,7 @@
     }
   }
 
-  // --- CONNECTIVITY & FULLSCREEN ---
+  // --- 3. CONNECTIVITY & FULLSCREEN ---
 
   function updateStatusAlerts() {
     const failures = KioskStore.getFailures();
@@ -178,22 +215,24 @@
     }
   });
 
-  // Init loads
-  loadPlaylist();
+  // Init TV Setup selector dropdown on load
+  initSetupScreen();
   updateStatusAlerts();
 
   // Storage Sync
   KioskStore.subscribe((key, val) => {
-    if (key === KioskStore.KEYS.BANNERS || key === KioskStore.KEYS.PLAYLISTS || key === KioskStore.KEYS.TVS || key === 'reset') {
-      loadPlaylist();
+    if (tvCanvas.style.display !== 'none') {
+      if (key === KioskStore.KEYS.BANNERS || key === KioskStore.KEYS.PLAYLISTS || key === KioskStore.KEYS.TVS || key === 'reset') {
+        loadPlaylist();
+      }
+      if (key === KioskStore.KEYS.CONFIG || key === 'reset') {
+        if (activeBannersList.length === 0) {
+          showFallbackBillboard();
+        }
+      }
     }
     if (key === KioskStore.KEYS.SIMULATED_FAILURES || key === 'reset') {
       updateStatusAlerts();
-    }
-    if (key === KioskStore.KEYS.CONFIG || key === 'reset') {
-      if (activeBannersList.length === 0) {
-        showFallbackBillboard();
-      }
     }
   });
 })();

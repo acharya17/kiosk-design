@@ -1,93 +1,76 @@
-# GLOBAL ADMIN UI STANDARDS
+# GLOBAL ADMIN UI STANDARDS — BANNER MANAGEMENT = MASTER REFERENCE
 
-Apply the following rules as GLOBAL design and interaction standards across the entire Admin Panel. These rules must be followed on EVERY page and in EVERY module.
+The Banner Management page is the REFERENCE IMPLEMENTATION for the entire Admin Panel.
+Do NOT redesign patterns separately for other pages. Reuse the same components and visual patterns.
+Only CONTENT and BUSINESS-SPECIFIC fields should change.
 
-## 1. GLOBAL PAGE STRUCTURE
-Every page must use the same structure: Breadcrumb -> Page Title -> Short Description -> Page Toolbar -> Main Content -> Pagination / Footer where applicable.
-Use consistent page width, left alignment, header spacing, section spacing, card padding, border radius, typography, and button sizing.
+## 1. PAGE HEADER STANDARD
+Every Admin page: Breadcrumb → Page Title → Short Description. Same structure, typography, spacing, alignment.
 
-## 2. GLOBAL SEARCH
-Every list page that supports search must use the same Search component.
-- Default: `[ Search icon ] Search...`
-- Active: `[ Search icon ] Search text [ X ]`
-Clicking X clears the search. Standard icons: Search → Search, Clear → X (no emojis).
+## 2. LIST PAGE STANDARD
+Every management/list page follows: Page Header → [ Search ] [ Filter ] [ + Add ] → Active Filter Chips → Table → Pagination.
+Apply to: Banners, Playlists, TVs, Categories, Products, Customisation, Taxes, Discounts, Kiosks, Orders, Payment History, Devices.
+Only include Add when the business requirement allows creation.
 
-## 3. GLOBAL FILTER SYSTEM
-Use `[ Search ] [ Filter ] [ Primary Action ]` in the toolbar.
-Clicking Filter opens the reusable Filter Drawer/Popover (with Multi-select, Date range, Apply, Clear All).
-Filter button shows active count (e.g. Filter 2). Show active filter chips above the table.
+## 3. SEARCH STANDARD
+Same Search component as Banner Management: Search icon inside input, Clear X appears when text exists, Clicking X clears search. Works with filters and pagination. Same dimensions on every page.
 
-## 4. GLOBAL TABLE SYSTEM
-Use the standard table component with fixed column structure, consistent alignment, same row height, vertical-align middle, consistent status badges, and subtle row separators. Actions aligned to the far right.
+## 4. FILTER STANDARD
+Same Filter button and Filter Drawer/Popover as Banner Management. Multi-select, single-select, date range, search options. Footer: Clear All / Cancel / Apply Filters. Show filter chips after applying. Only filter options change per module.
 
-## 5. GLOBAL TABLE ACTIONS
-Use compact icon buttons (View → Eye, Edit → Pencil, More → MoreHorizontal). Do not use large text buttons in rows.
+## 5. TABLE STANDARD
+Same header style, row height, cell padding, border, radius, typography, alignment, status badges, action buttons, hover behaviour as Banner Management. Columns intentionally sized by content.
 
-## 6. GLOBAL STATUS CONTROL
-Use Status Badge + Compact Switch (e.g., `Active [ ON ]`). Changing status triggers standard confirmation dialog, then updates switch, badge, and shows success toast. No large activate/deactivate buttons.
+## 6. TABLE ACTION STANDARD
+Compact icon buttons: View → Eye, Edit → Pencil, More → MoreHorizontal. No large text buttons in rows. Delete always uses standard confirmation dialog.
 
-## 7. GLOBAL CONFIRMATION DIALOG
-Use ONE reusable confirmation dialog for Logout, Delete, Activate, Deactivate, Replace, Reset.
+## 7. STATUS STANDARD
+Status Badge + Switch (Active [ON] / Inactive [OFF]). Changing status → Confirmation dialog → Confirm → Update → Toast. Same switch design everywhere.
 
-## 8. GLOBAL ADD / EDIT FORM
-Use the SAME layout for Add and Edit. Structure: Page Header -> Basic Information -> Configuration -> Additional Information -> Footer Actions (Cancel, Save). Ensure strict grid alignment.
+## 8. PAGINATION STANDARD
+Same pagination component as Banner Management. Responds to Search, Filters, Data changes.
 
-## 9. GLOBAL VIEW / DETAILS PAGE
-View pages should NOT look like editable forms. Structure: Page Header (Edit) -> Summary -> Basic Info -> Configuration -> Related Info.
+## 9. ADD/EDIT PAGE STANDARD
+Same form structure as Banner Add page: left-aligned, max-width container, section headers with underlines, 2-column grid, same field heights/labels/inputs/validation/button placement. Only fields change. Add → "Save [Entity]", Edit → "Save Changes".
 
-## 10. GLOBAL BUTTON SYSTEM
-- Primary: Accent background, White text
-- Secondary: White/light background, Border, Dark text
-- Destructive: Error color
-- Icon button: Small square, standard icon
+## 10. VIEW PAGE STANDARD
+Same details layout: Back button at top, summary sections, NOT an editable form. 2-column read-only grid with uppercase labels.
 
-## 11. GLOBAL TOAST SYSTEM
-Consistent success, update, delete, error, warning toasts.
+## 11. CONFIRMATION DIALOG
+ONE reusable dialog for: Logout, Delete, Activate, Deactivate, Replace, Reset. Not for: View, Edit, Search, Filter, Preview, Navigation.
 
-## 12. GLOBAL LOADING STATES
-Use Skeleton rows/cards. Never show technical text (e.g. API loading).
+## 12. TOAST SYSTEM
+Consistent success/update/delete/error/warning toasts across all modules.
 
-## 13. GLOBAL EMPTY STATES
-Show proper empty state with icon, message, and action (Add or Clear Search/Filters).
+## 13. EMPTY STATES
+Proper empty state with icon, message, and action (Add or Clear Search/Filters).
 
-## 14. GLOBAL PAGINATION
-Standard pagination component with Previous, Page numbers, Next, active page, and Rows per page selector.
+## 14. LOADING STATES
+Skeleton rows for tables, skeleton cards for cards, loading button for forms. Never show technical text.
 
-## 15. GLOBAL SEARCH + FILTER + TABLE PATTERN
-Page Header -> Toolbar [ Search, Filter, Action ] -> Active chips -> Table -> Pagination.
-Mandatory for Banners, Playlists, TVs, Categories, Products, Kiosks, Orders, Payments, etc.
+## 15. ICON SYSTEM
+Lucide Icons exclusively. Add→Plus, Edit→Pencil, View→Eye, Delete→Trash2, More→MoreHorizontal, Search→Search, Filter→ListFilter, Save→Save, Close→X, Back→ArrowLeft, Upload→Upload, Logout→LogOut. No emoji.
 
-## 16. GLOBAL SAMPLE DATA
-Use realistic centralized sample data. Data must be connected across modules. Updates must sync globally.
+## 16. ALIGNMENT RULES
+Same content start position, max width, horizontal padding, card padding, section spacing, input heights, button heights, icon sizes, table row heights on every page. Two-column forms: equal width, equal gap.
 
-## 17. GLOBAL ICON SYSTEM
-Use Lucide Icons exclusively (Plus, Pencil, Eye, Trash2, MoreHorizontal, Search, ListFilter, Save, X, ArrowLeft, RefreshCw, Upload, Download, Settings, LogOut). No emojis.
+## 17. RESPONSIVENESS
+Clean at 1440px, 1280px, 1024px. No overlapping, broken tables, misaligned buttons, clipped content.
 
-## 18. GLOBAL ALIGNMENT RULES
-All pages must use the same grid structures, paddings, and widths. For two-column forms, columns must always have equal width and equal gap.
+## 18. SAMPLE DATA
+Centralized realistic data across all modules. Connected records. Updates sync globally via KioskStore.
 
-## 19. GLOBAL RESPONSIVE RULES
-Primary target 1440px desktop. Ensure no overlap or clipping on 1280px and 1024px.
+## 19. FORM VALIDATION
+Inline validation, clear non-technical messages, highlight affected field, prevent invalid save.
 
-## 20. GLOBAL DATA INTERACTION
-The application must behave connectedly. Actions in one module must instantly reflect in related modules via the central KioskStore.
+## 20. VISUAL STYLE
+Light neutral background, white cards, soft borders, subtle shadows, consistent rounded corners, clean typography, restrained accent color, standard outline icons, minimal decoration.
 
-## 21. GLOBAL NAVIGATION
-Consistent sidebar, top header, breadcrumb. Sidebar active state reflects current module.
+## 21. BUSINESS RULES
+Do NOT duplicate fields or ask users to manually enter info that can be auto-detected. Do NOT force Add/Edit/Delete onto modules where those actions don't make business sense. Master Data: List→Add→View→Edit→Delete/Status. Configuration: View→Configure→Save. Monitoring: List→Search/Filter→View.
 
-## 22. GLOBAL FORM VALIDATION
-Use clear, non-technical inline validation error messages. Prevent invalid saves.
+## 22. LOGIN
+Three accounts: kiosk1@gmail→Admin, kiosk2@gmail→Kiosk, kiosk3@gmail→Display. Common password Bistro@123. NEVER display credentials in UI. Auto-route based on email after login.
 
-## 23. GLOBAL VISUAL STYLE
-Light neutral background, white cards, soft borders, subtle shadows, consistent rounded corners, clean typography.
-
-## 24. GLOBAL RULE FOR BUSINESS-SPECIFIC FIELDS
-Do not ask users to manually enter information that can be auto-detected (e.g., Media Type from uploaded file).
-
-## 25. GLOBAL ACTION PRINCIPLE
-Master Data: List -> Add -> View -> Edit -> Delete / Status.
-Configuration: View -> Configure -> Save.
-Monitoring: List -> Search/Filter -> View.
-
-## 26. FINAL GLOBAL RULE
-Before creating ANY new Admin page, check that it follows the standard components listed above. Everything must feel like ONE Admin product.
+## 23. FINAL QUALITY CHECK
+Before ANY Admin page is complete, verify it matches Banner Management in: page header, search, search clear, filter, multi-select, apply, clear all, filter chips, table alignment, status switch, view, edit, delete confirmation, toast, pagination, empty state, loading state, icons, buttons, form alignment, add/edit structure, view structure, sample data. Design the Admin Panel as ONE PRODUCT.

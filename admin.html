@@ -326,17 +326,29 @@
         <!-- 3.2 PLAYLISTS TAB -->
         <section id="tab-playlists" class="tab-pane">
           <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <input type="text" id="playlist-search" class="form-control inline-filter" placeholder="Search Playlists..." style="max-width: 300px; margin-bottom: 0;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="playlist-search" class="form-control inline-filter" placeholder="Search Playlists..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="playlist-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
             <div style="display: flex; gap: 0.75rem; align-items: center;">
               <button class="btn btn-secondary btn-filter-toggle" data-tab="playlists" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
               </button>
-              <button class="btn btn-primary" id="btn-add-playlist">+ Add Playlist</button>
+              <button class="btn btn-primary" id="btn-add-playlist" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Playlist</button>
             </div>
           </div>
           <div class="filter-chips-container" id="playlist-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="playlists-table">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 18%;">
+                <col style="width: 12%;">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Playlist Name</th>
@@ -349,23 +361,38 @@
               </thead>
               <tbody id="playlists-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="playlists-pagination"></div>
           </div>
         </section>
 
         <!-- 3.3 TV TAB -->
         <section id="tab-tvs" class="tab-pane">
           <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <input type="text" id="tv-search" class="form-control inline-filter" placeholder="Search TVs..." style="max-width: 300px; margin-bottom: 0;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="tv-search" class="form-control inline-filter" placeholder="Search TVs..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="tv-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
             <div style="display: flex; gap: 0.75rem; align-items: center;">
               <button class="btn btn-secondary btn-filter-toggle" data-tab="tvs" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
               </button>
-              <button class="btn btn-primary" id="btn-add-tv">+ Add TV</button>
+              <button class="btn btn-primary" id="btn-add-tv" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add TV</button>
             </div>
           </div>
           <div class="filter-chips-container" id="tv-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="tvs-table">
+              <colgroup>
+                <col style="width: 18%;">
+                <col style="width: 10%;">
+                <col style="width: 14%;">
+                <col style="width: 18%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+              </colgroup>
               <thead>
                 <tr>
                   <th>TV Name</th>
@@ -380,6 +407,7 @@
               </thead>
               <tbody id="tvs-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="tvs-pagination"></div>
           </div>
         </section>
 
@@ -423,22 +451,41 @@
 
         <!-- 4.1 CATEGORIES TAB -->
         <section id="tab-categories" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-category">+ Add Category</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="category-search" class="form-control inline-filter" placeholder="Search Categories..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="category-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="categories" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-category" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Category</button>
+            </div>
           </div>
+          <div class="filter-chips-container" id="categories-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="categories-table">
+              <colgroup>
+                <col style="width: 30%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 12%;">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Category</th>
                   <th>Image Icon</th>
                   <th>Product Count</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="categories-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="categories-pagination"></div>
           </div>
         </section>
 

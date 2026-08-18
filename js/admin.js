@@ -1661,7 +1661,6 @@
     document.getElementById('banner-form-page').reset();
     resetMediaPreview();
     document.getElementById('banner-page-id').value = '';
-    document.getElementById('banner-form-title-h3').textContent = 'Add Banner';
     document.getElementById('btn-save-banner').textContent = 'Save Banner';
     
     document.getElementById('banner-page-start-date').value = new Date().toISOString().split('T')[0];
@@ -1778,7 +1777,6 @@
     document.getElementById('banner-preview-filename').textContent = 'existing_media';
     document.getElementById('banner-detected-type').textContent = b.contentType.toUpperCase();
 
-    document.getElementById('banner-form-title-h3').textContent = 'Edit Banner';
     document.getElementById('btn-save-banner').textContent = 'Save Changes';
     
     tabPanes.forEach(pane => pane.classList.remove('active'));

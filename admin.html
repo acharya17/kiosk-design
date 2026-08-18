@@ -491,17 +491,31 @@
 
         <!-- 4.2 PRODUCTS TAB -->
         <section id="tab-products" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search Products..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="product-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="products" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-product" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Product</button>
+            </div>
           </div>
-          <div class="filter-panel">
-            <input type="text" id="product-search" class="form-control inline-filter" placeholder="Search products...">
-            <select id="product-category-filter" class="form-select inline-filter">
-              <option value="all">All Categories</option>
-            </select>
-          </div>
+          <div class="filter-chips-container" id="products-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="products-table">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 10%;">
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 15%;">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Product</th>
@@ -510,21 +524,42 @@
                   <th>Price</th>
                   <th>Availability</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="products-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="products-pagination"></div>
           </div>
         </section>
 
         <!-- 4.3 CUSTOMISATION TAB -->
         <section id="tab-customisation" class="tab-pane">
-          <div class="pane-header-row">
-            <button class="btn btn-primary" id="btn-add-modifier">+ Add Modifier</button>
+          <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="modifier-search" class="form-control inline-filter" placeholder="Search Modifiers..." style="margin-bottom: 0;">
+              <button class="search-clear-btn" id="modifier-search-clear" title="Clear search"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-secondary btn-filter-toggle" data-tab="customisation" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="list-filter"></i> Filter <span class="filter-count" style="display: none; background: var(--primary); color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; align-items: center; justify-content: center;">0</span>
+              </button>
+              <button class="btn btn-primary" id="btn-add-modifier" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add Modifier</button>
+            </div>
           </div>
+          <div class="filter-chips-container" id="customisation-filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
           <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="modifiers-table">
+              <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 15%;">
+                <col style="width: 20%;">
+                <col style="width: 10%;">
+                <col style="width: 15%;">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Modifier Name</th>
@@ -533,11 +568,12 @@
                   <th>Required/Optional</th>
                   <th>Applicable Products</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="modifiers-tbody"></tbody>
             </table>
+            <div class="pagination-bar" id="customisation-pagination"></div>
           </div>
         </section>
 

@@ -989,117 +989,436 @@
     document.getElementById('fallback-image').value = f.image;
   }
 
-  // 4.6 Categories CRUD
+  // 4.5 Categories CRUD
+  let categoryPage = 1;
+  let categoryPageSize = 10;
+
   function renderCategories() {
     const categories = KioskStore.getCategories() || [];
     const tbody = document.getElementById('categories-tbody');
+    const paginationEl = document.getElementById('categories-pagination');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    categories.forEach(c => {
+    const search = (document.getElementById('category-search')?.value || '').toLowerCase();
+    const current = activeFilters.categories || { status: [] };
+
+    const filtered = categories.filter(c => {
+      const matchSearch = c.name.toLowerCase().includes(search);
+      let matchStatus = true;
+      if (current.status && current.status.length > 0) {
+        matchStatus = false;
+        if (current.status.includes('active') && c.status === 'active') matchStatus = true;
+        if (current.status.includes('inactive') && c.status !== 'active') matchStatus = true;
+      }
+      return matchSearch && matchStatus;
+    });
+
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / categoryPageSize));
+    if (categoryPage > totalPages) categoryPage = totalPages;
+    const startIdx = (categoryPage - 1) * categoryPageSize;
+    const pageItems = filtered.slice(startIdx, startIdx + categoryPageSize);
+
+    if (totalItems === 0) {
+      const hasSearch = search.length > 0;
+      const hasFilters = current.status && current.status.length > 0;
+      let emptyHtml = '';
+      if (hasSearch) {
+        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No categories match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('category-search').value='';document.getElementById('category-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+      } else if (hasFilters) {
+        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No categories match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.categories={status:[]};updateFilterChips('categories');renderCategories();">Clear Filters</button></div></td></tr>`;
+      } else {
+        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="folder" class="empty-icon"></i><h4>No categories found</h4><p>Create your first menu category.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-category').click();">Create Category</button></div></td></tr>`;
+      }
+      tbody.innerHTML = emptyHtml;
+      if (paginationEl) paginationEl.innerHTML = '';
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+
+    pageItems.forEach(c => {
+      const isActive = c.status === 'active';
+      const statusBadge = isActive
+        ? '<span class="badge touch-badge">Active</span>'
+        : '<span class="badge danger-badge">Inactive</span>';
+
       tbody.innerHTML += `
         <tr>
-          <td><strong>${c.name}</strong></td>
-          <td style="font-size: 1.5rem;">${c.icon}</td>
-          <td>${c.count || 0} Items</td>
-          <td><span class="badge touch-badge">${c.status.toUpperCase()}</span></td>
+          <td><strong style="display:block;line-height:1.3;">${c.name}</strong></td>
+          <td><div style="font-size: 1.5rem;">${c.icon || '📁'}</div></td>
+          <td><span class="badge desktop-badge">${c.count || 0} Products</span></td>
           <td>
-            <button class="btn btn-secondary btn-view-category" data-id="${c.id}">View</button>
-            <button class="btn btn-secondary btn-edit-category" data-id="${c.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-category" data-id="${c.id}">Delete</button>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              ${statusBadge}
+              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
+                <input type="checkbox" class="category-status-toggle" data-id="${c.id}" ${isActive ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn-action btn-view-category" data-id="${c.id}" title="View Details">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-edit-category" data-id="${c.id}" title="Edit">
+                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-action-danger btn-delete-category" data-id="${c.id}" title="Delete">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
     });
 
+    if (paginationEl) {
+      const showFrom = startIdx + 1;
+      const showTo = Math.min(startIdx + categoryPageSize, totalItems);
+      
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.85rem; color: var(--text-admin-muted);">
+          <div>Showing ${showFrom}-${showTo} of ${totalItems}</div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn-page" ${categoryPage === 1 ? 'disabled' : ''} onclick="window.changeCategoryPage(${categoryPage - 1})"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+      `;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="btn-page ${categoryPage === i ? 'active' : ''}" onclick="window.changeCategoryPage(${i})">${i}</button>`;
+      }
+      html += `
+            <button class="btn-page" ${categoryPage === totalPages ? 'disabled' : ''} onclick="window.changeCategoryPage(${categoryPage + 1})"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+          </div>
+        </div>
+      `;
+      paginationEl.innerHTML = html;
+    }
+
+    if (window.lucide) lucide.createIcons();
+    
+    // Bind listeners
+    document.querySelectorAll('.category-status-toggle').forEach(t => t.addEventListener('change', (e) => {
+      const id = t.getAttribute('data-id');
+      const all = KioskStore.getCategories();
+      const cat = all.find(x => x.id === id);
+      if (cat) {
+        cat.status = t.checked ? 'active' : 'inactive';
+        KioskStore.setCategories(all);
+        renderCategories();
+      }
+    }));
     bindEvents('.btn-view-category', showCategoryDetails);
     bindEvents('.btn-edit-category', editCategory);
     bindEvents('.btn-delete-category', deleteCategory);
   }
 
-  // 4.7 Products CRUD
+  // 4.6 Products CRUD
+  let productPage = 1;
+  let productPageSize = 10;
+
   function renderProducts() {
     const products = KioskStore.getProducts() || [];
     const categories = KioskStore.getCategories() || [];
     const tbody = document.getElementById('products-tbody');
+    const paginationEl = document.getElementById('products-pagination');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    const search = document.getElementById('product-search').value.toLowerCase();
-    const cVal = document.getElementById('product-category-filter').value;
-
-    const filterCatDropdown = document.getElementById('product-category-filter');
-    if (filterCatDropdown.options.length === 1) {
-      categories.forEach(c => {
-        filterCatDropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-      });
-      const mSelect = document.getElementById('product-category');
-      mSelect.innerHTML = '';
-      categories.forEach(c => {
-        mSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-      });
-    }
+    const search = (document.getElementById('product-search')?.value || '').toLowerCase();
+    const current = activeFilters.products || { status: [], category: [], availability: [] };
 
     const filtered = products.filter(p => {
       const matchSearch = p.name.toLowerCase().includes(search);
-      const matchCat = cVal === 'all' || p.categoryId === cVal;
-      return matchSearch && matchCat;
+      let matchStatus = true;
+      if (current.status && current.status.length > 0) {
+        matchStatus = false;
+        if (current.status.includes('active') && p.status === 'active') matchStatus = true;
+        if (current.status.includes('inactive') && p.status !== 'active') matchStatus = true;
+      }
+      let matchCat = true;
+      if (current.category && current.category.length > 0) {
+        matchCat = current.category.includes(p.categoryId);
+      }
+      let matchAvail = true;
+      if (current.availability && current.availability.length > 0) {
+        matchAvail = false;
+        if (current.availability.includes('available') && p.available) matchAvail = true;
+        if (current.availability.includes('unavailable') && !p.available) matchAvail = true;
+      }
+      return matchSearch && matchStatus && matchCat && matchAvail;
     });
 
-    filtered.forEach(p => {
-      const cat = categories.find(c => c.id === p.categoryId)?.name || p.categoryId;
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / productPageSize));
+    if (productPage > totalPages) productPage = totalPages;
+    const startIdx = (productPage - 1) * productPageSize;
+    const pageItems = filtered.slice(startIdx, startIdx + productPageSize);
+
+    if (totalItems === 0) {
+      const hasSearch = search.length > 0;
+      const hasFilters = (current.status && current.status.length > 0) || (current.category && current.category.length > 0) || (current.availability && current.availability.length > 0);
+      let emptyHtml = '';
+      if (hasSearch) {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No products match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('product-search').value='';document.getElementById('product-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+      } else if (hasFilters) {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No products match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.products={status:[],category:[],availability:[]};updateFilterChips('products');renderProducts();">Clear Filters</button></div></td></tr>`;
+      } else {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="package" class="empty-icon"></i><h4>No products found</h4><p>Add products to your catalog.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-product').click();">Add Product</button></div></td></tr>`;
+      }
+      tbody.innerHTML = emptyHtml;
+      if (paginationEl) paginationEl.innerHTML = '';
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+
+    pageItems.forEach(p => {
+      const cat = categories.find(c => c.id === p.categoryId) || { name: 'Uncategorized' };
+      const isActive = p.status === 'active';
+      const statusBadge = isActive
+        ? '<span class="badge touch-badge">Active</span>'
+        : '<span class="badge danger-badge">Inactive</span>';
+      
+      const isAvail = p.available;
+      const availBadge = isAvail
+        ? '<span class="badge desktop-badge" style="color:var(--green);">In Stock</span>'
+        : '<span class="badge desktop-badge" style="color:var(--danger);">Out of Stock</span>';
+
       tbody.innerHTML += `
         <tr>
-          <td><strong>${p.name}</strong></td>
-          <td><img src="${p.image}" class="thumbnail" alt="product"></td>
-          <td><span class="badge desktop-badge">${cat}</span></td>
-          <td><strong>$${p.price.toFixed(2)}</strong></td>
-          <td><span class="badge ${p.available ? 'touch-badge' : 'danger-badge'}">${p.available ? 'Available' : 'Out of stock'}</span></td>
-          <td><span class="badge touch-badge">${p.status.toUpperCase()}</span></td>
+          <td><strong style="display:block;line-height:1.3;">${p.name}</strong></td>
           <td>
-            <button class="btn btn-secondary btn-view-product" data-id="${p.id}">View</button>
-            <button class="btn btn-secondary btn-edit-product" data-id="${p.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-product" data-id="${p.id}">Delete</button>
+            <img src="${p.image}" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-admin); display: block;"
+              alt="${p.name}" onerror="this.outerHTML='<div class=\\'thumb-placeholder\\'><i data-lucide=\\'image\\' style=\\'width:18px;height:18px;\\'></i></div>'">
+          </td>
+          <td><span class="badge desktop-badge">${cat.name}</span></td>
+          <td><strong>$${p.price.toFixed(2)}</strong></td>
+          <td>${availBadge}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              ${statusBadge}
+              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
+                <input type="checkbox" class="product-status-toggle" data-id="${p.id}" ${isActive ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn-action btn-view-product" data-id="${p.id}" title="View Details">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-edit-product" data-id="${p.id}" title="Edit">
+                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-action-danger btn-delete-product" data-id="${p.id}" title="Delete">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
     });
 
+    if (paginationEl) {
+      const showFrom = startIdx + 1;
+      const showTo = Math.min(startIdx + productPageSize, totalItems);
+      
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.85rem; color: var(--text-admin-muted);">
+          <div>Showing ${showFrom}-${showTo} of ${totalItems}</div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn-page" ${productPage === 1 ? 'disabled' : ''} onclick="window.changeProductPage(${productPage - 1})"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+      `;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="btn-page ${productPage === i ? 'active' : ''}" onclick="window.changeProductPage(${i})">${i}</button>`;
+      }
+      html += `
+            <button class="btn-page" ${productPage === totalPages ? 'disabled' : ''} onclick="window.changeProductPage(${productPage + 1})"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+          </div>
+        </div>
+      `;
+      paginationEl.innerHTML = html;
+    }
+
+    if (window.lucide) lucide.createIcons();
+    
+    // Bind listeners
+    document.querySelectorAll('.product-status-toggle').forEach(t => t.addEventListener('change', (e) => {
+      const id = t.getAttribute('data-id');
+      const all = KioskStore.getProducts();
+      const p = all.find(x => x.id === id);
+      if (p) {
+        p.status = t.checked ? 'active' : 'inactive';
+        KioskStore.setProducts(all);
+        renderProducts();
+      }
+    }));
     bindEvents('.btn-view-product', showProductDetails);
     bindEvents('.btn-edit-product', editProduct);
     bindEvents('.btn-delete-product', deleteProduct);
   }
 
-  // 4.8 Customisations CRUD
+  window.changeProductPage = function(p) {
+    productPage = p;
+    renderProducts();
+  }
+
+  // 4.7 Modifiers CRUD
+  let modifierPage = 1;
+  let modifierPageSize = 10;
+
   function renderModifiers() {
+    // We will extract unique modifiers from products
     const products = KioskStore.getProducts() || [];
+    let modifiersMap = new Map();
+    
+    products.forEach(p => {
+      if (p.addOns) {
+        p.addOns.forEach(a => {
+          if (!modifiersMap.has(a.name)) {
+            modifiersMap.set(a.name, { id: 'mod-' + a.name.toLowerCase().replace(/\\s+/g, '-'), name: a.name, type: 'Add-on', price: a.price, required: false, applicable: [p.name], status: 'active' });
+          } else {
+            modifiersMap.get(a.name).applicable.push(p.name);
+          }
+        });
+      }
+      if (p.variants) {
+        p.variants.forEach(v => {
+          if (!modifiersMap.has(v.name)) {
+            modifiersMap.set(v.name, { id: 'mod-' + v.name.toLowerCase().replace(/\\s+/g, '-'), name: v.name, type: 'Variant', price: 0, required: true, applicable: [p.name], status: 'active' });
+          } else {
+            modifiersMap.get(v.name).applicable.push(p.name);
+          }
+        });
+      }
+    });
+    
+    const modifiers = Array.from(modifiersMap.values());
+    
     const tbody = document.getElementById('modifiers-tbody');
+    const paginationEl = document.getElementById('customisation-pagination');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    let modifiers = KioskStore.get('kiosk_modifiers') || [];
+    const search = (document.getElementById('modifier-search')?.value || '').toLowerCase();
+    const current = activeFilters.customisation || { status: [], type: [], required: [] };
 
-    modifiers.forEach(m => {
-      const linked = m.productIds.map(pid => products.find(p => p.id === pid)?.name || pid).join(', ');
+    const filtered = modifiers.filter(m => {
+      const matchSearch = m.name.toLowerCase().includes(search);
+      let matchStatus = true;
+      if (current.status && current.status.length > 0) {
+        matchStatus = false;
+        if (current.status.includes('active') && m.status === 'active') matchStatus = true;
+        if (current.status.includes('inactive') && m.status !== 'active') matchStatus = true;
+      }
+      return matchSearch && matchStatus;
+    });
+
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / modifierPageSize));
+    if (modifierPage > totalPages) modifierPage = totalPages;
+    const startIdx = (modifierPage - 1) * modifierPageSize;
+    const pageItems = filtered.slice(startIdx, startIdx + modifierPageSize);
+
+    if (totalItems === 0) {
+      const hasSearch = search.length > 0;
+      const hasFilters = current.status && current.status.length > 0;
+      let emptyHtml = '';
+      if (hasSearch) {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No modifiers match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('modifier-search').value='';document.getElementById('modifier-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+      } else if (hasFilters) {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No modifiers match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.customisation={status:[]};updateFilterChips('customisation');renderModifiers();">Clear Filters</button></div></td></tr>`;
+      } else {
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="sliders-horizontal" class="empty-icon"></i><h4>No customisations found</h4><p>Create variants or add-ons for products.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-modifier').click();">Add Modifier</button></div></td></tr>`;
+      }
+      tbody.innerHTML = emptyHtml;
+      if (paginationEl) paginationEl.innerHTML = '';
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+
+    pageItems.forEach(m => {
+      const isActive = m.status === 'active';
+      const statusBadge = isActive
+        ? '<span class="badge touch-badge">Active</span>'
+        : '<span class="badge danger-badge">Inactive</span>';
+      
+      const reqBadge = m.required
+        ? '<span class="badge warning-badge">Required</span>'
+        : '<span class="badge desktop-badge">Optional</span>';
 
       tbody.innerHTML += `
         <tr>
-          <td><strong>${m.name}</strong></td>
-          <td><span class="badge desktop-badge">${m.type.toUpperCase()}</span></td>
-          <td>+$${m.price.toFixed(2)}</td>
-          <td>${m.required ? 'Mandatory' : 'Optional'}</td>
-          <td style="font-size:0.8rem; max-width: 150px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${linked || 'None'}</td>
-          <td><span class="badge touch-badge">${m.status.toUpperCase()}</span></td>
+          <td><strong style="display:block;line-height:1.3;">${m.name}</strong></td>
+          <td>${m.type}</td>
+          <td>${m.price > 0 ? '+$' + m.price.toFixed(2) : 'Varies'}</td>
+          <td>${reqBadge}</td>
+          <td><span class="badge desktop-badge">${m.applicable.length} Products</span></td>
           <td>
-            <button class="btn btn-secondary btn-view-modifier" data-id="${m.id}">View</button>
-            <button class="btn btn-secondary btn-edit-modifier" data-id="${m.id}">Edit</button>
-            <button class="btn btn-danger btn-delete-modifier" data-id="${m.id}">Delete</button>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              ${statusBadge}
+              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
+                <input type="checkbox" class="modifier-status-toggle" data-id="${m.id}" ${isActive ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
+              <button class="btn-action btn-view-modifier" data-id="${m.id}" title="View Details">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-edit-modifier" data-id="${m.id}" title="Edit">
+                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-action-danger btn-delete-modifier" data-id="${m.id}" title="Delete">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
     });
 
+    if (paginationEl) {
+      const showFrom = startIdx + 1;
+      const showTo = Math.min(startIdx + modifierPageSize, totalItems);
+      
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.85rem; color: var(--text-admin-muted);">
+          <div>Showing ${showFrom}-${showTo} of ${totalItems}</div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn-page" ${modifierPage === 1 ? 'disabled' : ''} onclick="window.changeModifierPage(${modifierPage - 1})"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+      `;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="btn-page ${modifierPage === i ? 'active' : ''}" onclick="window.changeModifierPage(${i})">${i}</button>`;
+      }
+      html += `
+            <button class="btn-page" ${modifierPage === totalPages ? 'disabled' : ''} onclick="window.changeModifierPage(${modifierPage + 1})"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+          </div>
+        </div>
+      `;
+      paginationEl.innerHTML = html;
+    }
+
+    if (window.lucide) lucide.createIcons();
+    
+    // Bind listeners
+    document.querySelectorAll('.modifier-status-toggle').forEach(t => t.addEventListener('change', (e) => {
+      // Stub for updating modifiers, normally would save to store
+      const id = t.getAttribute('data-id');
+      renderModifiers();
+    }));
     bindEvents('.btn-view-modifier', showModifierDetails);
     bindEvents('.btn-edit-modifier', editModifier);
     bindEvents('.btn-delete-modifier', deleteModifier);
   }
+
+  window.changeModifierPage = function(p) {
+    modifierPage = p;
+    renderModifiers();
+  };
 
   // 4.9 Taxes CRUD
   function renderTaxes() {
@@ -2734,7 +3053,40 @@
   document.getElementById('tv-search').addEventListener('input', renderTVs);
 
   document.getElementById('product-search').addEventListener('input', renderProducts);
-  document.getElementById('product-category-filter').addEventListener('change', renderProducts);
+  const productSearchClear = document.getElementById('product-search-clear');
+  if (productSearchClear) {
+    productSearchClear.addEventListener('click', () => {
+      document.getElementById('product-search').value = '';
+      productPage = 1;
+      renderProducts();
+    });
+  }
+  
+  const categorySearchClear = document.getElementById('category-search-clear');
+  if (categorySearchClear) {
+    categorySearchClear.addEventListener('click', () => {
+      document.getElementById('category-search').value = '';
+      categoryPage = 1;
+      renderCategories();
+    });
+  }
+  document.getElementById('category-search').addEventListener('input', () => {
+    categoryPage = 1;
+    renderCategories();
+  });
+  
+  const modifierSearchClear = document.getElementById('modifier-search-clear');
+  if (modifierSearchClear) {
+    modifierSearchClear.addEventListener('click', () => {
+      document.getElementById('modifier-search').value = '';
+      modifierPage = 1;
+      renderModifiers();
+    });
+  }
+  document.getElementById('modifier-search').addEventListener('input', () => {
+    modifierPage = 1;
+    renderModifiers();
+  });
 
   document.getElementById('order-search').addEventListener('input', renderOrders);
   document.getElementById('order-filter-status').addEventListener('change', renderOrders);

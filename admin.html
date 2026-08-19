@@ -1192,58 +1192,91 @@
 </section>
 <!-- PLAYLIST FORM TAB -->
 <section class="tab-pane" id="tab-playlist-form">
-<div class="compact-form-container" style="max-width: 1000px; margin: 0 auto; padding-bottom: 2rem;">
-<h3 id="playlist-form-title-h3" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem;">Add Playlist</h3>
-<form id="playlist-form-page">
-<input id="playlist-page-id" type="hidden">
-<h4 class="form-section-title">Basic Information</h4>
-<div class="form-group">
-<label for="playlist-page-name">Playlist Name *</label>
-<input class="form-control" id="playlist-page-name" required="" type="text">
-</div>
-<div class="form-group">
-<label>Transition Animation</label>
-<select class="form-select" id="playlist-page-transition">
-<option value="fade">Fade Cross</option>
-<option value="slide">Slide Horizontal</option>
-</select>
-</div>
-<h4 class="form-section-title">Configuration</h4>
-<div class="form-group">
-<label>Select Banners to Loop</label>
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.5rem;">
-        
-        <!-- Available Banners Column -->
-        <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin);">
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-            <input type="text" id="playlist-banners-search" class="form-control" placeholder="Search available banners..." style="margin-bottom: 0; font-size: 0.85rem; padding: 0.4rem; height: auto;">
-          </div>
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.8rem;">
-            <button type="button" class="btn btn-secondary" id="btn-playlist-select-all" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Select All</button>
-            <button type="button" class="btn btn-secondary" id="btn-playlist-clear-all" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Clear All</button>
-          </div>
-          <label style="font-size: 0.8rem; color: var(--text-admin-muted); display: block; margin-bottom: 0.5rem;">Available Banners</label>
-          <div id="playlist-banners-available" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem;">
-            <!-- Populated via JS -->
-          </div>
-        </div>
+<div class="compact-form-container" style="max-width: 1200px; margin: 0 auto; padding-bottom: 2rem;">
+  <form id="playlist-form-page">
+    <input id="playlist-page-id" type="hidden">
 
-        <!-- Selected Banners Column (Playback Order) -->
-        <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin);">
-          <label style="font-size: 0.8rem; color: var(--text-admin-muted); display: block; margin-bottom: 0.75rem;">Selected Banners (Playback Order)</label>
-          <div id="playlist-banners-selected" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem;">
-            <!-- Populated via JS -->
-          </div>
+    <!-- Header Actions at Top -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-icon-only btn-cancel-playlist" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0;" title="Go Back">
+          <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        </button>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.15rem;">Admin Control &gt; Playlists</div>
+          <h3 id="playlist-form-title-h3" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Playlist</h3>
         </div>
-
       </div>
-</div>
-</div>
-<div style="display: flex; gap: 1rem; margin-top: 1.5rem; border-top: 1px solid var(--border-admin); padding-top: 1.5rem;">
-  <button class="btn btn-secondary btn-cancel-playlist" type="button">Cancel</button>
-  <button class="btn btn-primary" type="submit">Save Playlist</button>
-</div>
-</form>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-cancel-playlist" type="button" style="height: 38px;">Cancel</button>
+        <button class="btn btn-primary" type="submit" style="height: 38px;">Save Playlist</button>
+      </div>
+    </div>
+
+    <!-- Master Grid Layout -->
+    <div style="display: grid; grid-template-columns: 7fr 3fr; gap: 1.5rem; align-items: start;">
+      
+      <!-- Left side (70%): inputs -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Basic Information</h4>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="playlist-page-name" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Playlist Name *</label>
+            <input class="form-control" id="playlist-page-name" required="" type="text" style="height: 38px;">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Transition Animation</label>
+            <select class="form-select" id="playlist-page-transition" style="height: 38px;">
+              <option value="fade">Fade Cross</option>
+              <option value="slide">Slide Horizontal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Configuration</h4>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; display: block;">Select Banners to Loop</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              
+              <!-- Available Banners Column -->
+              <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin);">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <input type="text" id="playlist-banners-search" class="form-control" placeholder="Search available banners..." style="margin-bottom: 0; font-size: 0.85rem; padding: 0.4rem; height: auto;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.8rem;">
+                  <button type="button" class="btn btn-secondary" id="btn-playlist-select-all" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Select All</button>
+                  <button type="button" class="btn btn-secondary" id="btn-playlist-clear-all" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Clear All</button>
+                </div>
+                <label style="font-size: 0.8rem; color: var(--text-admin-muted); display: block; margin-bottom: 0.5rem;">Available Banners</label>
+                <div id="playlist-banners-available" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem;">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <!-- Selected Banners Column (Playback Order) -->
+              <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin);">
+                <label style="font-size: 0.8rem; color: var(--text-admin-muted); display: block; margin-bottom: 0.75rem;">Selected Banners (Playback Order)</label>
+                <div id="playlist-banners-selected" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem;">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side (30%): Config Preview -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Playlist Info</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-admin-muted);">Create dynamic loops by grouping multiple scheduled banners together. Assign this playlist to any TV screen to begin broadcasting.</p>
+        </div>
+      </div>
+
+    </div>
+  </form>
 </div>
 </section>
 <section class="tab-pane" id="tab-playlist-view">
@@ -1907,62 +1940,84 @@
   </div>
 </div>
 </section><section class="tab-pane" id="tab-modifier-form">
-<div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-  <div>
-    <button class="btn-icon btn-dashboard-nav" data-tab="customisation" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
-    <span id="modifier-form-title-h3" style="font-size: 1.25rem; font-weight: 600; display: inline-block; vertical-align: middle;">Add Modifier</span>
-  </div>
-</div>
-<div class="compact-form-container" style="max-width: 1000px; margin: 0 auto;">
+<div class="compact-form-container" style="max-width: 1200px; margin: 0 auto; padding-bottom: 2rem;">
   <form id="modifier-form-page">
     <input id="modifier-page-id" type="hidden">
-    <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border-admin); margin-bottom: 1.5rem;">
-      <h3 style="font-size: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem;">Basic Information</h3>
-      <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
-        
-<div class="form-group">
-  <label class="form-label">Modifier Name *</label>
-  <input class="form-control" id="modifier-page-name" required="" type="text" placeholder="e.g. Extra Cheese">
-</div>
-<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <div class="form-group">
-    <label class="form-label">Price Addition ($) *</label>
-    <input class="form-control" id="modifier-page-price" required="" type="number" step="0.01" min="0">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Selection Type *</label>
-    <select class="form-select" id="modifier-page-type" required="">
-      <option value="addon">Add-on (Checkbox)</option>
-      <option value="radio">Choice (Radio Button)</option>
-    </select>
-  </div>
-</div>
-<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <div class="form-group">
-    <label class="form-label">Requirement</label>
-    <select class="form-select" id="modifier-page-required">
-      <option value="false">Optional</option>
-      <option value="true">Required</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Status</label>
-    <select class="form-select" id="modifier-page-status">
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-    </select>
-  </div>
-</div>
 
+    <!-- Header Actions at Top -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-icon-only btn-dashboard-nav" data-tab="customisation" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0;" title="Go Back">
+          <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        </button>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.15rem;">Admin Control &gt; Customisation</div>
+          <h3 id="modifier-form-title-h3" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Modifier</h3>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-dashboard-nav" data-tab="customisation" type="button" style="height: 38px;">Cancel</button>
+        <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem; height: 38px;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Modifier</button>
       </div>
     </div>
-    <div style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-admin);">
-      <button class="btn btn-secondary btn-dashboard-nav" data-tab="customisation" type="button">Cancel</button>
-      <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Modifier</button>
+
+    <!-- Master Grid Layout -->
+    <div style="display: grid; grid-template-columns: 7fr 3fr; gap: 1.5rem; align-items: start;">
+      
+      <!-- Left side (70%): inputs -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Basic Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Modifier Name *</label>
+              <input class="form-control" id="modifier-page-name" required="" type="text" placeholder="e.g. Extra Cheese" style="height: 38px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Price Addition ($) *</label>
+                <input class="form-control" id="modifier-page-price" required="" type="number" step="0.01" min="0" style="height: 38px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Selection Type *</label>
+                <select class="form-select" id="modifier-page-type" required="" style="height: 38px;">
+                  <option value="addon">Add-on (Checkbox)</option>
+                  <option value="radio">Choice (Radio Button)</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Requirement</label>
+                <select class="form-select" id="modifier-page-required" style="height: 38px;">
+                  <option value="false">Optional</option>
+                  <option value="true">Required</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Status</label>
+                <select class="form-select" id="modifier-page-status" style="height: 38px;">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side (30%): Config Preview -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Modifier Summary</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-admin-muted);">Add customization items like toppings, size, or crust options. You can link these modifiers to products in the customization matrix.</p>
+        </div>
+      </div>
+
     </div>
   </form>
 </div>
-    </section><section class="tab-pane" id="tab-modifier-view">
+</section><section class="tab-pane" id="tab-modifier-view">
 <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
   <div>
     <button class="btn-icon btn-dashboard-nav" data-tab="customisation" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
@@ -2001,49 +2056,71 @@
   </div>
 </div>
     </section><section class="tab-pane" id="tab-tax-form">
-<div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-  <div>
-    <button class="btn-icon btn-dashboard-nav" data-tab="taxes" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
-    <span id="tax-form-title-h3" style="font-size: 1.25rem; font-weight: 600; display: inline-block; vertical-align: middle;">Add Tax</span>
-  </div>
-</div>
-<div class="compact-form-container" style="max-width: 1000px; margin: 0 auto;">
+<div class="compact-form-container" style="max-width: 1200px; margin: 0 auto; padding-bottom: 2rem;">
   <form id="tax-form-page">
     <input id="tax-page-id" type="hidden">
-    <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border-admin); margin-bottom: 1.5rem;">
-      <h3 style="font-size: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem;">Basic Information</h3>
-      <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
-        
-<div class="form-group">
-  <label class="form-label">Tax Name *</label>
-  <input class="form-control" id="tax-page-name" required="" type="text" placeholder="e.g. CGST">
-</div>
-<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <div class="form-group">
-    <label class="form-label">Rate (%) *</label>
-    <input class="form-control" id="tax-page-rate" required="" type="number" step="0.01" min="0" max="100">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Status</label>
-    <select class="form-select" id="tax-page-status">
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-    </select>
-  </div>
-</div>
 
+    <!-- Header Actions at Top -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-icon-only btn-dashboard-nav" data-tab="taxes" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0;" title="Go Back">
+          <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        </button>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.15rem;">Admin Control &gt; Taxes</div>
+          <h3 id="tax-form-title-h3" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Tax</h3>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-dashboard-nav" data-tab="taxes" type="button" style="height: 38px;">Cancel</button>
+        <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem; height: 38px;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Tax</button>
       </div>
     </div>
-    <div style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-admin);">
-      <button class="btn btn-secondary btn-dashboard-nav" data-tab="taxs" type="button">Cancel</button>
-      <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Tax</button>
+
+    <!-- Master Grid Layout -->
+    <div style="display: grid; grid-template-columns: 7fr 3fr; gap: 1.5rem; align-items: start;">
+      
+      <!-- Left side (70%): inputs -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Basic Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Tax Name *</label>
+              <input class="form-control" id="tax-page-name" required="" type="text" placeholder="e.g. CGST" style="height: 38px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Rate (%) *</label>
+                <input class="form-control" id="tax-page-rate" required="" type="number" step="0.01" min="0" max="100" style="height: 38px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Status</label>
+                <select class="form-select" id="tax-page-status" style="height: 38px;">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side (30%): Config Preview -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Tax Summary</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-admin-muted);">Configure local tax rules that will be dynamically calculated during checkout on the self-ordering kiosks.</p>
+        </div>
+      </div>
+
     </div>
   </form>
 </div>
     </section><section class="tab-pane" id="tab-tax-view">
 <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
   <div>
-    <button class="btn-icon btn-dashboard-nav" data-tab="taxs" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
+    <button class="btn-icon btn-dashboard-nav" data-tab="taxes" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
     <span style="font-size: 1.25rem; font-weight: 600; display: inline-block; vertical-align: middle;">View Tax</span>
   </div>
   <div style="display: flex; gap: 0.75rem;">
@@ -2071,63 +2148,85 @@
   </div>
 </div>
     </section><section class="tab-pane" id="tab-discount-form">
-<div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-  <div>
-    <button class="btn-icon btn-dashboard-nav" data-tab="discounts" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
-    <span id="discount-form-title-h3" style="font-size: 1.25rem; font-weight: 600; display: inline-block; vertical-align: middle;">Add Discount</span>
-  </div>
-</div>
-<div class="compact-form-container" style="max-width: 1000px; margin: 0 auto;">
+<div class="compact-form-container" style="max-width: 1200px; margin: 0 auto; padding-bottom: 2rem;">
   <form id="discount-form-page">
     <input id="discount-page-id" type="hidden">
-    <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border-admin); margin-bottom: 1.5rem;">
-      <h3 style="font-size: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem;">Basic Information</h3>
-      <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
-        
-<div class="form-group">
-  <label class="form-label">Discount Name *</label>
-  <input class="form-control" id="discount-page-name" required="" type="text" placeholder="e.g. Summer Special">
-</div>
-<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <div class="form-group">
-    <label class="form-label">Discount Value *</label>
-    <input class="form-control" id="discount-page-value" required="" type="number" step="0.01" min="0">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Type *</label>
-    <select class="form-select" id="discount-page-type" required="">
-      <option value="percentage">Percentage (%)</option>
-      <option value="fixed">Fixed Amount ($)</option>
-    </select>
-  </div>
-</div>
-<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <div class="form-group">
-    <label class="form-label">Start Date</label>
-    <input class="form-control" id="discount-page-start-date" type="date">
-  </div>
-  <div class="form-group">
-    <label class="form-label">End Date</label>
-    <input class="form-control" id="discount-page-end-date" type="date">
-  </div>
-</div>
-<div class="form-group">
-  <label class="form-label">Status</label>
-  <select class="form-select" id="discount-page-status">
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-  </select>
-</div>
 
+    <!-- Header Actions at Top -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-icon-only btn-dashboard-nav" data-tab="discounts" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0;" title="Go Back">
+          <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        </button>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.15rem;">Admin Control &gt; Discounts</div>
+          <h3 id="discount-form-title-h3" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Discount</h3>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-dashboard-nav" data-tab="discounts" type="button" style="height: 38px;">Cancel</button>
+        <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem; height: 38px;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Discount</button>
       </div>
     </div>
-    <div style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-admin);">
-      <button class="btn btn-secondary btn-dashboard-nav" data-tab="discounts" type="button">Cancel</button>
-      <button class="btn btn-primary" type="submit" style="display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="save" style="width:16px;height:16px;"></i> Save Discount</button>
+
+    <!-- Master Grid Layout -->
+    <div style="display: grid; grid-template-columns: 7fr 3fr; gap: 1.5rem; align-items: start;">
+      
+      <!-- Left side (70%): inputs -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Basic Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Discount Name *</label>
+              <input class="form-control" id="discount-page-name" required="" type="text" placeholder="e.g. Summer Special" style="height: 38px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Discount Value *</label>
+                <input class="form-control" id="discount-page-value" required="" type="number" step="0.01" min="0" style="height: 38px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Type *</label>
+                <select class="form-select" id="discount-page-type" required="" style="height: 38px;">
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount ($)</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Start Date</label>
+                <input class="form-control" id="discount-page-start-date" type="date" style="height: 38px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">End Date</label>
+                <input class="form-control" id="discount-page-end-date" type="date" style="height: 38px;">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; display: block;">Status</label>
+              <select class="form-select" id="discount-page-status" style="height: 38px;">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side (30%): Config Preview -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="card" style="background: var(--bg-admin-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-admin);">
+          <h4 style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">Discount Summary</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-admin-muted);">Configure promotional discounts, percentage markdowns, or fixed coupon items to drive sales during campaign windows.</p>
+        </div>
+      </div>
+
     </div>
   </form>
 </div>
-    </section><section class="tab-pane" id="tab-discount-view">
+</section><section class="tab-pane" id="tab-discount-view">
 <div class="pane-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
   <div>
     <button class="btn-icon btn-dashboard-nav" data-tab="discounts" style="margin-right: 0.5rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem;"><i data-lucide="arrow-left"></i></button>
@@ -2311,9 +2410,14 @@
     
     <!-- Header Actions at Top -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-admin); padding-bottom: 1rem;">
-      <div>
-        <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.25rem;">Admin Control &gt; Categories</div>
-        <h3 id="category-form-title" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Category</h3>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-icon-only btn-dashboard-nav" data-tab="categories" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0;" title="Go Back">
+          <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        </button>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-admin-muted); margin-bottom: 0.15rem;">Admin Control &gt; Categories</div>
+          <h3 id="category-form-title" style="font-size: 1.25rem; font-weight: 600; margin: 0;">Add Category</h3>
+        </div>
       </div>
       <div style="display: flex; gap: 0.75rem;">
         <button class="btn btn-secondary btn-dashboard-nav" data-tab="categories" type="button" style="height: 38px;">Cancel</button>

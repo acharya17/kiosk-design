@@ -2984,7 +2984,7 @@
     document.getElementById('category-desc-input').value = c.description || '';
     document.getElementById('category-status-input').checked = c.status === 'active';
 
-    document.getElementById('category-form-title').textContent = 'Edit Category';
+    let hidden = document.getElementById('category-page-id'); if (!hidden) { hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.id = 'category-page-id'; document.getElementById('tab-category-form').appendChild(hidden); } hidden.value = c.id; document.getElementById('category-form-title').textContent = 'Edit Category';
 
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-category-form').classList.add('active');
@@ -4157,4 +4157,63 @@
   loadKioskConfigs();
   refreshAll();
 
+  // Automatic header visibility and navigation state sync based on active tab pane
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        const target = mutation.target;
+        if (target.classList.contains('active')) {
+          const mainHeader = document.querySelector('.main-header');
+          const isMainTab = ['tab-dashboard', 'tab-banners', 'tab-playlists', 'tab-tvs', 'tab-fallback', 'tab-categories', 'tab-products', 'tab-customisation', 'tab-taxes', 'tab-discounts', 'tab-kiosks', 'tab-kiosk-config', 'tab-payments', 'tab-payment-history', 'tab-orders', 'tab-devices', 'tab-roles'].includes(target.id);
+          
+          if (mainHeader) {
+            mainHeader.style.display = isMainTab ? 'block' : 'none';
+          }
+          
+          // Also sync sidebar active state!
+          if (isMainTab) {
+            const tabName = target.id.replace('tab-', '');
+            tabLinks.forEach(l => {
+              if (l.getAttribute('data-tab') === tabName) {
+                l.classList.add('active');
+              } else {
+                l.classList.remove('active');
+              }
+            });
+          } else {
+            // It's a sub-pane. Find parent tab if possible to keep it highlighted in sidebar.
+            const id = target.id;
+            let parentTab = '';
+            if (id.includes('banner')) parentTab = 'banners';
+            else if (id.includes('playlist')) parentTab = 'playlists';
+            else if (id.includes('tv')) parentTab = 'tvs';
+            else if (id.includes('category')) parentTab = 'categories';
+            else if (id.includes('product')) parentTab = 'products';
+            else if (id.includes('modifier')) parentTab = 'customisation';
+            else if (id.includes('tax')) parentTab = 'taxes';
+            else if (id.includes('discount')) parentTab = 'discounts';
+            else if (id.includes('kiosk-config')) parentTab = 'kiosk-config';
+            else if (id.includes('kiosk')) parentTab = 'kiosks';
+            else if (id.includes('payment-history')) parentTab = 'payment-history';
+            
+            if (parentTab) {
+              tabLinks.forEach(l => {
+                if (l.getAttribute('data-tab') === parentTab) {
+                  l.classList.add('active');
+                } else {
+                  l.classList.remove('active');
+                }
+              });
+            }
+          }
+        }
+      }
+    });
+  });
+
+  tabPanes.forEach(pane => {
+    observer.observe(pane, { attributes: true });
+  });
+
 })();
+

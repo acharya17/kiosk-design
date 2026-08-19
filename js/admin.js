@@ -2799,70 +2799,117 @@
 
   function renderPlaylistBannersSelect() {
     const banners = KioskStore.getBanners() || [];
-    const checklist = document.getElementById('playlist-page-banners-checklist');
-    checklist.innerHTML = '';
+    const searchVal = (document.getElementById('playlist-banners-search')?.value || '').toLowerCase();
     
+    const availableContainer = document.getElementById('playlist-banners-available');
+    const selectedContainer = document.getElementById('playlist-banners-selected');
+    
+    if (!availableContainer || !selectedContainer) return;
+    
+    availableContainer.innerHTML = '';
+    selectedContainer.innerHTML = '';
+
     // Render selected banners in order
     if (currentEditingPlaylistBanners.length > 0) {
-      checklist.innerHTML += `<div style="margin-bottom: 0.5rem; color: var(--text-admin-muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase;">Selected Banners (In Playback Order)</div>`;
       currentEditingPlaylistBanners.forEach((bid, index) => {
         const b = banners.find(x => x.id === bid);
         if (!b) return;
-        checklist.innerHTML += `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.5rem; margin-bottom: 0.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin);">
+        selectedContainer.innerHTML += `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-admin); margin-bottom: 0.25rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <span style="background: var(--primary); color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">${index + 1}</span>
               <img src="${b.image}" style="width: 40px; height: 24px; object-fit: cover; border-radius: 4px;" alt="Banner">
-              <span>${b.title} <small style="color: var(--text-admin-muted);">(Priority ${b.priority})</small></span>
+              <span style="font-size:0.85rem;">${b.title}</span>
             </div>
             <div style="display: flex; gap: 0.25rem;">
-              <button type="button" class="btn-action" onclick="moveBannerOrder(${index}, -1)" ${index === 0 ? 'disabled' : ''} style="padding: 0.2rem;"><i data-lucide="arrow-up" style="width:14px;height:14px;"></i></button>
-              <button type="button" class="btn-action" onclick="moveBannerOrder(${index}, 1)" ${index === currentEditingPlaylistBanners.length - 1 ? 'disabled' : ''} style="padding: 0.2rem;"><i data-lucide="arrow-down" style="width:14px;height:14px;"></i></button>
-              <button type="button" class="btn-action btn-action-danger" onclick="togglePlaylistBanner('${b.id}')" style="padding: 0.2rem;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+              <button type="button" class="btn-action btn-move-up" data-index="${index}" ${index === 0 ? 'disabled' : ''} style="padding: 0.2rem;"><i data-lucide="arrow-up" style="width:14px;height:14px;"></i></button>
+              <button type="button" class="btn-action btn-move-down" data-index="${index}" ${index === currentEditingPlaylistBanners.length - 1 ? 'disabled' : ''} style="padding: 0.2rem;"><i data-lucide="arrow-down" style="width:14px;height:14px;"></i></button>
+              <button type="button" class="btn-action btn-action-danger btn-remove-playlist-banner" data-id="${b.id}" style="padding: 0.2rem;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
             </div>
           </div>
         `;
       });
     } else {
-      checklist.innerHTML += `<div style="padding: 1rem; text-align: center; color: var(--text-admin-muted); border: 1px dashed var(--border-admin); border-radius: var(--radius-sm); margin-bottom: 1rem;">No banners selected. Add banners below.</div>`;
+      selectedContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-admin-muted); border: 1px dashed var(--border-admin); border-radius: var(--radius-sm);">No banners selected.</div>';
     }
 
-    // Render unselected banners
-    const unselected = banners.filter(b => !currentEditingPlaylistBanners.includes(b.id));
+    // Render unselected available banners with search filter
+    const unselected = banners.filter(b => !currentEditingPlaylistBanners.includes(b.id) && b.title.toLowerCase().includes(searchVal));
     if (unselected.length > 0) {
-      checklist.innerHTML += `<div style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-admin-muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase;">Available Banners</div>`;
       unselected.forEach(b => {
-        checklist.innerHTML += `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem; margin-bottom: 0.25rem; border-radius: var(--radius-sm);">
-            <div style="display: flex; align-items: center; gap: 0.5rem; opacity: 0.8;">
+        availableContainer.innerHTML += `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; opacity: 0.85;">
               <img src="${b.image}" style="width: 40px; height: 24px; object-fit: cover; border-radius: 4px;" alt="Banner">
-              <span>${b.title} <small style="color: var(--text-admin-muted);">(Priority ${b.priority})</small></span>
+              <span style="font-size:0.85rem;">${b.title} <small style="color: var(--text-admin-muted);">(Priority ${b.priority})</small></span>
             </div>
-            <button type="button" class="btn btn-secondary" onclick="togglePlaylistBanner('${b.id}')" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add</button>
+            <button type="button" class="btn btn-secondary btn-add-playlist-banner" data-id="${b.id}" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add</button>
           </div>
         `;
       });
+    } else {
+      availableContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-admin-muted);">No available banners found.</div>';
     }
 
     if (window.lucide) lucide.createIcons();
+
+    // Bind event handlers
+    document.querySelectorAll('.btn-add-playlist-banner').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        currentEditingPlaylistBanners.push(id);
+        renderPlaylistBannersSelect();
+      });
+    });
+
+    document.querySelectorAll('.btn-remove-playlist-banner').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        currentEditingPlaylistBanners = currentEditingPlaylistBanners.filter(x => x !== id);
+        renderPlaylistBannersSelect();
+      });
+    });
+
+    document.querySelectorAll('.btn-move-up').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.getAttribute('data-index'));
+        if (index > 0) {
+          const temp = currentEditingPlaylistBanners[index];
+          currentEditingPlaylistBanners[index] = currentEditingPlaylistBanners[index - 1];
+          currentEditingPlaylistBanners[index - 1] = temp;
+          renderPlaylistBannersSelect();
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-move-down').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.getAttribute('data-index'));
+        if (index < currentEditingPlaylistBanners.length - 1) {
+          const temp = currentEditingPlaylistBanners[index];
+          currentEditingPlaylistBanners[index] = currentEditingPlaylistBanners[index + 1];
+          currentEditingPlaylistBanners[index + 1] = temp;
+          renderPlaylistBannersSelect();
+        }
+      });
+    });
   }
 
-  window.togglePlaylistBanner = function(bid) {
-    if (currentEditingPlaylistBanners.includes(bid)) {
-      currentEditingPlaylistBanners = currentEditingPlaylistBanners.filter(id => id !== bid);
-    } else {
-      currentEditingPlaylistBanners.push(bid);
-    }
+  // Bind input and select/clear controls once
+  document.getElementById('playlist-banners-search')?.addEventListener('input', () => {
     renderPlaylistBannersSelect();
-  };
+  });
 
-  window.moveBannerOrder = function(index, direction) {
-    if (index + direction < 0 || index + direction >= currentEditingPlaylistBanners.length) return;
-    const temp = currentEditingPlaylistBanners[index];
-    currentEditingPlaylistBanners[index] = currentEditingPlaylistBanners[index + direction];
-    currentEditingPlaylistBanners[index + direction] = temp;
+  document.getElementById('btn-playlist-select-all')?.addEventListener('click', () => {
+    const banners = KioskStore.getBanners() || [];
+    currentEditingPlaylistBanners = banners.map(b => b.id);
     renderPlaylistBannersSelect();
-  };
+  });
+
+  document.getElementById('btn-playlist-clear-all')?.addEventListener('click', () => {
+    currentEditingPlaylistBanners = [];
+    renderPlaylistBannersSelect();
+  });
 
   document.getElementById('btn-add-playlists').addEventListener('click', () => {
     document.getElementById('playlist-form-page').reset();

@@ -569,16 +569,59 @@
   }
 
   function calculateCheckoutTotals() {
-    const config = KioskStore.getConfig() || { taxPercent: 8, discountPercent: 0 };
     const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    const taxBase = subtotal;
-    const taxAmount = taxBase * (config.taxPercent / 100);
+    
+    // Fetch active discounts
+    const discounts = KioskStore.getDiscounts() || [];
+    const todayStr = new Date().toISOString().split('T')[0];
+    let discountAmount = 0;
+    let appliedDiscountName = '';
+
+    const activeDiscounts = discounts.filter(d => {
+      if (d.status !== 'active') return false;
+      if (d.startDate && d.startDate > todayStr) return false;
+      if (d.endDate && d.endDate < todayStr) return false;
+      return true;
+    });
+
+    if (activeDiscounts.length > 0) {
+      // Find the highest discount
+      activeDiscounts.forEach(d => {
+        let amt = 0;
+        if (d.type === 'percentage') {
+          amt = subtotal * (d.value / 100);
+        } else {
+          amt = d.value;
+        }
+        if (amt > discountAmount) {
+          discountAmount = amt;
+          appliedDiscountName = d.name;
+        }
+      });
+    }
+
+    // Fetch active taxes
+    const taxes = KioskStore.getTaxes() || [];
+    const activeTaxes = taxes.filter(t => t.status === 'active');
+    const taxPercent = activeTaxes.reduce((sum, t) => sum + t.percentage, 0);
+
+    const taxBase = Math.max(0, subtotal - discountAmount);
+    const taxAmount = taxBase * (taxPercent / 100);
     const grandTotal = taxBase + taxAmount;
 
-    document.getElementById('calc-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('calc-tax-percent').textContent = config.taxPercent;
-    document.getElementById('calc-tax').textContent = `$${taxAmount.toFixed(2)}`;
-    document.getElementById('calc-grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+    document.getElementById('calc-subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    
+    const discRow = document.getElementById('calc-discount-row');
+    if (discountAmount > 0) {
+      discRow.style.display = 'flex';
+      document.getElementById('calc-discount').textContent = `-₹${discountAmount.toFixed(2)}`;
+    } else {
+      discRow.style.display = 'none';
+    }
+
+    document.getElementById('calc-tax-percent').textContent = taxPercent.toString();
+    document.getElementById('calc-tax').textContent = `₹${taxAmount.toFixed(2)}`;
+    document.getElementById('calc-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
     
     const payBtn = document.getElementById('btn-pay-now');
     payBtn.setAttribute('data-payable', grandTotal.toFixed(2));
@@ -629,11 +672,16 @@
     }
 
     // Render payment methods dynamically
-    const config = KioskStore.getConfig();
     const payContainer = document.getElementById('payment-options-container');
     payContainer.innerHTML = '';
+
+    const storePayments = KioskStore.getPayments() || [];
+    const isEnabled = (methodId) => {
+      const p = storePayments.find(item => item.id === methodId);
+      return p ? p.status === 'enabled' : false;
+    };
     
-    if (config.paymentMethods.upi) {
+    if (isEnabled('upi')) {
       payContainer.innerHTML += `
         <button class="payment-card" data-method="upi" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
           <i data-lucide="smartphone" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
@@ -641,7 +689,7 @@
         </button>
       `;
     }
-    if (config.paymentMethods.card) {
+    if (isEnabled('card')) {
       payContainer.innerHTML += `
         <button class="payment-card" data-method="card" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
           <i data-lucide="credit-card" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
@@ -649,7 +697,7 @@
         </button>
       `;
     }
-    if (config.paymentMethods.cash) {
+    if (isEnabled('cash')) {
       payContainer.innerHTML += `
         <button class="payment-card" data-method="cash" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
           <i data-lucide="banknote" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
@@ -760,10 +808,35 @@
   function completeCheckoutOrder(method, recoveredOrderId = null) {
     document.getElementById('payment-status-modal').style.display = 'none';
 
-    const config = KioskStore.getConfig();
     const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    const taxAmount = subtotal * (config.taxPercent / 100);
-    const grandTotal = subtotal + taxAmount;
+    
+    // Fetch active discounts
+    const discounts = KioskStore.getDiscounts() || [];
+    const todayStr = new Date().toISOString().split('T')[0];
+    let discountAmount = 0;
+    const activeDiscounts = discounts.filter(d => {
+      if (d.status !== 'active') return false;
+      if (d.startDate && d.startDate > todayStr) return false;
+      if (d.endDate && d.endDate < todayStr) return false;
+      return true;
+    });
+    if (activeDiscounts.length > 0) {
+      activeDiscounts.forEach(d => {
+        let amt = 0;
+        if (d.type === 'percentage') amt = subtotal * (d.value / 100);
+        else amt = d.value;
+        if (amt > discountAmount) discountAmount = amt;
+      });
+    }
+
+    // Fetch active taxes
+    const taxes = KioskStore.getTaxes() || [];
+    const activeTaxes = taxes.filter(t => t.status === 'active');
+    const taxPercent = activeTaxes.reduce((sum, t) => sum + t.percentage, 0);
+
+    const taxBase = Math.max(0, subtotal - discountAmount);
+    const taxAmount = taxBase * (taxPercent / 100);
+    const grandTotal = taxBase + taxAmount;
 
     const orderId = recoveredOrderId || ('ord-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 4));
     const orderToken = (KioskStore.getOrders().length + 101).toString();
@@ -774,6 +847,9 @@
       kioskId: activeKioskId,
       dateTime: new Date().toISOString(),
       items: cart,
+      subtotalAmount: subtotal,
+      discountAmount: discountAmount,
+      taxAmount: taxAmount,
       totalAmount: grandTotal,
       paymentMethod: method,
       paymentStatus: method === 'cash' ? 'pending_counter' : 'success',
@@ -784,7 +860,7 @@
     KioskStore.addOrder(order);
 
     document.getElementById('conf-order-id').textContent = orderId;
-    document.getElementById('conf-grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+    document.getElementById('conf-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
 
     const itemsContainer = document.getElementById('conf-items-list');
     itemsContainer.innerHTML = '';
@@ -792,7 +868,7 @@
       itemsContainer.innerHTML += `
         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
           <span>${item.quantity}x ${item.name}</span>
-          <span>$${(item.unitPrice * item.quantity).toFixed(2)}</span>
+          <span>₹${(item.unitPrice * item.quantity).toFixed(2)}</span>
         </div>
       `;
     });

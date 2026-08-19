@@ -9,12 +9,12 @@
   --text-admin-main: #0f172a;    /* Deep slate for strong text hierarchy */
   --text-admin-muted: #64748b;   /* Soft slate for captions/muted labels */
 
-  --bg-kiosk: #fafafa;
+  --bg-kiosk: #f8fafc;
   --bg-kiosk-card: #ffffff;
-  --text-kiosk-main: #1e293b;
+  --text-kiosk-main: #0f172a;
   --text-kiosk-muted: #64748b;
-  --primary-kiosk: #10b981; /* Emerald */
-  --primary-kiosk-light: #ecfdf5;
+  --primary-kiosk: #4f46e5; /* Indigo matching Admin Panel primary color */
+  --primary-kiosk-light: rgba(79, 70, 229, 0.05);
   --accent-kiosk: #f59e0b; /* Amber */
   --accent-kiosk-light: #fffbeb;
 
@@ -34,7 +34,7 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  --shadow-glow-kiosk: 0 10px 30px -10px rgba(16, 185, 129, 0.2);
+  --shadow-glow-kiosk: 0 10px 30px -10px rgba(79, 70, 229, 0.2);
   --shadow-glow-danger: 0 10px 30px -10px rgba(239, 68, 68, 0.2);
 
   /* Border Radius - Modern 14px-18px soft corners */

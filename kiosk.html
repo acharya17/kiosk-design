@@ -28,90 +28,111 @@
     </div>
 
     <!-- Screen 1: Welcome Splash -->
-    <section id="screen-welcome" class="kiosk-screen active">
-      <div class="welcome-overlay">
-        <div class="brand-header">
-          <h1 id="welcome-store-name">Antigravity Bistro</h1>
-          <p>Fresh &bull; Fast &bull; Gourmet</p>
+    <section id="screen-welcome" class="kiosk-screen active" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+      <div class="welcome-overlay" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 4rem 2rem; text-align: center;">
+        <div class="brand-header" style="margin-top: 2rem;">
+          <h1 id="welcome-store-name" style="font-family: var(--font-display); font-size: 2.75rem; font-weight: 800; color: var(--text-admin-main);">Antigravity Bistro</h1>
+          <p style="color: var(--text-admin-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.85rem; margin-top: 0.5rem;">Fresh &bull; Fast &bull; Gourmet</p>
         </div>
 
-        <div class="welcome-body">
-          <div class="touch-cta" id="btn-start-order">
-            <div class="ripple-circle"></div>
-            <i data-lucide="pointer" class="touch-icon" style="width: 32px; height: 32px;"></i>
-            <h2>Start Order</h2>
-            <p>Start your gourmet experience</p>
+        <div class="welcome-body" style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+          <div class="touch-cta" id="btn-start-order" style="background: #ffffff; width: 220px; height: 220px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); border: 2px solid var(--border-admin); cursor: pointer; position: relative; transition: transform 0.2s;">
+            <div class="ripple-circle" style="position: absolute; inset: 0; border: 4px solid var(--primary); border-radius: 50%; opacity: 0.1; animation: ripple 2s infinite ease-out;"></div>
+            <i data-lucide="pointer" class="touch-icon" style="width: 36px; height: 36px; color: var(--primary); margin-bottom: 0.5rem;"></i>
+            <h2 style="font-family: var(--font-display); font-size: 1.35rem; color: var(--text-admin-main); font-weight: 800; margin: 0 0 0.25rem 0;">Start Order</h2>
+            <p style="font-size: 0.8rem; color: var(--text-admin-muted); margin: 0;">Touch screen to begin</p>
           </div>
         </div>
 
-        <div class="welcome-footer">
-          <div class="language-selector" id="kiosk-language-selector" style="display: none;">
-            <!-- Rendered by JS if configured -->
-          </div>
-          <p class="footer-tag">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span> | <a href="#" id="btn-kiosk-logout" style="color: rgba(255,255,255,0.4); text-decoration: underline; font-size: 0.8rem; margin-left: 0.25rem;">Exit Kiosk</a></p>
+        <div class="welcome-footer" style="display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
+          <p class="footer-tag" style="font-size: 0.75rem; color: var(--text-admin-muted); font-weight: 500;">Kiosk ID: <span id="kiosk-id-display">kiosk-01</span> | <a href="#" id="btn-kiosk-logout" style="color: var(--danger); text-decoration: none; font-weight: 600; margin-left: 0.25rem;">Exit Kiosk</a></p>
         </div>
       </div>
     </section>
 
-    <!-- Screen 2: Dine In / Takeaway Selection (Merged/Skipped if config says so, but keeping for flow) -->
-    <section id="screen-order-type" class="kiosk-screen">
-      <div class="kiosk-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
-        <button class="back-btn btn-to-welcome" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back</button>
-        <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.5rem;">Antigravity Bistro</h2>
+    <!-- Screen 2: Dine In / Takeaway Selection -->
+    <section id="screen-order-type" class="kiosk-screen" style="background: #f8fafc;">
+      <div class="kiosk-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
+        <button class="back-btn btn-to-welcome" style="display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-size: 0.95rem; cursor: pointer; color: var(--text-admin-main); font-weight: 600;"><i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Back</button>
+        <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-admin-main);">Antigravity Bistro</h2>
         <span></span>
       </div>
-      <div class="screen-content flex-center">
-        <h2 class="title-prompt">Where will you be eating today?</h2>
-        <div class="order-type-grid">
-          <button class="type-card" id="btn-type-dinein">
-            <i data-lucide="utensils" class="type-icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--primary);"></i>
-            <h3>Dine In</h3>
-            <p>Enjoy your meal warm inside our cozy dining hall</p>
+      <div class="screen-content flex-center" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+        <h2 class="title-prompt" style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; color: var(--text-admin-main); margin-bottom: 2.5rem; text-align: center;">Choose Dining Preference</h2>
+        <div class="order-type-grid" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%; max-width: 360px;">
+          <button class="type-card" id="btn-type-dinein" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.2s; outline: none; width: 100%;">
+            <i data-lucide="utensils" class="type-icon" style="width: 36px; height: 36px; margin: 0 auto 0.75rem auto; color: var(--primary); display: block;"></i>
+            <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-admin-main); margin-bottom: 0.35rem;">Dine In</h3>
+            <p style="font-size: 0.85rem; color: var(--text-admin-muted); line-height: 1.4; margin: 0;">Enjoy your meal inside our restaurant</p>
           </button>
-          <button class="type-card" id="btn-type-takeaway">
-            <i data-lucide="shopping-bag" class="type-icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--primary);"></i>
-            <h3>Takeaway</h3>
-            <p>Freshly packed to go in eco-friendly packaging</p>
+          <button class="type-card" id="btn-type-takeaway" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.2s; outline: none; width: 100%;">
+            <i data-lucide="shopping-bag" class="type-icon" style="width: 36px; height: 36px; margin: 0 auto 0.75rem auto; color: var(--primary); display: block;"></i>
+            <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-admin-main); margin-bottom: 0.35rem;">Takeaway</h3>
+            <p style="font-size: 0.85rem; color: var(--text-admin-muted); line-height: 1.4; margin: 0;">Freshly packed to go</p>
           </button>
         </div>
       </div>
     </section>
 
     <!-- Screen 3: Main Browsing Experience -->
-    <section id="screen-browse" class="kiosk-screen">
+    <section id="screen-browse" class="kiosk-screen" style="background: #f8fafc;">
       <!-- Top Bar matching Prompt Requirements -->
-      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <div class="header-left" style="display: flex; align-items: center; gap: 1rem;">
-          <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="store" style="width:24px;height:24px;"></i> Antigravity Bistro</h2>
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
+        <div class="header-left" style="display: flex; align-items: center;">
+          <h2 class="header-logo" style="margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-admin-main); display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="store" style="width:20px;height:20px;color:var(--primary);"></i> Bistro</h2>
         </div>
-        <div class="header-center search-box" style="flex: 1; max-width: 400px; position: relative;">
-          <i data-lucide="search" class="search-icon" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-admin-muted);"></i>
-          <input type="text" id="product-search" placeholder="Search products..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 50px; border: 1px solid var(--border-admin); font-size: 1rem; box-sizing: border-box;">
-          <i data-lucide="x" id="product-search-clear" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-admin-muted); cursor: pointer; display: none;"></i>
+        <div class="header-center search-box" style="flex: 1; max-width: 260px; position: relative; margin: 0 0.75rem;">
+          <i data-lucide="search" class="search-icon" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted);"></i>
+          <input type="text" id="product-search" placeholder="Search menu..." style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.25rem; border-radius: var(--radius-full); border: 1px solid var(--border-admin); font-size: 0.85rem; background: #f8fafc; outline: none;">
+          <i data-lucide="x" id="product-search-clear" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-admin-muted); cursor: pointer; display: none;"></i>
         </div>
-        <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem;">
-          <button class="btn-icon" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-admin);">
-            <i data-lucide="languages" style="width: 24px; height: 24px;"></i>
-          </button>
-          <button class="btn-icon" id="btn-header-cart" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-admin); position: relative;">
-            <i data-lucide="shopping-cart" style="width: 28px; height: 28px;"></i>
-            <span class="cart-count-badge" id="header-cart-count" style="position: absolute; top: -8px; right: -8px; background: var(--primary); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;">0</span>
+        <div class="header-right" style="display: flex; align-items: center; gap: 0.75rem;">
+          <button class="btn-icon" id="btn-header-cart" style="display: flex; align-items: center; background: transparent; border: none; cursor: pointer; color: var(--text-admin-main); position: relative; padding: 0.25rem;">
+            <i data-lucide="shopping-cart" style="width: 24px; height: 24px;"></i>
+            <span class="cart-count-badge" id="header-cart-count" style="position: absolute; top: -6px; right: -6px; background: var(--primary); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700;">0</span>
           </button>
         </div>
       </header>
 
-      <!-- Grid layout with Sidebar -->
-      <div class="browse-layout" style="display: flex; height: calc(100vh - 73px);">
-        <aside class="category-sidebar" style="background: #f9fafb; border-right: 1px solid var(--border-admin); width: 220px; padding: 1rem 0; overflow-y: auto;">
-          <div class="category-list" id="kiosk-category-list">
-            <!-- Dynamically populated -->
-          </div>
-        </aside>
+      <!-- Main Browse layout inside one flex screen -->
+      <div class="browse-layout" style="display: flex; flex-direction: column; height: calc(100vh - 61px); overflow: hidden;">
         
-        <main class="product-grid-container" style="padding: 2rem; overflow-y: auto; background: #fff; flex: 1;">
-          <div id="browse-type-badge" style="display: inline-block; padding: 0.25rem 0.75rem; background: rgba(0,0,0,0.05); border-radius: 20px; font-size: 0.85rem; margin-bottom: 1rem; color: var(--text-admin-muted);">Dine In</div>
-          <h2 class="category-title" id="current-category-title" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 2rem; color: var(--text-admin);">All Products</h2>
-          <div class="products-grid" id="kiosk-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
+        <!-- Header / Category selector row -->
+        <div style="background: #ffffff; padding: 0.75rem 1.25rem 0.5rem 1.25rem; border-bottom: 1px solid var(--border-admin);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h2 id="current-category-title" style="margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--text-admin-main);">Our Menu</h2>
+            <div id="browse-type-badge" style="padding: 0.25rem 0.6rem; background: var(--primary-kiosk-light); border-radius: var(--radius-full); font-size: 0.75rem; color: var(--primary); font-weight: 700; border: 1px solid rgba(79, 70, 229, 0.15);">Dine In</div>
+          </div>
+          
+          <!-- Category Chips Horizontal Scroll -->
+          <div id="kiosk-category-list" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch;">
+            <!-- Dynamically populated category chips -->
+          </div>
+        </div>
+
+        <!-- Filter, Search and Sort mini-bar -->
+        <div style="background: #ffffff; border-bottom: 1px solid var(--border-admin); padding: 0.5rem 1.25rem; display: flex; gap: 0.5rem; align-items: center;">
+          <div class="search-box" style="flex: 1; position: relative; background: #f8fafc; border: 1px solid var(--border-admin); border-radius: var(--radius-md); display: flex; align-items: center; padding: 0.4rem 0.75rem;">
+            <i data-lucide="search" style="width: 16px; height: 16px; color: var(--text-admin-muted); margin-right: 0.5rem;"></i>
+            <input type="text" id="product-search" placeholder="Search products..." style="background: transparent; border: none; outline: none; font-size: 0.85rem; width: 100%; color: var(--text-admin-main);">
+            <i data-lucide="x" id="product-search-clear" style="width: 16px; height: 16px; color: var(--text-admin-muted); cursor: pointer; display: none;"></i>
+          </div>
+          <button class="btn btn-secondary" id="btn-kiosk-filter" style="height: 34px; padding: 0 0.75rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem; border-radius: var(--radius-md); font-weight: 600;">
+            <i data-lucide="list-filter" style="width: 15px; height: 15px;"></i> Filter
+          </button>
+          <button class="btn btn-secondary" id="btn-kiosk-sort" style="height: 34px; padding: 0 0.75rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem; border-radius: var(--radius-md); font-weight: 600;">
+            <i data-lucide="arrow-up-down" style="width: 15px; height: 15px;"></i> Sort
+          </button>
+        </div>
+
+        <!-- Active Filters Row -->
+        <div id="active-filter-chips-row" style="background: #f8fafc; padding: 0.5rem 1.25rem; display: none; gap: 0.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border-admin);">
+          <!-- Active filter chips render here -->
+        </div>
+
+        <!-- Product Grid Area (4 per row on wide, 2 on medium, 1 on small) -->
+        <main class="product-grid-container" style="padding: 1.25rem; overflow-y: auto; background: #f8fafc; flex: 1;">
+          <div class="products-grid" id="kiosk-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; padding-bottom: 2rem;">
             <!-- Dynamically populated -->
           </div>
         </main>
@@ -119,106 +140,106 @@
     </section>
 
     <!-- Screen 4: Cart and Checkout Details -->
-    <section id="screen-cart" class="kiosk-screen">
-      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <button class="back-btn" id="btn-cart-back" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back to Menu</button>
-        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shopping-cart"></i> Cart</h2>
+    <section id="screen-cart" class="kiosk-screen" style="background: #f8fafc;">
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
+        <button class="back-btn" id="btn-cart-back" style="display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-size: 0.95rem; cursor: pointer; color: var(--text-admin-main); font-weight: 600;"><i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Menu</button>
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; font-weight: 700; color: var(--text-admin-main);"><i data-lucide="shopping-cart" style="color:var(--primary);width:20px;height:20px;"></i> Your Cart</h2>
         <span></span>
       </header>
 
-      <div class="cart-layout" style="display: flex; height: calc(100vh - 73px);">
+      <div class="cart-layout" style="display: flex; flex-direction: column; height: calc(100vh - 61px); overflow: hidden;">
         <!-- Scrollable items list -->
-        <div class="cart-items-panel" style="flex: 1; padding: 2rem; overflow-y: auto; background: #f9fafb;">
-          <div class="items-list" id="cart-items-list" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="cart-items-panel" style="flex: 1; padding: 1.25rem; overflow-y: auto; background: #f8fafc;">
+          <div class="items-list" id="cart-items-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <!-- Dynamically populated -->
           </div>
         </div>
 
         <!-- Checkout & Totals Summary Panel -->
-        <div class="cart-checkout-panel" style="width: 420px; background: #fff; padding: 2rem; border-left: 1px solid var(--border-admin); display: flex; flex-direction: column;">
-          <div class="totals-breakdown" style="flex: 1;">
-            <div class="total-row" style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-admin-muted);">
+        <div class="cart-checkout-panel" style="background: #fff; padding: 1.25rem; border-top: 1px solid var(--border-admin); display: flex; flex-direction: column; gap: 0.75rem; flex-shrink: 0; box-shadow: 0 -4px 10px rgba(0,0,0,0.03);">
+          <div class="totals-breakdown" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="total-row" style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-admin-muted);">
               <span>Subtotal</span>
               <span id="calc-subtotal">$0.00</span>
             </div>
-            <div class="total-row discount-row" id="calc-discount-row" style="display: none; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);">
+            <div class="total-row discount-row" id="calc-discount-row" style="display: none; justify-content: space-between; font-size: 0.9rem; color: var(--danger);">
               <span>Discount</span>
               <span id="calc-discount">-$0.00</span>
             </div>
-            <div class="total-row" style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-admin-muted);">
+            <div class="total-row" style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-admin-muted);">
               <span>Taxes (<span id="calc-tax-percent">0</span>%)</span>
               <span id="calc-tax">$0.00</span>
             </div>
-            <hr style="border: none; border-top: 2px dashed var(--border-admin); margin: 1.5rem 0;">
-            <div class="total-row grand-total" style="display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 700; color: var(--text-admin);">
+            <hr style="border: none; border-top: 1px dashed var(--border-admin); margin: 0.5rem 0;">
+            <div class="total-row grand-total" style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; color: var(--text-admin-main);">
               <span>Total</span>
               <span id="calc-grand-total">$0.00</span>
             </div>
           </div>
 
-          <form id="checkout-form" class="checkout-form" style="margin-top: 2rem;">
-            <button type="button" class="btn btn-secondary" id="btn-continue-ordering" style="width: 100%; margin-bottom: 1rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Continue Ordering</button>
-            <button type="submit" class="btn btn-primary" id="btn-pay-now" style="width: 100%; padding: 1rem; font-size: 1.2rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">Proceed to Payment <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i></button>
+          <form id="checkout-form" class="checkout-form" style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <button type="button" class="btn btn-secondary" id="btn-continue-ordering" style="flex: 1; padding: 0.75rem; font-size: 0.95rem; border-radius: var(--radius-md); font-weight: 600; height: 42px;">Add Items</button>
+            <button type="submit" class="btn btn-primary" id="btn-pay-now" style="flex: 2; padding: 0.75rem; font-size: 0.95rem; border-radius: var(--radius-md); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: 42px;">Checkout <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i></button>
           </form>
         </div>
       </div>
     </section>
 
     <!-- Screen 5: Simulated Payment Steps -->
-    <section id="screen-payment" class="kiosk-screen">
-      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid var(--border-admin); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <button class="back-btn" id="btn-payment-back" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-admin); font-weight: 600;"><i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> Back to Cart</button>
-        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="credit-card"></i> Payment</h2>
+    <section id="screen-payment" class="kiosk-screen" style="background: #f8fafc;">
+      <header class="kiosk-top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid var(--border-admin);">
+        <button class="back-btn" id="btn-payment-back" style="display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-size: 0.95rem; cursor: pointer; color: var(--text-admin-main); font-weight: 600;"><i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Cart</button>
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; font-weight: 700; color: var(--text-admin-main);"><i data-lucide="credit-card" style="color:var(--primary);width:20px;height:20px;"></i> Payment</h2>
         <span></span>
       </header>
 
-      <div class="payment-wrapper flex-center" style="height: calc(100vh - 73px); background: #f9fafb; flex-direction: column; padding: 2rem;">
-        <h2 class="title-prompt" style="font-size: 2rem; margin-bottom: 0.5rem;">Choose Payment Method</h2>
-        <p class="payable-indicator" style="font-size: 1.25rem; color: var(--text-admin-muted); margin-bottom: 3rem;">Total Payable: <strong id="payment-grand-total" style="color: var(--text-admin); font-size: 1.5rem;">$0.00</strong></p>
+      <div class="payment-wrapper flex-center" style="height: calc(100vh - 61px); background: #f8fafc; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem;">
+        <h2 class="title-prompt" style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--text-admin-main); margin-bottom: 0.25rem;">Select Payment Method</h2>
+        <p class="payable-indicator" style="font-size: 1rem; color: var(--text-admin-muted); margin-bottom: 2rem;">Total Payable: <strong id="payment-grand-total" style="color: var(--primary); font-size: 1.25rem;">$0.00</strong></p>
 
-        <div class="payment-options-grid" id="payment-options-container" style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+        <div class="payment-options-grid" id="payment-options-container" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 320px; justify-content: center;">
           <!-- Rendered by JS -->
         </div>
 
-        <button class="btn btn-secondary" id="btn-cancel-payment" style="margin-top: 4rem; padding: 1rem 2rem; font-size: 1.1rem; color: var(--danger); border-color: rgba(220, 38, 38, 0.2); background: rgba(220, 38, 38, 0.05); border-radius: var(--radius-md);">Cancel Order</button>
+        <button class="btn btn-secondary" id="btn-cancel-payment" style="margin-top: 2rem; padding: 0.75rem 1.5rem; font-size: 0.95rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); border-radius: var(--radius-md); font-weight: 600; height: 42px;">Cancel &amp; Edit Order</button>
       </div>
     </section>
 
     <!-- Screen 6: Order Confirmation -->
-    <section id="screen-confirmation" class="kiosk-screen">
-      <div class="confirmation-wrapper flex-center" style="height: 100vh; flex-direction: column; background: #fff;">
-        <i data-lucide="circle-check" style="width: 80px; height: 80px; color: var(--green); margin-bottom: 1.5rem;"></i>
-        <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Order Confirmed</h2>
-        <p class="subtitle" style="color: var(--text-admin-muted); font-size: 1.2rem; margin-bottom: 3rem;">Thank you for your order.</p>
+    <section id="screen-confirmation" class="kiosk-screen" style="background: #ffffff;">
+      <div class="confirmation-wrapper flex-center" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <i data-lucide="circle-check" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: var(--text-admin-main); margin-bottom: 0.25rem;">Order Confirmed</h2>
+        <p class="subtitle" style="color: var(--text-admin-muted); font-size: 0.95rem; margin-bottom: 2rem;">Thank you for your order.</p>
 
-        <div style="background: #f9fafb; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); padding: 3rem; width: 100%; max-width: 500px; text-align: center;">
-          <p style="color: var(--text-admin-muted); margin-bottom: 0.5rem; font-size: 1.1rem;">Order Number:</p>
-          <h1 id="conf-order-id" style="font-family: var(--font-display); font-size: 3rem; margin: 0 0 2rem 0; color: var(--primary);">ORD-1026</h1>
+        <div style="background: #f8fafc; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); padding: 1.5rem; width: 100%; max-width: 360px; text-align: center; box-shadow: var(--shadow-sm);">
+          <p style="color: var(--text-admin-muted); margin-bottom: 0.25rem; font-size: 0.95rem; font-weight: 500;">Your Token Number:</p>
+          <h1 id="conf-order-id" style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin: 0 0 1.5rem 0; color: var(--primary);">ORD-1026</h1>
           
-          <div style="text-align: left; margin-bottom: 2rem; max-height: 200px; overflow-y: auto;">
-            <h4 style="margin: 0 0 1rem 0; color: var(--text-admin-muted); border-bottom: 1px solid var(--border-admin); padding-bottom: 0.5rem;">Items</h4>
-            <div id="conf-items-list" style="font-size: 1.1rem; line-height: 1.6;">
+          <div style="text-align: left; margin-bottom: 1.5rem; max-height: 140px; overflow-y: auto;">
+            <h4 style="margin: 0 0 0.75rem 0; color: var(--text-admin-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 0.25rem;">Items Summary</h4>
+            <div id="conf-items-list" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-admin-main);">
               <!-- Populated dynamically -->
             </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.25rem; font-weight: 700; border-top: 2px dashed var(--border-admin); padding-top: 1.5rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; font-weight: 700; border-top: 1px dashed var(--border-admin); padding-top: 1rem; margin-bottom: 0.75rem; color: var(--text-admin-main);">
             <span>Total:</span>
             <span id="conf-grand-total">$0.00</span>
           </div>
           
-          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-admin-muted);">
-            <span>Payment:</span>
-            <span style="color: var(--green); font-weight: 600;">Successful</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-admin-muted); font-size: 0.9rem;">
+            <span>Payment Method:</span>
+            <span style="color: var(--success); font-weight: 600;">Successful</span>
           </div>
         </div>
 
-        <button class="btn btn-primary" id="btn-finish-order" style="margin-top: 3rem; padding: 1rem 3rem; font-size: 1.25rem; border-radius: var(--radius-lg);">Done</button>
+        <button class="btn btn-primary" id="btn-finish-order" style="margin-top: 2rem; padding: 0.75rem 2.5rem; font-size: 1.1rem; border-radius: var(--radius-md); font-weight: 700; width: 100%; max-width: 360px; height: 46px;">Done</button>
       </div>
     </section>
   </div>
-
-  <!-- PRODUCT DETAILS & CUSTOMIZER MODAL DRAWER -->
   <div class="modal" id="customizer-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="customizer-drawer" style="background: #fff; width: 90%; max-width: 600px; height: 90vh; border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <div class="customizer-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center;">
@@ -256,6 +277,104 @@
   </div>
 
   <!-- PAYMENT STATUS MODAL OVERLAY -->
+  
+  <!-- KIOSK PRODUCT FILTER MODAL -->
+  <div class="modal" id="kiosk-filter-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 1500; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+    <div style="background: #ffffff; width: 90%; max-width: 380px; border-radius: var(--radius-lg); border: 1px solid var(--border-admin); box-shadow: var(--shadow-xl); overflow: hidden; display: flex; flex-direction: column;">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-admin-main);">Filter</h3>
+        <button id="btn-close-kiosk-filter" style="background: none; border: none; cursor: pointer; color: var(--text-admin-muted); display: inline-flex; padding: 0.25rem;"><i data-lucide="x" style="width: 20px; height: 20px;"></i></button>
+      </div>
+      
+      <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; max-height: 60vh; overflow-y: auto;">
+        
+        <!-- Category Multi select -->
+        <div>
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-admin-muted); letter-spacing: 0.5px;">Category</h4>
+          <div id="filter-category-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Category options checkboxes dynamic -->
+          </div>
+        </div>
+
+        <!-- Price Range Checkbox group -->
+        <div>
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-admin-muted); letter-spacing: 0.5px;">Price Range</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-price" value="0-100" style="width: 16px; height: 16px; accent-color: var(--primary);"> Under $100
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-price" value="100-200" style="width: 16px; height: 16px; accent-color: var(--primary);"> $100–$200
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-price" value="200-300" style="width: 16px; height: 16px; accent-color: var(--primary);"> $200–$300
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-price" value="300-max" style="width: 16px; height: 16px; accent-color: var(--primary);"> $300+
+            </label>
+          </div>
+        </div>
+
+        <!-- Rating Filter options -->
+        <div>
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-admin-muted); letter-spacing: 0.5px;">Rating</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-rating" value="4" style="width: 16px; height: 16px; accent-color: var(--primary);"> 4★ &amp; above
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+              <input type="checkbox" name="filter-rating" value="3" style="width: 16px; height: 16px; accent-color: var(--primary);"> 3★ &amp; above
+            </label>
+          </div>
+        </div>
+
+        <!-- Availability Switch -->
+        <div>
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-admin-muted); letter-spacing: 0.5px;">Availability</h4>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+            <input type="checkbox" id="filter-availability-only" style="width: 16px; height: 16px; accent-color: var(--primary);"> Available Only
+          </label>
+        </div>
+
+      </div>
+
+      <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border-admin); background: #f8fafc; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+        <button id="btn-clear-kiosk-filter" style="background: none; border: none; cursor: pointer; color: var(--danger); font-size: 0.85rem; font-weight: 700; padding: 0.5rem 0;">Clear All</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="btn-cancel-kiosk-filter" class="btn btn-secondary" style="height: 36px; padding: 0 1rem; font-size: 0.85rem; border-radius: var(--radius-md); font-weight: 600;">Cancel</button>
+          <button id="btn-apply-kiosk-filter" class="btn btn-primary" style="height: 36px; padding: 0 1rem; font-size: 0.85rem; border-radius: var(--radius-md); font-weight: 700;">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KIOSK PRODUCT SORT POPUP -->
+  <div class="modal" id="kiosk-sort-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 1500; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+    <div style="background: #ffffff; width: 90%; max-width: 320px; border-radius: var(--radius-lg); border: 1px solid var(--border-admin); box-shadow: var(--shadow-xl); overflow: hidden; display: flex; flex-direction: column;">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-admin-main);">Sort By</h3>
+        <button id="btn-close-kiosk-sort" style="background: none; border: none; cursor: pointer; color: var(--text-admin-muted); display: inline-flex; padding: 0.25rem;"><i data-lucide="x" style="width: 20px; height: 20px;"></i></button>
+      </div>
+      
+      <div style="padding: 0.75rem 0; display: flex; flex-direction: column;">
+        <button class="sort-option-btn active" data-sort="popular" style="padding: 0.75rem 1.25rem; background: transparent; border: none; text-align: left; font-size: 0.95rem; color: var(--primary); font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          Popular <i data-lucide="circle-check" style="width: 16px; height: 16px;"></i>
+        </button>
+        <button class="sort-option-btn" data-sort="price-low" style="padding: 0.75rem 1.25rem; background: transparent; border: none; text-align: left; font-size: 0.95rem; color: var(--text-admin-main); font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          Price: Low → High
+        </button>
+        <button class="sort-option-btn" data-sort="price-high" style="padding: 0.75rem 1.25rem; background: transparent; border: none; text-align: left; font-size: 0.95rem; color: var(--text-admin-main); font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          Price: High → Low
+        </button>
+        <button class="sort-option-btn" data-sort="rating" style="padding: 0.75rem 1.25rem; background: transparent; border: none; text-align: left; font-size: 0.95rem; color: var(--text-admin-main); font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          Rating
+        </button>
+        <button class="sort-option-btn" data-sort="name" style="padding: 0.75rem 1.25rem; background: transparent; border: none; text-align: left; font-size: 0.95rem; color: var(--text-admin-main); font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          Name
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="modal" id="payment-status-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
     
     <!-- Processing State -->

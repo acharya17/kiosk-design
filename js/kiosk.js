@@ -158,34 +158,43 @@
     const container = document.getElementById('kiosk-category-list');
     container.innerHTML = '';
 
-    categories.forEach((cat, idx) => {
-      // Ensure we only use valid Lucide icons. Map old standard emojis to lucide if needed, 
-      // but assuming Admin panel uses lucide string (e.g. 'grid-2x2')
-      let iconName = 'grid-2x2';
-      
-      const isFirst = idx === 0 && !currentCategoryId;
-      if (isFirst) currentCategoryId = cat.id;
+    // Add 'All' Category Chip
+    const allChip = document.createElement('div');
+    allChip.className = `category-item ${!currentCategoryId ? 'active' : ''}`;
+    allChip.style.cssText = `padding: 0.4rem 1rem; border-radius: var(--radius-full); border: 1px solid var(--border-admin); font-size: 0.85rem; font-weight: ${!currentCategoryId ? '700' : '500'}; background: ${!currentCategoryId ? 'var(--primary)' : '#ffffff'}; color: ${!currentCategoryId ? '#ffffff' : 'var(--text-admin-muted)'}; cursor: pointer; white-space: nowrap; transition: all 0.2s;`;
+    allChip.innerHTML = `<span>All</span>`;
+    allChip.addEventListener('click', () => {
+      document.querySelectorAll('#kiosk-category-list .category-item').forEach(el => {
+        el.style.background = '#ffffff';
+        el.style.color = 'var(--text-admin-muted)';
+        el.style.fontWeight = '500';
+      });
+      allChip.style.background = 'var(--primary)';
+      allChip.style.color = '#ffffff';
+      allChip.style.fontWeight = '700';
+      currentCategoryId = null;
+      document.getElementById('current-category-title').textContent = 'Our Menu';
+      renderProductsGrid();
+    });
+    container.appendChild(allChip);
 
+    categories.forEach((cat) => {
       const item = document.createElement('div');
-      item.className = `category-item ${currentCategoryId === cat.id ? 'active' : ''}`;
+      const isSelected = currentCategoryId === cat.id;
+      item.className = `category-item ${isSelected ? 'active' : ''}`;
       item.setAttribute('data-id', cat.id);
-      item.style.cssText = `display: flex; flex-direction: column; align-items: center; padding: 1rem 0.5rem; text-align: center; border-radius: var(--radius-md); margin: 0 0.5rem 0.5rem; cursor: pointer; color: ${currentCategoryId === cat.id ? 'var(--primary)' : 'var(--text-admin-muted)'}; background: ${currentCategoryId === cat.id ? 'var(--primary-light)' : 'transparent'}; font-weight: ${currentCategoryId === cat.id ? '700' : '500'}; transition: all 0.2s;`;
+      item.style.cssText = `padding: 0.4rem 1rem; border-radius: var(--radius-full); border: 1px solid var(--border-admin); font-size: 0.85rem; font-weight: ${isSelected ? '700' : '500'}; background: ${isSelected ? 'var(--primary)' : '#ffffff'}; color: ${isSelected ? '#ffffff' : 'var(--text-admin-muted)'}; cursor: pointer; white-space: nowrap; transition: all 0.2s;`;
       
-      item.innerHTML = `
-        <i data-lucide="${iconName}" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
-        <span style="font-size: 0.85rem; line-height: 1.2;">${cat.name}</span>
-      `;
+      item.innerHTML = `<span>${cat.name}</span>`;
       
       item.addEventListener('click', () => {
-        document.querySelectorAll('.category-item').forEach(el => {
-          el.classList.remove('active');
+        document.querySelectorAll('#kiosk-category-list .category-item').forEach(el => {
+          el.style.background = '#ffffff';
           el.style.color = 'var(--text-admin-muted)';
-          el.style.background = 'transparent';
           el.style.fontWeight = '500';
         });
-        item.classList.add('active');
-        item.style.color = 'var(--primary)';
-        item.style.background = 'var(--primary-light)';
+        item.style.background = 'var(--primary)';
+        item.style.color = '#ffffff';
         item.style.fontWeight = '700';
         currentCategoryId = cat.id;
         document.getElementById('current-category-title').textContent = cat.name;
@@ -197,8 +206,182 @@
     const activeCat = categories.find(c => c.id === currentCategoryId);
     if (activeCat) {
       document.getElementById('current-category-title').textContent = activeCat.name;
+    } else if (!currentCategoryId) {
+      document.getElementById('current-category-title').textContent = 'Our Menu';
     }
+  }
+
+  // --- KIOSK SORT AND FILTER STATE ---
+  let activeFilters = {
+    categories: [],
+    prices: [],
+    ratings: [],
+    availabilityOnly: false
+  };
+  let activeSort = 'popular'; // 'popular' | 'price-low' | 'price-high' | 'rating' | 'name'
+
+  // Open modals
+  document.getElementById('btn-kiosk-filter').addEventListener('click', () => {
+    populateFilterCategoryCheckboxes();
+    document.getElementById('kiosk-filter-modal').style.display = 'flex';
+  });
+
+  document.getElementById('btn-kiosk-sort').addEventListener('click', () => {
+    document.getElementById('kiosk-sort-modal').style.display = 'flex';
+  });
+
+  // Close modals
+  document.getElementById('btn-close-kiosk-filter').addEventListener('click', () => {
+    document.getElementById('kiosk-filter-modal').style.display = 'none';
+  });
+  document.getElementById('btn-cancel-kiosk-filter').addEventListener('click', () => {
+    document.getElementById('kiosk-filter-modal').style.display = 'none';
+  });
+  document.getElementById('btn-close-kiosk-sort').addEventListener('click', () => {
+    document.getElementById('kiosk-sort-modal').style.display = 'none';
+  });
+
+  // Clear filters
+  document.getElementById('btn-clear-kiosk-filter').addEventListener('click', () => {
+    activeFilters.categories = [];
+    activeFilters.prices = [];
+    activeFilters.ratings = [];
+    activeFilters.availabilityOnly = false;
     
+    // Reset DOM controls
+    document.getElementById('filter-availability-only').checked = false;
+    document.querySelectorAll('input[name="filter-price"]').forEach(el => el.checked = false);
+    document.querySelectorAll('input[name="filter-rating"]').forEach(el => el.checked = false);
+    
+    applyFilters();
+    document.getElementById('kiosk-filter-modal').style.display = 'none';
+  });
+
+  // Apply filters
+  document.getElementById('btn-apply-kiosk-filter').addEventListener('click', () => {
+    // Read categories
+    activeFilters.categories = [];
+    document.querySelectorAll('input[name="filter-category"]:checked').forEach(el => {
+      activeFilters.categories.push(el.value);
+    });
+
+    // Read prices
+    activeFilters.prices = [];
+    document.querySelectorAll('input[name="filter-price"]:checked').forEach(el => {
+      activeFilters.prices.push(el.value);
+    });
+
+    // Read ratings
+    activeFilters.ratings = [];
+    document.querySelectorAll('input[name="filter-rating"]:checked').forEach(el => {
+      activeFilters.ratings.push(parseInt(el.value));
+    });
+
+    // Availability
+    activeFilters.availabilityOnly = document.getElementById('filter-availability-only').checked;
+
+    applyFilters();
+    document.getElementById('kiosk-filter-modal').style.display = 'none';
+  });
+
+  // Sort Options binding
+  document.querySelectorAll('.sort-option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-option-btn').forEach(el => {
+        el.classList.remove('active');
+        el.style.color = 'var(--text-admin-main)';
+        el.style.fontWeight = '500';
+        const icon = el.querySelector('i');
+        if (icon) icon.remove();
+      });
+      btn.classList.add('active');
+      btn.style.color = 'var(--primary)';
+      btn.style.fontWeight = '700';
+      btn.innerHTML += ` <i data-lucide="circle-check" style="width: 16px; height: 16px;"></i>`;
+      if (window.lucide) lucide.createIcons();
+
+      activeSort = btn.getAttribute('data-sort');
+      renderProductsGrid();
+      document.getElementById('kiosk-sort-modal').style.display = 'none';
+    });
+  });
+
+  function populateFilterCategoryCheckboxes() {
+    const categories = KioskStore.getCategories() || [];
+    const container = document.getElementById('filter-category-options');
+    container.innerHTML = '';
+    categories.forEach(cat => {
+      const isChecked = activeFilters.categories.includes(cat.id);
+      container.innerHTML += `
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-admin-main); cursor: pointer;">
+          <input type="checkbox" name="filter-category" value="${cat.id}" ${isChecked ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--primary);"> ${cat.name}
+        </label>
+      `;
+    });
+  }
+
+  function applyFilters() {
+    renderActiveFilterChips();
+    renderProductsGrid();
+  }
+
+  function renderActiveFilterChips() {
+    const row = document.getElementById('active-filter-chips-row');
+    row.innerHTML = '';
+    let count = 0;
+
+    // Categories chips
+    activeFilters.categories.forEach(catId => {
+      const cat = KioskStore.getCategories().find(c => c.id === catId);
+      if (cat) {
+        createChip(row, 'cat-' + catId, `Cat: ${cat.name}`, () => {
+          activeFilters.categories = activeFilters.categories.filter(id => id !== catId);
+          applyFilters();
+        });
+        count++;
+      }
+    });
+
+    // Prices chips
+    activeFilters.prices.forEach(pr => {
+      createChip(row, 'pr-' + pr, `Price: ${pr}`, () => {
+        activeFilters.prices = activeFilters.prices.filter(p => p !== pr);
+        applyFilters();
+      });
+      count++;
+    });
+
+    // Ratings chips
+    activeFilters.ratings.forEach(rt => {
+      createChip(row, 'rt-' + rt, `Rating: ${rt}★+`, () => {
+        activeFilters.ratings = activeFilters.ratings.filter(r => r !== rt);
+        applyFilters();
+      });
+      count++;
+    });
+
+    // Availability chip
+    if (activeFilters.availabilityOnly) {
+      createChip(row, 'avail-only', 'Available Only', () => {
+        activeFilters.availabilityOnly = false;
+        applyFilters();
+      });
+      count++;
+    }
+
+    if (count > 0) {
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
+  }
+
+  function createChip(parent, id, text, onRemove) {
+    const chip = document.createElement('div');
+    chip.style.cssText = 'display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(79, 70, 229, 0.05); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(79, 70, 229, 0.15); font-size: 0.75rem; font-weight: 600; cursor: pointer;';
+    chip.innerHTML = `${text} <i data-lucide="x" style="width: 12px; height: 12px;"></i>`;
+    chip.addEventListener('click', onRemove);
+    parent.appendChild(chip);
     if (window.lucide) lucide.createIcons();
   }
 
@@ -208,12 +391,60 @@
     const searchVal = document.getElementById('product-search').value.toLowerCase();
     container.innerHTML = '';
 
-    const filtered = products.filter(p => {
-      // If search is active, show across all categories, otherwise just current category
-      const matchesCat = searchVal ? true : p.categoryId === currentCategoryId;
-      const matchesSearch = p.name.toLowerCase().includes(searchVal) || (p.description && p.description.toLowerCase().includes(searchVal));
-      return matchesCat && matchesSearch;
+    // Apply Filter constraints
+    let filtered = products.filter(p => {
+      // 1. Search bar match
+      if (searchVal) {
+        const matchesSearch = p.name.toLowerCase().includes(searchVal) || (p.description && p.description.toLowerCase().includes(searchVal));
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Horizontal active Category selection (if no multi-select filter categories are active)
+      if (activeFilters.categories.length === 0 && currentCategoryId) {
+        if (p.categoryId !== currentCategoryId) return false;
+      }
+
+      // 3. Multi-select Filter category constraint
+      if (activeFilters.categories.length > 0) {
+        if (!activeFilters.categories.includes(p.categoryId)) return false;
+      }
+
+      // 4. Availability Filter constraint
+      if (activeFilters.availabilityOnly && !p.available) return false;
+
+      // 5. Ratings Filter constraint (default 5 stars if empty)
+      if (activeFilters.ratings.length > 0) {
+        const rating = p.rating || 5;
+        const matchesRating = activeFilters.ratings.some(r => rating >= r);
+        if (!matchesRating) return false;
+      }
+
+      // 6. Prices filter constraint
+      if (activeFilters.prices.length > 0) {
+        const price = p.price;
+        const matchesPrice = activeFilters.prices.some(pr => {
+          if (pr === '0-100') return price <= 100;
+          if (pr === '100-200') return price > 100 && price <= 200;
+          if (pr === '200-300') return price > 200 && price <= 300;
+          if (pr === '300-max') return price > 300;
+          return false;
+        });
+        if (!matchesPrice) return false;
+      }
+
+      return true;
     });
+
+    // Apply Sorting logic
+    if (activeSort === 'price-low') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (activeSort === 'price-high') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (activeSort === 'rating') {
+      filtered.sort((a, b) => (b.rating || 5) - (a.rating || 5));
+    } else if (activeSort === 'name') {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
 
     if (filtered.length === 0) {
       container.innerHTML = `
@@ -230,26 +461,38 @@
     filtered.forEach(p => {
       const card = document.createElement('div');
       card.className = `product-card ${!p.available ? 'oos' : ''}`;
-      card.style.cssText = `background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; ${!p.available ? 'opacity: 0.6;' : 'cursor: pointer;'}`;
+      card.style.cssText = `background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; box-shadow: var(--shadow-sm); position: relative; ${!p.available ? 'opacity: 0.6;' : 'cursor: pointer;'}`;
       
-      // Handle missing images
       const imageSrc = p.image || '';
-      const imageEl = imageSrc ? `<img src="${imageSrc}" style="width: 100%; height: 180px; object-fit: cover;" alt="${p.name}">` : `<div style="width: 100%; height: 180px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: var(--text-admin-muted);"><i data-lucide="image" style="width: 48px; height: 48px;"></i><span style="display:block; margin-top: 0.5rem;">Image unavailable</span></div>`;
+      const imageEl = imageSrc ? `<img src="${imageSrc}" style="width: 100%; height: 120px; object-fit: cover;" alt="${p.name}">` : `<div style="width: 100%; height: 120px; background: #f8fafc; border-bottom: 1px solid var(--border-admin); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-admin-muted);"><i data-lucide="image" style="width: 32px; height: 32px; opacity: 0.5;"></i></div>`;
+
+      // Rating stars markup helper
+      const starsCount = p.rating || 5;
+      let starsMarkup = '';
+      for (let i = 0; i < 5; i++) {
+        starsMarkup += `<i data-lucide="star" style="width: 12px; height: 12px; fill: ${i < starsCount ? 'var(--warning)' : 'none'}; color: ${i < starsCount ? 'var(--warning)' : 'var(--text-admin-muted)'}; margin-right: 1px;"></i>`;
+      }
 
       card.innerHTML = `
-        ${!p.available ? '<div style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; z-index: 10;">Unavailable</div>' : ''}
+        ${!p.available ? '<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(15, 23, 42, 0.85); color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; z-index: 10;">OOS</div>' : ''}
         ${imageEl}
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1;">
-          <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--text-admin);">${p.name}</h4>
-          ${p.description ? `<p style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-admin-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.description}</p>` : ''}
-          <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 1.25rem; font-weight: 700; color: var(--text-admin);">$${p.price.toFixed(2)}</span>
-            ${p.available ? `<button class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: var(--radius-full); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="plus" style="width: 16px; height: 16px;"></i> Add</button>` : `<span style="color: var(--text-admin-muted); font-weight: 600;">Unavailable</span>`}
+        <div style="padding: 0.75rem; display: flex; flex-direction: column; flex: 1; gap: 0.25rem;">
+          <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-admin-main); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</h4>
+          <div style="display: flex; align-items: center;">${starsMarkup}</div>
+          ${p.description ? `<p style="margin: 0; font-size: 0.75rem; color: var(--text-admin-muted); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.6em;">${p.description}</p>` : '<div style="height: 2.6em;"></div>'}
+          <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 0.25rem;">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--primary);">$${p.price.toFixed(2)}</span>
+            ${p.available ? `<button class="btn btn-primary btn-add-fast" data-id="${p.id}" style="padding: 0 0.5rem; font-size: 0.75rem; height: 26px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 0.2rem; font-weight: 700;"><i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add</button>` : `<span style="color: var(--danger); font-size: 0.75rem; font-weight: 700;">Sold Out</span>`}
           </div>
         </div>
       `;
 
+      // Fast Add order button click logic or variant details drawer modal opening logic
       if (p.available) {
+        card.querySelector('.btn-add-fast').addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleProductAddFast(p);
+        });
         card.addEventListener('click', () => {
           openCustomizer(p);
         });
@@ -258,6 +501,52 @@
     });
 
     if (window.lucide) lucide.createIcons();
+  }
+
+  function handleProductAddFast(product) {
+    // If customizations exist, we must configure options inside the customizer drawer modal
+    const hasVariants = product.variants && product.variants.length > 0;
+    const hasAddons = product.addOns && product.addOns.length > 0;
+
+    if (hasVariants || hasAddons) {
+      openCustomizer(product);
+      return;
+    }
+
+    // Direct checkout addition
+    const hash = product.id + '|';
+    const duplicate = cart.find(item => item.cartItemHash === hash);
+    if (duplicate) {
+      duplicate.quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        cartItemHash: hash,
+        name: product.name,
+        quantity: 1,
+        unitPrice: product.price,
+        customizations: []
+      });
+    }
+
+    updateCartSummary();
+    
+    // Success feedback overlay / banner toast
+    showCartSuccessFeedback(`${product.name} added to cart`);
+  }
+
+  function showCartSuccessFeedback(message) {
+    const feedback = document.createElement('div');
+    feedback.style.cssText = 'position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 0.5rem 1.25rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; z-index: 1000; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.35rem;';
+    feedback.innerHTML = `<i data-lucide="circle-check" style="width: 16px; height: 16px;"></i> ${message}`;
+    document.body.appendChild(feedback);
+    if (window.lucide) lucide.createIcons();
+
+    setTimeout(() => {
+      feedback.style.transition = 'opacity 0.5s';
+      feedback.style.opacity = '0';
+      setTimeout(() => feedback.remove(), 500);
+    }, 1500);
   }
 
   // --- SEARCH ---
@@ -327,7 +616,7 @@
               child.style.background = 'transparent';
             });
             row.style.borderColor = 'var(--primary)';
-            row.style.background = 'var(--primary-light)';
+            row.style.background = 'var(--primary-kiosk-light)';
             updateCustomizerPrice();
           });
 
@@ -363,7 +652,7 @@
         row.querySelector('input').addEventListener('change', (e) => {
           if(e.target.checked) {
             row.style.borderColor = 'var(--primary)';
-            row.style.background = 'var(--primary-light)';
+            row.style.background = 'var(--primary-kiosk-light)';
           } else {
             row.style.borderColor = 'var(--border-admin)';
             row.style.background = 'transparent';
@@ -517,20 +806,20 @@
 
     cart.forEach(item => {
       const row = document.createElement('div');
-      row.style.cssText = 'background: #fff; padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;';
+      row.style.cssText = 'background: #fff; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-sm);';
       
       const detailStr = item.customizations.join('<br>');
       
       row.innerHTML = `
         <div style="flex: 1;">
-          <h4 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; color: var(--text-admin);">${item.name}</h4>
-          ${detailStr ? `<p style="margin: 0; font-size: 0.95rem; color: var(--text-admin-muted); line-height: 1.5;">${detailStr}</p>` : ''}
-          <div style="margin-top: 1rem; font-weight: 700; color: var(--text-admin); font-size: 1.1rem;">$${(item.unitPrice * item.quantity).toFixed(2)}</div>
+          <h4 style="margin: 0 0 0.25rem 0; font-size: 1.15rem; color: var(--text-admin-main); font-weight: 700;">${item.name}</h4>
+          ${detailStr ? `<p style="margin: 0; font-size: 0.85rem; color: var(--text-admin-muted); line-height: 1.4;">${detailStr}</p>` : ''}
+          <div style="margin-top: 0.75rem; font-weight: 700; color: var(--primary); font-size: 1.05rem;">$${(item.unitPrice * item.quantity).toFixed(2)}</div>
         </div>
-        <div style="display: flex; align-items: center; background: #f1f5f9; border-radius: var(--radius-md); padding: 0.25rem;">
-          <button class="btn-cart-dec" data-hash="${item.cartItemHash}" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-admin);"><i data-lucide="minus" style="width: 16px; height: 16px;"></i></button>
-          <span style="width: 40px; text-align: center; font-weight: 600;">${item.quantity}</span>
-          <button class="btn-cart-inc" data-hash="${item.cartItemHash}" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-admin);"><i data-lucide="plus" style="width: 16px; height: 16px;"></i></button>
+        <div style="display: flex; align-items: center; background: #f8fafc; border-radius: var(--radius-md); padding: 0.25rem; border: 1px solid var(--border-admin);">
+          <button class="btn-cart-dec" data-hash="${item.cartItemHash}" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-admin-main);"><i data-lucide="minus" style="width: 14px; height: 14px;"></i></button>
+          <span style="width: 36px; text-align: center; font-weight: 600; font-size: 0.95rem; color: var(--text-admin-main);">${item.quantity}</span>
+          <button class="btn-cart-inc" data-hash="${item.cartItemHash}" style="background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-admin-main);"><i data-lucide="plus" style="width: 14px; height: 14px;"></i></button>
         </div>
       `;
       container.appendChild(row);
@@ -609,19 +898,19 @@
     const taxAmount = taxBase * (taxPercent / 100);
     const grandTotal = taxBase + taxAmount;
 
-    document.getElementById('calc-subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('calc-subtotal').textContent = `$${subtotal.toFixed(2)}`;
     
     const discRow = document.getElementById('calc-discount-row');
     if (discountAmount > 0) {
       discRow.style.display = 'flex';
-      document.getElementById('calc-discount').textContent = `-₹${discountAmount.toFixed(2)}`;
+      document.getElementById('calc-discount').textContent = `-$${discountAmount.toFixed(2)}`;
     } else {
       discRow.style.display = 'none';
     }
 
     document.getElementById('calc-tax-percent').textContent = taxPercent.toString();
-    document.getElementById('calc-tax').textContent = `₹${taxAmount.toFixed(2)}`;
-    document.getElementById('calc-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
+    document.getElementById('calc-tax').textContent = `$${taxAmount.toFixed(2)}`;
+    document.getElementById('calc-grand-total').textContent = `$${grandTotal.toFixed(2)}`;
     
     const payBtn = document.getElementById('btn-pay-now');
     payBtn.setAttribute('data-payable', grandTotal.toFixed(2));
@@ -683,25 +972,40 @@
     
     if (isEnabled('upi')) {
       payContainer.innerHTML += `
-        <button class="payment-card" data-method="upi" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
-          <i data-lucide="smartphone" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
-          <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">UPI</h3>
+        <button class="payment-card" data-method="upi" style="width: 100%; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);">
+          <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(79, 70, 229, 0.05); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <i data-lucide="smartphone" style="width: 22px; height: 22px;"></i>
+          </div>
+          <div style="text-align: left;">
+            <h3 style="margin: 0 0 0.15rem 0; font-size: 1.05rem; font-weight: 700; color: var(--text-admin-main);">UPI / QR Code</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-admin-muted);">Scan and pay instantly</p>
+          </div>
         </button>
       `;
     }
     if (isEnabled('card')) {
       payContainer.innerHTML += `
-        <button class="payment-card" data-method="card" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
-          <i data-lucide="credit-card" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
-          <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Card</h3>
+        <button class="payment-card" data-method="card" style="width: 100%; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);">
+          <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(79, 70, 229, 0.05); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <i data-lucide="credit-card" style="width: 22px; height: 22px;"></i>
+          </div>
+          <div style="text-align: left;">
+            <h3 style="margin: 0 0 0.15rem 0; font-size: 1.05rem; font-weight: 700; color: var(--text-admin-main);">Credit / Debit Card</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-admin-muted);">Swipe or tap to pay</p>
+          </div>
         </button>
       `;
     }
     if (isEnabled('cash')) {
       payContainer.innerHTML += `
-        <button class="payment-card" data-method="cash" style="width: 200px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 2px solid var(--border-admin); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
-          <i data-lucide="banknote" class="pay-icon" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
-          <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Cash</h3>
+        <button class="payment-card" data-method="cash" style="width: 100%; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; background: #fff; border: 1px solid var(--border-admin); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);">
+          <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(79, 70, 229, 0.05); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <i data-lucide="banknote" style="width: 22px; height: 22px;"></i>
+          </div>
+          <div style="text-align: left;">
+            <h3 style="margin: 0 0 0.15rem 0; font-size: 1.05rem; font-weight: 700; color: var(--text-admin-main);">Pay at Counter (Cash)</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-admin-muted);">Pay with cash at the counter</p>
+          </div>
         </button>
       `;
     }
@@ -715,8 +1019,8 @@
         startPaymentProcessing(method);
       });
       // hover states
-      card.addEventListener('mouseover', () => { card.style.borderColor = 'var(--primary)'; card.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; });
-      card.addEventListener('mouseout', () => { card.style.borderColor = 'var(--border-admin)'; card.style.boxShadow = 'none'; });
+      card.addEventListener('mouseover', () => { card.style.borderColor = 'var(--primary)'; card.style.boxShadow = 'var(--shadow-md)'; });
+      card.addEventListener('mouseout', () => { card.style.borderColor = 'var(--border-admin)'; card.style.boxShadow = 'var(--shadow-sm)'; });
     });
 
     const payable = document.getElementById('btn-pay-now').getAttribute('data-payable');
@@ -860,7 +1164,7 @@
     KioskStore.addOrder(order);
 
     document.getElementById('conf-order-id').textContent = orderId;
-    document.getElementById('conf-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
+    document.getElementById('conf-grand-total').textContent = `$${grandTotal.toFixed(2)}`;
 
     const itemsContainer = document.getElementById('conf-items-list');
     itemsContainer.innerHTML = '';
@@ -868,7 +1172,7 @@
       itemsContainer.innerHTML += `
         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
           <span>${item.quantity}x ${item.name}</span>
-          <span>₹${(item.unitPrice * item.quantity).toFixed(2)}</span>
+          <span>$${(item.unitPrice * item.quantity).toFixed(2)}</span>
         </div>
       `;
     });

@@ -964,7 +964,7 @@
   function renderPayments() {
     const payments = KioskStore.getPayments() || [];
     const tbody = document.getElementById('payments-tbody');
-    const searchInput = document.getElementById('payment-search');
+    const searchInput = document.getElementById('payments-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = payments.filter(p => {
@@ -1029,7 +1029,7 @@
     bindEvents('.btn-edit-payment', editPayment);
   }
 
-  const paymentSearch = document.getElementById('payment-search');
+  const paymentSearch = document.getElementById('payments-search');
   if (paymentSearch) paymentSearch.addEventListener('input', () => { paymentPage = 1; renderPayments(); });
 
   // 4.3 Playlists CRUD
@@ -1038,7 +1038,7 @@
     const tbody = document.getElementById('playlists-tbody');
     tbody.innerHTML = '';
 
-    const search = document.getElementById('playlist-search').value.toLowerCase();
+    const search = document.getElementById('playlists-search').value.toLowerCase();
     const current = activeFilters.playlists || { status: [] };
 
     const filtered = playlists.filter(p => {
@@ -1086,7 +1086,7 @@
     const tbody = document.getElementById('tvs-tbody');
     tbody.innerHTML = '';
 
-    const search = document.getElementById('tv-search').value.toLowerCase();
+    const search = document.getElementById('tvs-search').value.toLowerCase();
     const current = activeFilters.tvs || { status: [], type: [], playlist: [], location: [] };
 
     const filtered = tvs.filter(t => {
@@ -1168,7 +1168,7 @@
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    const search = (document.getElementById('category-search')?.value || '').toLowerCase();
+    const search = (document.getElementById('categories-search')?.value || '').toLowerCase();
     const current = activeFilters.categories || { status: [] };
 
     const filtered = categories.filter(c => {
@@ -1206,11 +1206,11 @@
       const hasFilters = current.status && current.status.length > 0;
       let emptyHtml = '';
       if (hasSearch) {
-        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No categories match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('category-search').value='';document.getElementById('category-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No categories match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('categories-search').value='';document.getElementById('categories-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
       } else if (hasFilters) {
         emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No categories match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.categories={status:[]};updateFilterChips('categories');renderCategories();">Clear Filters</button></div></td></tr>`;
       } else {
-        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="folder" class="empty-icon"></i><h4>No categories found</h4><p>Create your first menu category.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-category').click();">Create Category</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="folder" class="empty-icon"></i><h4>No categories found</h4><p>Create your first menu category.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-categories').click();">Create Category</button></div></td></tr>`;
       }
       tbody.innerHTML = emptyHtml;
       if (paginationEl) paginationEl.innerHTML = '';
@@ -1355,7 +1355,7 @@
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    const search = (document.getElementById('product-search')?.value || '').toLowerCase();
+    const search = (document.getElementById('products-search')?.value || '').toLowerCase();
     const current = activeFilters.products || { status: [], category: [], availability: [] };
 
     const filtered = products.filter(p => {
@@ -1403,11 +1403,11 @@
       const hasFilters = (current.status && current.status.length > 0) || (current.category && current.category.length > 0) || (current.availability && current.availability.length > 0);
       let emptyHtml = '';
       if (hasSearch) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No products match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('product-search').value='';document.getElementById('product-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No products match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('products-search').value='';document.getElementById('products-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
       } else if (hasFilters) {
         emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No products match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.products={status:[],category:[],availability:[]};updateFilterChips('products');renderProducts();">Clear Filters</button></div></td></tr>`;
       } else {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="package" class="empty-icon"></i><h4>No products found</h4><p>Add products to your catalog.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-product').click();">Add Product</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="package" class="empty-icon"></i><h4>No products found</h4><p>Add products to your catalog.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-products').click();">Add Product</button></div></td></tr>`;
       }
       tbody.innerHTML = emptyHtml;
       if (paginationEl) paginationEl.innerHTML = '';
@@ -1590,7 +1590,7 @@
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    const search = (document.getElementById('modifier-search')?.value || '').toLowerCase();
+    const search = (document.getElementById('customisation-search')?.value || '').toLowerCase();
     const current = activeFilters.customisation || { status: [], type: [], required: [] };
 
     const filtered = modifiers.filter(m => {
@@ -1615,11 +1615,11 @@
       const hasFilters = current.status && current.status.length > 0;
       let emptyHtml = '';
       if (hasSearch) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No modifiers match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('modifier-search').value='';document.getElementById('modifier-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No modifiers match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('customisation-search').value='';document.getElementById('customisation-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
       } else if (hasFilters) {
         emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No modifiers match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.customisation={status:[]};updateFilterChips('customisation');renderModifiers();">Clear Filters</button></div></td></tr>`;
       } else {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="sliders-horizontal" class="empty-icon"></i><h4>No customisations found</h4><p>Create variants or add-ons for products.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-modifier').click();">Add Modifier</button></div></td></tr>`;
+        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="sliders-horizontal" class="empty-icon"></i><h4>No customisations found</h4><p>Create variants or add-ons for products.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-customisation').click();">Add Modifier</button></div></td></tr>`;
       }
       tbody.innerHTML = emptyHtml;
       if (paginationEl) paginationEl.innerHTML = '';
@@ -1761,7 +1761,7 @@
   function renderTaxes() {
     const taxes = KioskStore.getTaxes() || [];
     const tbody = document.getElementById('taxes-tbody');
-    const searchInput = document.getElementById('tax-search');
+    const searchInput = document.getElementById('taxes-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = taxes.filter(t => {
@@ -1830,7 +1830,7 @@
   }
 
   // Bind Search
-  const taxSearch = document.getElementById('tax-search');
+  const taxSearch = document.getElementById('taxes-search');
   if (taxSearch) taxSearch.addEventListener('input', () => { taxPage = 1; renderTaxes(); });
 
   // 4.10 Discounts CRUD
@@ -1840,7 +1840,7 @@
   function renderDiscounts() {
     const discounts = KioskStore.getDiscounts() || [];
     const tbody = document.getElementById('discounts-tbody');
-    const searchInput = document.getElementById('discount-search');
+    const searchInput = document.getElementById('discounts-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = discounts.filter(d => {
@@ -1918,7 +1918,7 @@
     bindEvents('.btn-delete-discount', deleteDiscount);
   }
 
-  const discountSearch = document.getElementById('discount-search');
+  const discountSearch = document.getElementById('discounts-search');
   if (discountSearch) discountSearch.addEventListener('input', () => { discountPage = 1; renderDiscounts(); });
 
   let kioskPage = 1;
@@ -1927,7 +1927,7 @@
   function renderKiosks() {
     const kiosks = KioskStore.getKiosks() || [];
     const tbody = document.getElementById('kiosks-tbody');
-    const searchInput = document.getElementById('kiosk-search');
+    const searchInput = document.getElementById('kiosks-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = kiosks.filter(k => {
@@ -1998,7 +1998,7 @@
     bindEvents('.btn-edit-kiosk', editKiosk);
   }
 
-  const kioskSearch = document.getElementById('kiosk-search');
+  const kioskSearch = document.getElementById('kiosks-search');
   if (kioskSearch) kioskSearch.addEventListener('input', () => { kioskPage = 1; renderKiosks(); });
 
   // 4.12 Kiosk Config settings
@@ -2043,7 +2043,7 @@
     const tbody = document.getElementById('pay-history-tbody');
     if (!tbody) return;
     
-    const search = document.getElementById('pay-history-search').value.toLowerCase();
+    const search = document.getElementById('payment-history-search').value.toLowerCase();
     const current = activeFilters['payment-history'] || { paymentStatus: [], paymentMethod: [], kiosk: [], orderStatus: [] };
 
     let filtered = orders.filter(o => {
@@ -2264,7 +2264,7 @@
       { deviceId: 'PAY-001', type: 'Card Terminal', ipAddress: '192.168.1.103', status: 'offline' }
     ];
 
-    const searchInput = document.getElementById('device-search');
+    const searchInput = document.getElementById('devices-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = devices.filter(d => {
@@ -2334,7 +2334,7 @@
     if (window.lucide) lucide.createIcons();
   }
 
-  const deviceSearch = document.getElementById('device-search');
+  const deviceSearch = document.getElementById('devices-search');
   if (deviceSearch) deviceSearch.addEventListener('input', () => { devicePage = 1; renderDevices(); });
 
   let rolePage = 1;
@@ -2351,7 +2351,7 @@
       { name: 'Display Bot', email: 'display@bistro.com', role: 'API Access', status: 'inactive' }
     ];
 
-    const searchInput = document.getElementById('role-search');
+    const searchInput = document.getElementById('roles-search');
     const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
     let filtered = roles.filter(r => {
@@ -2417,7 +2417,7 @@
     if (window.lucide) lucide.createIcons();
   }
 
-  const roleSearch = document.getElementById('role-search');
+  const roleSearch = document.getElementById('roles-search');
   if (roleSearch) roleSearch.addEventListener('input', () => { rolePage = 1; renderRoles(); });
 
 
@@ -2864,7 +2864,7 @@
     renderPlaylistBannersSelect();
   };
 
-  document.getElementById('btn-add-playlist').addEventListener('click', () => {
+  document.getElementById('btn-add-playlists').addEventListener('click', () => {
     document.getElementById('playlist-form-page').reset();
     document.getElementById('playlist-page-id').value = '';
     document.getElementById('playlist-form-title-h3').textContent = 'Add Playlist';
@@ -2994,7 +2994,7 @@
   });
 
   // TVs CRUD (Page based)
-  document.getElementById('btn-add-tv').addEventListener('click', () => {
+  document.getElementById('btn-add-tvs').addEventListener('click', () => {
     document.getElementById('tv-form-page').reset();
     document.getElementById('tv-page-id').value = '';
     document.getElementById('tv-form-title-h3').textContent = 'Add TV';
@@ -3114,7 +3114,7 @@
   });
 
   // Category forms
-  document.getElementById('btn-add-category').addEventListener('click', () => {
+  document.getElementById('btn-add-categories').addEventListener('click', () => {
     document.getElementById('category-form').reset();
     document.getElementById('category-id').value = '';
     document.getElementById('category-modal-title').textContent = 'Add Category';
@@ -3166,7 +3166,7 @@
   }
 
   // Product Add/Edit
-  document.getElementById('btn-add-product').addEventListener('click', () => {
+  document.getElementById('btn-add-products').addEventListener('click', () => {
     document.getElementById('product-form').reset();
     document.getElementById('product-id').value = '';
     document.getElementById('product-modal-title').textContent = 'Add Product';
@@ -3259,7 +3259,7 @@
   }
 
   // Modifiers setup CRUD
-  document.getElementById('btn-add-modifier').addEventListener('click', () => {
+  document.getElementById('btn-add-customisation').addEventListener('click', () => {
     document.getElementById('modifier-form').reset();
     document.getElementById('modifier-id').value = '';
     document.getElementById('modifier-modal-title').textContent = 'Add Modifier';
@@ -3346,7 +3346,7 @@
   }
 
   // Taxes
-  document.getElementById('btn-add-tax').addEventListener('click', () => {
+  document.getElementById('btn-add-taxes').addEventListener('click', () => {
     document.getElementById('tax-form').reset();
     document.getElementById('tax-id').value = '';
     document.getElementById('tax-modal-title').textContent = 'Add Tax Profile';
@@ -3398,7 +3398,7 @@
   }
 
   // Discounts
-  document.getElementById('btn-add-discount').addEventListener('click', () => {
+  document.getElementById('btn-add-discounts').addEventListener('click', () => {
     document.getElementById('discount-form').reset();
     document.getElementById('discount-id').value = '';
     document.getElementById('discount-modal-title').textContent = 'Add Discount';
@@ -3458,7 +3458,7 @@
   }
 
   // Kiosk Add/Edit/View
-  document.getElementById('btn-add-kiosk').addEventListener('click', () => {
+  document.getElementById('btn-add-kiosks').addEventListener('click', () => {
     document.getElementById('kiosk-form').reset();
     document.getElementById('kiosk-id').value = '';
     document.getElementById('kiosk-id-val').disabled = false;
@@ -3732,41 +3732,41 @@
   }
 
   // Bind key inputs filter render loops
-  document.getElementById('playlist-search').addEventListener('input', renderPlaylists);
-  document.getElementById('tv-search').addEventListener('input', renderTVs);
+  document.getElementById('playlists-search').addEventListener('input', renderPlaylists);
+  document.getElementById('tvs-search').addEventListener('input', renderTVs);
 
-  document.getElementById('product-search').addEventListener('input', renderProducts);
-  const productSearchClear = document.getElementById('product-search-clear');
+  document.getElementById('products-search').addEventListener('input', renderProducts);
+  const productSearchClear = document.getElementById('products-search-clear');
   if (productSearchClear) {
     productSearchClear.addEventListener('click', () => {
-      document.getElementById('product-search').value = '';
+      document.getElementById('products-search').value = '';
       productPage = 1;
       renderProducts();
     });
   }
   
-  const categorySearchClear = document.getElementById('category-search-clear');
+  const categorySearchClear = document.getElementById('categories-search-clear');
   if (categorySearchClear) {
     categorySearchClear.addEventListener('click', () => {
-      document.getElementById('category-search').value = '';
+      document.getElementById('categories-search').value = '';
       categoryPage = 1;
       renderCategories();
     });
   }
-  document.getElementById('category-search').addEventListener('input', () => {
+  document.getElementById('categories-search').addEventListener('input', () => {
     categoryPage = 1;
     renderCategories();
   });
   
-  const modifierSearchClear = document.getElementById('modifier-search-clear');
+  const modifierSearchClear = document.getElementById('customisation-search-clear');
   if (modifierSearchClear) {
     modifierSearchClear.addEventListener('click', () => {
-      document.getElementById('modifier-search').value = '';
+      document.getElementById('customisation-search').value = '';
       modifierPage = 1;
       renderModifiers();
     });
   }
-  document.getElementById('modifier-search').addEventListener('input', () => {
+  document.getElementById('customisation-search').addEventListener('input', () => {
     modifierPage = 1;
     renderModifiers();
   });
@@ -3867,7 +3867,7 @@
     });
   });
 
-  const searchPayInput = document.getElementById('pay-history-search');
+  const searchPayInput = document.getElementById('payment-history-search');
   if (searchPayInput) {
     searchPayInput.addEventListener('input', renderPaymentHistory);
   }

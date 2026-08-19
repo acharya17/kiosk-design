@@ -1,4 +1,4 @@
-﻿(function() {
+(function() {
   // Authentication State
   let isAuthenticated = true;
 
@@ -2115,9 +2115,7 @@
     });
 
     if (window.lucide) lucide.createIcons();
-    bindEvents('.btn-view-payment', (e) => {
-      showToast('Payment view disabled in demo', 'info');
-    });
+    bindEvents('.btn-view-payment', showPaymentDetails);
   }
 
   function showPaymentDetails(id) {

@@ -3115,30 +3115,57 @@
 
   // Category forms
   document.getElementById('btn-add-categories').addEventListener('click', () => {
-    document.getElementById('category-form').reset();
-    document.getElementById('category-id').value = '';
-    document.getElementById('category-modal-title').textContent = 'Add Category';
-    document.getElementById('category-modal').classList.add('visible');
+    document.getElementById('category-name-input').value = '';
+    document.getElementById('category-desc-input').value = '';
+    document.getElementById('category-status-input').checked = true;
+    
+    let hidden = document.getElementById('category-page-id');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.id = 'category-page-id';
+      hidden.type = 'hidden';
+      document.getElementById('tab-category-form').appendChild(hidden);
+    }
+    hidden.value = '';
+
+    document.getElementById('category-form-title').textContent = 'Add Category';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-category-form').classList.add('active');
+    tabTitle.textContent = 'Add Category';
+    tabDescription.textContent = 'Create a new category for your products.';
+    breadcrumbCurrent.textContent = 'Add Category';
   });
 
-  document.getElementById('category-form').addEventListener('submit', (e) => {
+  document.getElementById('btn-save-category').addEventListener('click', (e) => {
     e.preventDefault();
-    const id = document.getElementById('category-id').value;
-    const name = document.getElementById('category-name').value.trim();
-    const icon = document.getElementById('category-icon').value.trim();
-    const status = document.getElementById('category-status').value;
+    const hidden = document.getElementById('category-page-id');
+    const id = hidden ? hidden.value : '';
+    const name = document.getElementById('category-name-input').value.trim();
+    const desc = document.getElementById('category-desc-input').value.trim();
+    const status = document.getElementById('category-status-input').checked ? 'active' : 'inactive';
+
+    if (!name) {
+      showToast('Category name is required.', 'error');
+      return;
+    }
 
     const list = KioskStore.getCategories() || [];
     if (id) {
       const c = list.find(item => item.id === id);
-      if (c) Object.assign(c, { name, icon, status });
+      if (c) Object.assign(c, { name, icon: 'folder', status, description: desc });
     } else {
-      list.push({ id: 'cat-' + name.toLowerCase().replace(/[^a-z0-9]/g, '-'), name, icon, status, count: 0 });
+      list.push({ id: 'cat-' + Date.now(), name, icon: 'folder', status, description: desc, count: 0 });
     }
 
     KioskStore.setCategories(list);
-    document.getElementById('category-modal').classList.remove('visible');
     showToast(`Category "${name}" saved.`);
+    
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-categories').classList.add('active');
+    tabTitle.textContent = 'Categories';
+    tabDescription.textContent = 'Manage category folders.';
+    breadcrumbCurrent.textContent = 'Categories';
+    renderCategories();
   });
 
   function editCategory(id) {
@@ -3146,306 +3173,29 @@
     const c = cats.find(item => item.id === id);
     if (!c) return;
 
-    document.getElementById('category-id').value = c.id;
-    document.getElementById('category-name').value = c.name;
-    document.getElementById('category-icon').value = c.icon;
-    document.getElementById('category-status').value = c.status;
-
-    document.getElementById('category-modal-title').textContent = 'Edit Category';
-    document.getElementById('category-modal').classList.add('visible');
-  }
-
-  function deleteCategory(id) {
-    const list = KioskStore.getCategories();
-    const c = list.find(item => item.id === id);
-    const name = c ? c.name : 'Category';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.setCategories(list.filter(item => item.id !== id));
-      showToast('Category deleted.');
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
-  }
-
-  // Product Add/Edit
-  document.getElementById('btn-add-products').addEventListener('click', () => {
-    document.getElementById('product-form').reset();
-    document.getElementById('product-id').value = '';
-    document.getElementById('product-modal-title').textContent = 'Add Product';
-    document.getElementById('product-modal').classList.add('visible');
-  });
-
-  document.getElementById('product-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('product-id').value;
-    const name = document.getElementById('product-name').value.trim();
-    const categoryId = document.getElementById('product-category').value;
-    const price = parseFloat(document.getElementById('product-price').value) || 0.01;
-    const image = document.getElementById('product-image').value.trim();
-    const description = document.getElementById('product-desc').value.trim();
-    const status = document.getElementById('product-status').value;
-    const available = document.getElementById('product-available').value === 'true';
-
-    const list = KioskStore.getProducts() || [];
-    if (id) {
-      const p = list.find(item => item.id === id);
-      if (p) Object.assign(p, { name, categoryId, price, image, description, status, available });
-    } else {
-      list.push({ id: 'prod-' + Date.now(), categoryId, name, description, price, image, available, status, customizable: false });
+    let hidden = document.getElementById('category-page-id');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.id = 'category-page-id';
+      hidden.type = 'hidden';
+      document.getElementById('tab-category-form').appendChild(hidden);
     }
+    hidden.value = c.id;
 
-    KioskStore.setProducts(list);
-    document.getElementById('product-modal').classList.remove('visible');
-    showToast(`Product "${name}" saved.`);
-  });
+    document.getElementById('category-name-input').value = c.name;
+    document.getElementById('category-desc-input').value = c.description || '';
+    document.getElementById('category-status-input').checked = c.status === 'active';
 
-  function editProduct(id) {
-    const products = KioskStore.getProducts();
-    const p = products.find(item => item.id === id);
-    if (!p) return;
-
-    document.getElementById('product-id').value = p.id;
-    document.getElementById('product-name').value = p.name;
-    document.getElementById('product-category').value = p.categoryId;
-    document.getElementById('product-price').value = p.price;
-    document.getElementById('product-image').value = p.image;
-    document.getElementById('product-desc').value = p.description;
-    document.getElementById('product-status').value = p.status;
-    document.getElementById('product-available').value = p.available ? 'true' : 'false';
-
-    document.getElementById('product-modal-title').textContent = 'Edit Product';
-    document.getElementById('product-modal').classList.add('visible');
+    document.getElementById('category-form-title').textContent = 'Edit Category';
+    
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-category-form').classList.add('active');
+    tabTitle.textContent = 'Edit Category';
+    tabDescription.textContent = 'Modify folder details.';
+    breadcrumbCurrent.textContent = 'Edit Category';
   }
 
-  function deleteProduct(id) {
-    const list = KioskStore.getProducts();
-    const p = list.find(item => item.id === id);
-    const name = p ? p.name : 'Product';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.setProducts(list.filter(item => item.id !== id));
-      showToast('Product item deleted.');
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
-  }
-
-  function showProductDetails(id) {
-    const products = KioskStore.getProducts();
-    const categories = KioskStore.getCategories() || [];
-    const p = products.find(item => item.id === id);
-    if (!p) return;
-
-    document.getElementById('details-product-name').textContent = p.name;
-    document.getElementById('details-product-image').src = p.image;
-    document.getElementById('details-product-desc').textContent = p.description;
-    document.getElementById('details-product-price').textContent = `$${p.price.toFixed(2)}`;
-    document.getElementById('details-product-category').textContent = categories.find(c => c.id === p.categoryId)?.name || p.categoryId;
-    document.getElementById('details-product-stock').textContent = p.available ? 'Available' : 'Out of stock';
-    document.getElementById('details-product-status').textContent = p.status.toUpperCase();
-
-    const modConfig = document.getElementById('details-product-customisation');
-    modConfig.innerHTML = '';
-    if (p.customizable) {
-      modConfig.innerHTML += '<p style="color: var(--success); font-weight:bold; margin-bottom:0.5rem;">Modifiers Configurations</p>';
-      if (p.variants) {
-        p.variants.forEach(v => {
-          modConfig.innerHTML += `<p><strong>Variants:</strong> ${v.name} (${v.options.map(o => `${o.name} +$${o.price.toFixed(2)}`).join(', ')})</p>`;
-        });
-      }
-      if (p.addOns) {
-        modConfig.innerHTML += `<p><strong>Add-ons:</strong> ${p.addOns.map(a => `${a.name} (+$${a.price.toFixed(2)})`).join(', ')}</p>`;
-      }
-    } else {
-      modConfig.innerHTML = '<p>Standard catalog item. Modifiers disabled.</p>';
-    }
-
-    document.getElementById('product-details-drawer').classList.add('visible');
-  }
-
-  // Modifiers setup CRUD
-  document.getElementById('btn-add-customisation').addEventListener('click', () => {
-    document.getElementById('modifier-form').reset();
-    document.getElementById('modifier-id').value = '';
-    document.getElementById('modifier-modal-title').textContent = 'Add Modifier';
-
-    const products = KioskStore.getProducts() || [];
-    const container = document.getElementById('modifier-products-checklist');
-    container.innerHTML = '';
-    products.forEach(p => {
-      container.innerHTML += `
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff; font-weight: normal;">
-          <input type="checkbox" name="mod-prods" value="${p.id}">
-          ${p.name}
-        </label>
-      `;
-    });
-
-    document.getElementById('modifier-modal').classList.add('visible');
-  });
-
-  document.getElementById('modifier-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('modifier-id').value;
-    const name = document.getElementById('modifier-name').value.trim();
-    const type = document.getElementById('modifier-type').value;
-    const price = parseFloat(document.getElementById('modifier-price').value) || 0;
-    const required = document.getElementById('modifier-required').value === 'true';
-    const status = document.getElementById('modifier-status').value;
-
-    const checked = document.querySelectorAll('input[name="mod-prods"]:checked');
-    const productIds = Array.from(checked).map(c => c.value);
-
-    let modifiers = KioskStore.get('kiosk_modifiers') || [];
-    if (id) {
-      const m = modifiers.find(item => item.id === id);
-      if (m) Object.assign(m, { name, type, price, required, productIds, status });
-    } else {
-      modifiers.push({ id: 'mod-' + Date.now(), name, type, price, required, productIds, status });
-    }
-
-    KioskStore.set('kiosk_modifiers', modifiers);
-    document.getElementById('modifier-modal').classList.remove('visible');
-    showToast(`Modifier option "${name}" saved.`);
-    renderModifiers();
-  });
-
-  function editModifier(id) {
-    const modifiers = KioskStore.get('kiosk_modifiers') || [];
-    const m = modifiers.find(item => item.id === id);
-    if (!m) return;
-
-    document.getElementById('modifier-id').value = m.id;
-    document.getElementById('modifier-name').value = m.name;
-    document.getElementById('modifier-type').value = m.type;
-    document.getElementById('modifier-price').value = m.price;
-    document.getElementById('modifier-required').value = m.required ? 'true' : 'false';
-    document.getElementById('modifier-status').value = m.status;
-
-    const products = KioskStore.getProducts() || [];
-    const container = document.getElementById('modifier-products-checklist');
-    container.innerHTML = '';
-    products.forEach(p => {
-      const checked = m.productIds.includes(p.id) ? 'checked' : '';
-      container.innerHTML += `
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff; font-weight: normal;">
-          <input type="checkbox" name="mod-prods" value="${p.id}" ${checked}>
-          ${p.name}
-        </label>
-      `;
-    });
-
-    document.getElementById('modifier-modal-title').textContent = 'Edit Modifier';
-    document.getElementById('modifier-modal').classList.add('visible');
-  }
-
-  function deleteModifier(id) {
-    const list = KioskStore.get('kiosk_modifiers') || [];
-    const m = list.find(item => item.id === id);
-    const name = m ? m.name : 'Modifier';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.set('kiosk_modifiers', list.filter(item => item.id !== id));
-      showToast('Modifier option removed.');
-      renderModifiers();
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
-  }
-
-  // Taxes
-  document.getElementById('btn-add-taxes').addEventListener('click', () => {
-    document.getElementById('tax-form').reset();
-    document.getElementById('tax-id').value = '';
-    document.getElementById('tax-modal-title').textContent = 'Add Tax Profile';
-    document.getElementById('tax-modal').classList.add('visible');
-  });
-
-  document.getElementById('tax-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('tax-id').value;
-    const name = document.getElementById('tax-name').value.trim();
-    const val = parseFloat(document.getElementById('tax-percentage').value) || 0;
-    const status = document.getElementById('tax-status').value;
-
-    const list = KioskStore.getTaxes() || [];
-    if (id) {
-      const t = list.find(item => item.id === id);
-      if (t) Object.assign(t, { name, percentage: val, status });
-    } else {
-      list.push({ id: 'tax-' + Date.now(), name, percentage: val, status });
-    }
-
-    KioskStore.setTaxes(list);
-    document.getElementById('tax-modal').classList.remove('visible');
-    showToast(`Tax Profile "${name}" saved.`);
-  });
-
-  function editTax(id) {
-    const list = KioskStore.getTaxes();
-    const t = list.find(item => item.id === id);
-    if (!t) return;
-
-    document.getElementById('tax-id').value = t.id;
-    document.getElementById('tax-name').value = t.name;
-    document.getElementById('tax-percentage').value = t.percentage;
-    document.getElementById('tax-status').value = t.status;
-
-    document.getElementById('tax-modal-title').textContent = 'Edit Tax Profile';
-    document.getElementById('tax-modal').classList.add('visible');
-  }
-
-  function deleteTax(id) {
-    const list = KioskStore.getTaxes();
-    const t = list.find(item => item.id === id);
-    const name = t ? t.name : 'Tax Profile';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.setTaxes(list.filter(item => item.id !== id));
-      showToast('Tax profile removed.');
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
-  }
-
-  // Discounts
-  document.getElementById('btn-add-discounts').addEventListener('click', () => {
-    document.getElementById('discount-form').reset();
-    document.getElementById('discount-id').value = '';
-    document.getElementById('discount-modal-title').textContent = 'Add Discount';
-    document.getElementById('discount-modal').classList.add('visible');
-  });
-
-  document.getElementById('discount-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('discount-id').value;
-    const name = document.getElementById('discount-name').value.toUpperCase().trim();
-    const type = document.getElementById('discount-type').value;
-    const value = parseFloat(document.getElementById('discount-value').value) || 0;
-    const products = document.getElementById('discount-products').value;
-    const start = document.getElementById('discount-start').value;
-    const end = document.getElementById('discount-end').value;
-    const status = document.getElementById('discount-status').value;
-
-    const list = KioskStore.getDiscounts() || [];
-    if (id) {
-      const d = list.find(item => item.id === id);
-      if (d) Object.assign(d, { name, type, value, applicableProducts: products, startDate: start, endDate: end, status });
-    } else {
-      list.push({ id: 'disc-' + Date.now(), name, type, value, applicableProducts: products, startDate: start, endDate: end, status });
-    }
-
-    KioskStore.setDiscounts(list);
-    document.getElementById('discount-modal').classList.remove('visible');
-    showToast(`Promotion "${name}" saved.`);
-  });
-
-  function editDiscount(id) {
-    const list = KioskStore.getDiscounts();
-    const d = list.find(item => item.id === id);
-    if (!d) return;
-
-    document.getElementById('discount-id').value = d.id;
-    document.getElementById('discount-name').value = d.name;
-    document.getElementById('discount-type').value = d.type;
-    document.getElementById('discount-value').value = d.value;
-    document.getElementById('discount-products').value = d.applicableProducts;
-    document.getElementById('discount-start').value = d.startDate;
-    document.getElementById('discount-end').value = d.endDate;
-    document.getElementById('discount-status').value = d.status;
-
-    document.getElementById('discount-modal-title').textContent = 'Edit Discount';
-    document.getElementById('discount-modal').classList.add('visible');
-  }
+  
 
   function deleteDiscount(id) {
     const list = KioskStore.getDiscounts();
@@ -3454,38 +3204,49 @@
     triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
       KioskStore.setDiscounts(list.filter(item => item.id !== id));
       showToast('Discount campaign deleted.');
+      renderDiscounts();
     }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
   // Kiosk Add/Edit/View
   document.getElementById('btn-add-kiosks').addEventListener('click', () => {
-    document.getElementById('kiosk-form').reset();
-    document.getElementById('kiosk-id').value = '';
-    document.getElementById('kiosk-id-val').disabled = false;
-    document.getElementById('kiosk-modal-title').textContent = 'Add Kiosk';
-    document.getElementById('kiosk-modal').classList.add('visible');
+    document.getElementById('kiosk-form-page').reset();
+    document.getElementById('kiosk-page-id').value = '';
+    document.getElementById('kiosk-page-id-input').disabled = false;
+    
+    document.getElementById('kiosk-form-title-h3').textContent = 'Add Kiosk';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-kiosk-form').classList.add('active');
+    tabTitle.textContent = 'Add Kiosk';
+    tabDescription.textContent = 'Register a new kiosk.';
+    breadcrumbCurrent.textContent = 'Add Kiosk';
   });
 
-  document.getElementById('kiosk-form').addEventListener('submit', (e) => {
+  document.getElementById('kiosk-form-page').addEventListener('submit', (e) => {
     e.preventDefault();
-    const id = document.getElementById('kiosk-id').value;
-    const idVal = document.getElementById('kiosk-id-val').value.trim();
-    const name = document.getElementById('kiosk-name').value.trim();
-    const loc = document.getElementById('kiosk-location').value.trim();
-    const status = document.getElementById('kiosk-status').value;
-    const avail = document.getElementById('kiosk-availability').value;
+    const id = document.getElementById('kiosk-page-id').value;
+    const idInput = document.getElementById('kiosk-page-id-input').value.trim();
+    const loc = document.getElementById('kiosk-page-location').value.trim();
+    const config = document.getElementById('kiosk-page-config').value;
+    const status = document.getElementById('kiosk-page-status').value;
 
     const list = KioskStore.getKiosks() || [];
     if (id) {
       const k = list.find(item => item.id === id);
-      if (k) Object.assign(k, { name, location: loc, status, availability: avail });
+      if (k) Object.assign(k, { location: loc, configuration: config, status });
     } else {
-      list.push({ id: idVal, name, location: loc, status, availability: avail, lastActive: 'Just now', connectionStatus: 'online' });
+      list.push({ id: idInput, name: idInput, location: loc, configuration: config, status, connectionStatus: 'online', lastActive: 'Just now' });
     }
 
     KioskStore.setKiosks(list);
-    document.getElementById('kiosk-modal').classList.remove('visible');
-    showToast(`Kiosk "${name}" saved.`);
+    showToast(`Kiosk "${id || idInput}" saved.`);
+    
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-kiosks').classList.add('active');
+    tabTitle.textContent = 'Kiosks';
+    tabDescription.textContent = 'Manage self-order hardware.';
+    breadcrumbCurrent.textContent = 'Kiosks';
+    renderKiosks();
   });
 
   function editKiosk(id) {
@@ -3493,26 +3254,20 @@
     const k = list.find(item => item.id === id);
     if (!k) return;
 
-    document.getElementById('kiosk-id').value = k.id;
-    document.getElementById('kiosk-id-val').value = k.id;
-    document.getElementById('kiosk-id-val').disabled = true;
-    document.getElementById('kiosk-name').value = k.name;
-    document.getElementById('kiosk-location').value = k.location || '';
-    document.getElementById('kiosk-status').value = k.status;
-    document.getElementById('kiosk-availability').value = k.availability;
+    document.getElementById('kiosk-page-id').value = k.id;
+    document.getElementById('kiosk-page-id-input').value = k.id;
+    document.getElementById('kiosk-page-id-input').disabled = true;
+    document.getElementById('kiosk-page-location').value = k.location || '';
+    document.getElementById('kiosk-page-config').value = k.configuration || 'standard';
+    document.getElementById('kiosk-page-status').value = k.status;
 
-    document.getElementById('kiosk-modal-title').textContent = 'Edit Kiosk';
-    document.getElementById('kiosk-modal').classList.add('visible');
-  }
-
-  function deleteKiosk(id) {
-    const list = KioskStore.getKiosks();
-    const k = list.find(item => item.id === id);
-    const name = k ? k.name : 'Kiosk Terminal';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.setKiosks(list.filter(item => item.id !== id));
-      showToast('Kiosk terminal removed.');
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+    document.getElementById('kiosk-form-title-h3').textContent = 'Edit Kiosk';
+    
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-kiosk-form').classList.add('active');
+    tabTitle.textContent = 'Edit Kiosk';
+    tabDescription.textContent = 'Modify kiosk settings.';
+    breadcrumbCurrent.textContent = 'Edit Kiosk';
   }
 
   function showKioskDetails(id) {
@@ -3520,41 +3275,31 @@
     const k = list.find(item => item.id === id);
     if (!k) return;
 
-    document.getElementById('details-kiosk-name').textContent = k.name;
-    document.getElementById('details-kiosk-lbl').textContent = k.name;
-    document.getElementById('details-kiosk-id').textContent = k.id;
-    document.getElementById('details-kiosk-loc').textContent = k.location || 'Lobby';
-    document.getElementById('details-kiosk-avail').textContent = k.availability === 'available' ? 'Available' : 'Maintenance';
-    document.getElementById('details-kiosk-status').textContent = k.connectionStatus.toUpperCase();
-    document.getElementById('details-kiosk-active').textContent = k.lastActive || 'Just now';
+    document.getElementById('view-kiosk-id-val').textContent = k.id;
+    document.getElementById('view-kiosk-location').textContent = k.location || 'Unknown';
+    document.getElementById('view-kiosk-config').textContent = k.configuration || 'Standard Layout';
+    document.getElementById('view-kiosk-connection').innerHTML = k.connectionStatus === 'online' 
+      ? '<span style="color:#22c55e;">Online</span>' 
+      : '<span style="color:#ef4444;">Offline</span>';
+    document.getElementById('view-kiosk-last-active').textContent = k.lastActive || 'Never';
+    document.getElementById('view-kiosk-status').innerHTML = k.status === 'active' 
+      ? '<span class="status-badge status-active">Active</span>' 
+      : '<span class="status-badge status-inactive">Inactive</span>';
 
-    // Hardware checklist
-    const hwList = document.getElementById('details-kiosk-hardware-list');
-    hwList.innerHTML = `
-      <p><strong>Touchscreen Link:</strong> <span class="badge touch-badge">OK</span></p>
-      <p><strong>Ticket Printer:</strong> <span class="badge touch-badge">OK</span></p>
-      <p><strong>Card reader terminal:</strong> <span class="badge touch-badge">OK</span></p>
-    `;
-
-    // Populate order history
-    const orders = KioskStore.getOrders() || [];
-    const kioskOrders = orders.filter(o => o.kioskId === k.id);
-    const container = document.getElementById('details-kiosk-orders');
-    container.innerHTML = '';
-    if (kioskOrders.length === 0) {
-      container.innerHTML = '<p>No orders processed from this kiosk.</p>';
-    } else {
-      kioskOrders.slice(0, 3).forEach(o => {
-        container.innerHTML += `
-          <div style="padding:0.4rem; background:rgba(0,0,0,0.2); border-radius:4px; margin-bottom:0.4rem;">
-            <strong>Token #${o.orderToken}</strong> - $${o.totalAmount.toFixed(2)}<br>
-            <small style="color:var(--text-admin-muted)">Status: ${o.orderStatus}</small>
-          </div>
-        `;
+    const editBtn = document.getElementById('btn-edit-kiosk-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => {
+        editKiosk(k.id);
       });
     }
 
-    document.getElementById('kiosk-details-drawer').classList.add('visible');
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-kiosk-view').classList.add('active');
+    tabTitle.textContent = 'Kiosk Details';
+    tabDescription.textContent = 'View configuration values.';
+    breadcrumbCurrent.textContent = 'View Kiosk';
   }
 
   // Save kiosk configs
@@ -3645,87 +3390,7 @@
     breadcrumbCurrent.textContent = 'View TV';
   }
 
-  function showCategoryDetails(id) {
-    const cats = KioskStore.getCategories() || [];
-    const products = KioskStore.getProducts() || [];
-    const c = cats.find(item => item.id === id);
-    if (!c) return;
-
-    document.getElementById('details-cat-name-header').textContent = c.name;
-    document.getElementById('details-cat-name').textContent = c.name;
-    document.getElementById('details-cat-icon').textContent = c.icon;
-    document.getElementById('details-cat-count').textContent = c.count || 0;
-    document.getElementById('details-cat-status').textContent = c.status.toUpperCase();
-
-    const related = products.filter(p => p.categoryId === c.id);
-    const container = document.getElementById('details-cat-products-list');
-    container.innerHTML = '<strong>Products in this category:</strong>';
-    if (related.length === 0) {
-      container.innerHTML += '<p>No products linked.</p>';
-    } else {
-      related.forEach(p => {
-        container.innerHTML += `<div style="margin-top:0.25rem;">ΓÇó ${p.name} ($${p.price.toFixed(2)})</div>`;
-      });
-    }
-
-    document.getElementById('category-details-drawer').classList.add('visible');
-  }
-
-  function showModifierDetails(id) {
-    const modifiers = KioskStore.get('kiosk_modifiers') || [];
-    const products = KioskStore.getProducts() || [];
-    const m = modifiers.find(item => item.id === id);
-    if (!m) return;
-
-    document.getElementById('details-mod-name-header').textContent = m.name;
-    document.getElementById('details-mod-name').textContent = m.name;
-    document.getElementById('details-mod-type').textContent = m.type.toUpperCase();
-    document.getElementById('details-mod-price').textContent = `+$${m.price.toFixed(2)}`;
-    document.getElementById('details-mod-required').textContent = m.required ? 'Mandatory' : 'Optional';
-
-    const linked = m.productIds.map(pid => products.find(p => p.id === pid)?.name || pid);
-    const container = document.getElementById('details-mod-products-list');
-    container.innerHTML = '';
-    if (linked.length === 0) {
-      container.innerHTML = 'No products linked.';
-    } else {
-      linked.forEach(name => {
-        container.innerHTML += `<div style="margin-top:0.25rem;">ΓÇó ${name}</div>`;
-      });
-    }
-
-    document.getElementById('modifier-details-drawer').classList.add('visible');
-  }
-
-  function showTaxDetails(id) {
-    const taxes = KioskStore.getTaxes() || [];
-    const t = taxes.find(item => item.id === id);
-    if (!t) return;
-
-    document.getElementById('details-tax-name-header').textContent = t.name;
-    document.getElementById('details-tax-name').textContent = t.name;
-    document.getElementById('details-tax-percentage').textContent = `${t.percentage}%`;
-    document.getElementById('details-tax-status').textContent = t.status.toUpperCase();
-
-    document.getElementById('tax-details-drawer').classList.add('visible');
-  }
-
-  function showDiscountDetails(id) {
-    const discounts = KioskStore.getDiscounts() || [];
-    const d = discounts.find(item => item.id === id);
-    if (!d) return;
-
-    document.getElementById('details-disc-name-header').textContent = d.name;
-    document.getElementById('details-disc-name').textContent = d.name;
-    document.getElementById('details-disc-type').textContent = d.type.toUpperCase();
-    document.getElementById('details-disc-value').textContent = d.type === 'percentage' ? `${d.value}%` : `$${d.value.toFixed(2)}`;
-    document.getElementById('details-disc-products').textContent = d.applicableProducts;
-    document.getElementById('details-disc-start').textContent = d.startDate;
-    document.getElementById('details-disc-end').textContent = d.endDate;
-    document.getElementById('details-disc-status').textContent = d.status.toUpperCase();
-
-    document.getElementById('discount-details-drawer').classList.add('visible');
-  }
+  
 
   function showRoleDetails() {
     document.getElementById('role-details-drawer').classList.add('visible');

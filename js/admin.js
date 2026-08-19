@@ -171,167 +171,171 @@
     document.getElementById('kpi-active-kiosks').textContent = onlineKiosks;
     document.getElementById('kpi-active-kiosks-sub').textContent = `${onlineKiosks} of ${kiosks.length} kiosks online`;
 
-    document.getElementById('kpi-orders-val').textContent = '126';
+    document.getElementById('kpi-orders-count').textContent = '126';
     document.getElementById('kpi-orders-sub').innerHTML = '<i data-lucide="trending-up" style="width: 12px; height: 12px;"></i> 12.4% from yesterday';
 
     // Destroy previous chart instances if they exist
-    if (window.myOrdersOverviewChart) { window.myOrdersOverviewChart.destroy(); }
-    if (window.myOrderStatusChart) { window.myOrderStatusChart.destroy(); }
-    if (window.myDeviceStatusChart) { window.myDeviceStatusChart.destroy(); }
+    try {
+      if (window.myOrdersOverviewChart) { window.myOrdersOverviewChart.destroy(); }
+      if (window.myOrderStatusChart) { window.myOrderStatusChart.destroy(); }
+      if (window.myDeviceStatusChart) { window.myDeviceStatusChart.destroy(); }
 
-    if (window.Chart) {
-      // 1. Orders Overview Line Chart
-      const ctx1 = document.getElementById('chart-orders-overview').getContext('2d');
-      window.myOrdersOverviewChart = new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Orders',
-            data: [18, 24, 21, 27, 19, 34, 29],
-            borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79, 70, 229, 0.05)',
-            borderWidth: 2.5,
-            pointBackgroundColor: '#4f46e5',
-            pointHoverRadius: 6,
-            tension: 0.35,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              backgroundColor: '#1f2937',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              borderColor: '#374151',
-              borderWidth: 1,
-              callbacks: {
-                label: function(context) { return ` ${context.raw} Orders`; }
-              }
-            }
+      if (window.Chart) {
+        // 1. Orders Overview Line Chart
+        const ctx1 = document.getElementById('chart-orders-overview').getContext('2d');
+        window.myOrdersOverviewChart = new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Orders',
+              data: [18, 24, 21, 27, 19, 34, 29],
+              borderColor: '#4f46e5',
+              backgroundColor: 'rgba(79, 70, 229, 0.05)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#4f46e5',
+              pointHoverRadius: 6,
+              tension: 0.35,
+              fill: true
+            }]
           },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: '#9ca3af', font: { size: 10 } }
-            },
-            y: {
-              grid: { color: 'rgba(75, 85, 99, 0.15)' },
-              ticks: { color: '#9ca3af', font: { size: 10 } }
-            }
-          }
-        }
-      });
-
-      // 2. Order Status Donut Chart
-      const ctx2 = document.getElementById('chart-order-status').getContext('2d');
-      window.myOrderStatusChart = new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-          labels: ['Completed', 'Pending', 'Cancelled', 'Failed'],
-          datasets: [{
-            data: [82, 14, 8, 4],
-            backgroundColor: ['#10b981', '#f59e0b', '#6b7280', '#ef4444'],
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '70%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#e5e7eb',
-                font: { size: 10 },
-                padding: 10,
-                boxWidth: 10
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                backgroundColor: '#1f2937',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#374151',
+                borderWidth: 1,
+                callbacks: {
+                  label: function(context) { return ` ${context.raw} Orders`; }
+                }
               }
             },
-            tooltip: {
-              backgroundColor: '#1f2937',
-              callbacks: {
-                label: function(context) { return ` ${context.label}: ${context.raw} orders`; }
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
+              },
+              y: {
+                grid: { color: 'rgba(75, 85, 99, 0.15)' },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
               }
             }
           }
-        }
-      });
+        });
 
-      // 3. Device Status Horizontal Bar Chart
-      const ctx3 = document.getElementById('chart-device-status').getContext('2d');
-      window.myDeviceStatusChart = new Chart(ctx3, {
-        type: 'bar',
-        data: {
-          labels: ['TVs', 'Kiosks'],
-          datasets: [
-            {
-              label: 'Online',
-              data: [
-                tvs.filter(t => t.connectionStatus === 'online').length,
-                kiosks.filter(k => k.connectionStatus === 'online').length
-              ],
-              backgroundColor: '#10b981',
-              barThickness: 12
-            },
-            {
-              label: 'Warning',
-              data: [
-                0,
-                kiosks.filter(k => k.connectionStatus === 'warning').length
-              ],
-              backgroundColor: '#f59e0b',
-              barThickness: 12
-            },
-            {
-              label: 'Offline',
-              data: [
-                tvs.filter(t => t.connectionStatus === 'offline').length,
-                kiosks.filter(k => k.connectionStatus === 'offline').length
-              ],
-              backgroundColor: '#ef4444',
-              barThickness: 12
-            }
-          ]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#e5e7eb',
-                font: { size: 10 },
-                boxWidth: 8
-              }
-            },
-            tooltip: {
-              backgroundColor: '#1f2937'
-            }
+        // 2. Order Status Donut Chart
+        const ctx2 = document.getElementById('chart-order-status').getContext('2d');
+        window.myOrderStatusChart = new Chart(ctx2, {
+          type: 'doughnut',
+          data: {
+            labels: ['Completed', 'Pending', 'Cancelled', 'Failed'],
+            datasets: [{
+              data: [82, 14, 8, 4],
+              backgroundColor: ['#10b981', '#f59e0b', '#6b7280', '#ef4444'],
+              borderWidth: 0,
+              hoverOffset: 4
+            }]
           },
-          scales: {
-            x: {
-              stacked: true,
-              grid: { display: false },
-              ticks: { color: '#9ca3af', font: { size: 10 } }
-            },
-            y: {
-              stacked: true,
-              grid: { display: false },
-              ticks: { color: '#9ca3af', font: { size: 10 } }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#e5e7eb',
+                  font: { size: 10 },
+                  padding: 10,
+                  boxWidth: 10
+                }
+              },
+              tooltip: {
+                backgroundColor: '#1f2937',
+                callbacks: {
+                  label: function(context) { return ` ${context.label}: ${context.raw} orders`; }
+                }
+              }
             }
           }
-        }
-      });
+        });
+
+        // 3. Device Status Horizontal Bar Chart
+        const ctx3 = document.getElementById('chart-device-status').getContext('2d');
+        window.myDeviceStatusChart = new Chart(ctx3, {
+          type: 'bar',
+          data: {
+            labels: ['TVs', 'Kiosks'],
+            datasets: [
+              {
+                label: 'Online',
+                data: [
+                  tvs.filter(t => t.connectionStatus === 'online').length,
+                  kiosks.filter(k => k.connectionStatus === 'online').length
+                ],
+                backgroundColor: '#10b981',
+                barThickness: 12
+              },
+              {
+                label: 'Warning',
+                data: [
+                  0,
+                  kiosks.filter(k => k.connectionStatus === 'warning').length
+                ],
+                backgroundColor: '#f59e0b',
+                barThickness: 12
+              },
+              {
+                label: 'Offline',
+                data: [
+                  tvs.filter(t => t.connectionStatus === 'offline').length,
+                  kiosks.filter(k => k.connectionStatus === 'offline').length
+                ],
+                backgroundColor: '#ef4444',
+                barThickness: 12
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#e5e7eb',
+                  font: { size: 10 },
+                  boxWidth: 8
+                }
+              },
+              tooltip: {
+                backgroundColor: '#1f2937'
+              }
+            },
+            scales: {
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
+              },
+              y: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+    } catch (chartErr) {
+      console.error('Error rendering charts:', chartErr);
     }
 
     // Render TV status table
@@ -871,1119 +875,18 @@
           </td>
           <td style="text-align: right; white-space: nowrap;">
             <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn-action btn-view-banner" data-id="${b.id}" title="View Details">
+              <button class="btn-action btn-view-kiosk" data-id="${k.id}" title="View Details">
                 <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
               </button>
-              <button class="btn-action btn-edit-banner" data-id="${b.id}" title="Edit">
+              <button class="btn-action btn-edit-kiosk" data-id="${k.id}" title="Edit">
                 <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
               </button>
-              <button class="btn-action btn-action-danger btn-delete-banner" data-id="${b.id}" title="Delete">
+              <button class="btn-action btn-more-kiosk" data-id="${k.id}" title="More Actions">
+                <i data-lucide="more-horizontal" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="btn-action btn-action-danger btn-delete-kiosk" data-id="${k.id}" title="Delete">
                 <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
               </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    // Pagination
-    const showFrom = startIdx + 1;
-    const showTo = Math.min(startIdx + bannerPageSize, totalItems);
-    let pagesHtml = '';
-    for (let i = 1; i <= totalPages; i++) {
-      pagesHtml += `<button class="page-btn ${i === bannerPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-    }
-    paginationEl.innerHTML = `
-      <div class="pagination-info">
-        Showing <strong>${showFrom}–${showTo}</strong> of <strong>${totalItems}</strong> banners
-        <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
-        <select class="page-size-select" id="banner-page-size-select">
-          <option value="10" ${bannerPageSize === 10 ? 'selected' : ''}>10</option>
-          <option value="20" ${bannerPageSize === 20 ? 'selected' : ''}>20</option>
-          <option value="50" ${bannerPageSize === 50 ? 'selected' : ''}>50</option>
-        </select>
-      </div>
-      <div class="pagination-controls">
-        <button class="page-btn" data-page="prev" ${bannerPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
-        ${pagesHtml}
-        <button class="page-btn" data-page="next" ${bannerPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
-      </div>
-    `;
-
-    // Bind pagination events
-    paginationEl.querySelectorAll('.page-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pg = btn.getAttribute('data-page');
-        if (pg === 'prev') bannerPage = Math.max(1, bannerPage - 1);
-        else if (pg === 'next') bannerPage = Math.min(totalPages, bannerPage + 1);
-        else bannerPage = parseInt(pg);
-        renderBanners();
-      });
-    });
-    const pageSizeSel = document.getElementById('banner-page-size-select');
-    if (pageSizeSel) {
-      pageSizeSel.addEventListener('change', (e) => {
-        bannerPageSize = parseInt(e.target.value);
-        bannerPage = 1;
-        renderBanners();
-      });
-    }
-
-    // Bind toggle switches
-    document.querySelectorAll('.banner-status-toggle').forEach(toggle => {
-      toggle.addEventListener('change', (e) => {
-        e.preventDefault();
-        const bid = toggle.getAttribute('data-id');
-        const allBanners = KioskStore.getBanners();
-        const banner = allBanners.find(x => x.id === bid);
-        if (!banner) return;
-        const wasActive = banner.active;
-        // Revert immediately — wait for confirmation
-        toggle.checked = wasActive;
-        const action = wasActive ? 'Deactivate' : 'Activate';
-        triggerConfirm(`${action} ${banner.title}?`, `Are you sure you want to ${action.toLowerCase()} this banner?`, () => {
-          banner.active = !wasActive;
-          KioskStore.setBanners(allBanners);
-          showToast(`${banner.title} ${wasActive ? 'deactivated' : 'activated'}.`);
-        }, { isDestructive: wasActive, confirmText: `Yes, ${action}` });
-      });
-    });
-
-    bindEvents('.btn-view-banner', previewBanner);
-    bindEvents('.btn-edit-banner', editBanner);
-    bindEvents('.btn-delete-banner', deleteBanner);
-  }
-
-  let paymentPage = 1;
-  let paymentPageSize = 10;
-  
-  function renderPayments() {
-    const payments = KioskStore.getPayments() || [];
-    const tbody = document.getElementById('payments-tbody');
-    const searchInput = document.getElementById('payment-search');
-    const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
-
-    let filtered = payments.filter(p => {
-      return !searchVal || p.name.toLowerCase().includes(searchVal);
-    });
-
-    if (window.tableSorts && window.tableSorts.payments) {
-      const { field, dir } = window.tableSorts.payments;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 3rem; color: var(--text-admin-muted);">
-        <i data-lucide="credit-card" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 1rem; display: block; margin: 0 auto;"></i>
-        No payment methods found.
-      </td></tr>`;
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    const totalPages = Math.ceil(filtered.length / paymentPageSize);
-    if (paymentPage > totalPages) paymentPage = Math.max(1, totalPages);
-    const startIndex = (paymentPage - 1) * paymentPageSize;
-    const paginated = filtered.slice(startIndex, startIndex + paymentPageSize);
-
-    tbody.innerHTML = '';
-    paginated.forEach(p => {
-      const statusBadge = p.status === 'enabled'
-        ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Enabled</span>`
-        : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Disabled</span>`;
-        
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <div style="width:32px; height:32px; border-radius:6px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="credit-card" style="width:16px;height:16px; color:var(--primary);"></i>
-              </div>
-              <strong>${p.name}</strong>
-            </div>
-          </td>
-          <td>${p.configuration}</td>
-          <td>${statusBadge}</td>
-          <td style="text-align: right;">
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon btn-edit-payment" data-id="${p.id}" title="Edit"><i data-lucide="settings"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (window.lucide) lucide.createIcons();
-    bindEvents('.btn-edit-payment', editPayment);
-  }
-
-  const paymentSearch = document.getElementById('payment-search');
-  if (paymentSearch) paymentSearch.addEventListener('input', () => { paymentPage = 1; renderPayments(); });
-
-  // 4.3 Playlists CRUD
-  function renderPlaylists() {
-    const playlists = KioskStore.getPlaylists() || [];
-    const tbody = document.getElementById('playlists-tbody');
-    tbody.innerHTML = '';
-
-    const search = document.getElementById('playlist-search').value.toLowerCase();
-    const current = activeFilters.playlists || { status: [] };
-
-    const filtered = playlists.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(search);
-      let matchStatus = true;
-      if (current.status.length > 0) {
-        matchStatus = current.status.includes(p.status);
-      }
-      return matchSearch && matchStatus;
-    });
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No playlists match the selected filters.</td></tr>';
-      return;
-    }
-
-    filtered.forEach(p => {
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${p.name}</strong><br><small style="color: var(--text-admin-muted);">ID: ${p.id}</small></td>
-          <td>${p.bannerIds?.length || 0} Banners</td>
-          <td>${p.assignedTVs || '0 TVs'}</td>
-          <td><span class="badge touch-badge">${p.status.toUpperCase()}</span></td>
-          <td>${p.updatedDate}</td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon-only btn-view-playlist" data-id="${p.id}" title="View Details" style="padding: 0.3rem 0.4rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-secondary btn-icon-only btn-edit-playlist" data-id="${p.id}" title="Edit Settings" style="padding: 0.3rem 0.4rem;"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-danger btn-icon-only btn-delete-playlist" data-id="${p.id}" title="Delete Record" style="padding: 0.3rem 0.4rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    bindEvents('.btn-view-playlist', simulatePlaylistSequence);
-    bindEvents('.btn-edit-playlist', editPlaylist);
-    bindEvents('.btn-delete-playlist', deletePlaylist);
-  }
-
-  // 4.4 TVs CRUD
-  function renderTVs() {
-    const tvs = KioskStore.getTVs() || [];
-    const playlists = KioskStore.getPlaylists() || [];
-    const tbody = document.getElementById('tvs-tbody');
-    tbody.innerHTML = '';
-
-    const search = document.getElementById('tv-search').value.toLowerCase();
-    const current = activeFilters.tvs || { status: [], type: [], playlist: [], location: [] };
-
-    const filtered = tvs.filter(t => {
-      const matchSearch = t.name.toLowerCase().includes(search);
-      let matchStatus = true;
-      if (current.status.length > 0) {
-        matchStatus = current.status.includes(t.status);
-      }
-      let matchType = true;
-      if (current.type.length > 0) {
-        matchType = current.connectionStatus.includes(t.connectionStatus);
-      }
-      let matchPlaylist = true;
-      if (current.playlist.length > 0) {
-        matchPlaylist = current.playlist.includes(t.assignedPlaylistId);
-      }
-      let matchLocation = true;
-      if (current.location.length > 0) {
-        matchLocation = current.location.includes(t.location);
-      }
-      return matchSearch && matchStatus && matchType && matchPlaylist && matchLocation;
-    });
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No TVs match the selected filters.</td></tr>';
-      return;
-    }
-
-    filtered.forEach(t => {
-      const pl = playlists.find(p => p.id === t.assignedPlaylistId)?.name || 'None';
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${t.name}</strong></td>
-          <td><span style="font-family: monospace;">${t.id}</span></td>
-          <td>${t.location || 'Counter'}</td>
-          <td><span class="badge desktop-badge">${pl}</span></td>
-          <td><span class="badge touch-badge">${t.status.toUpperCase()}</span></td>
-          <td><span class="badge ${t.connectionStatus === 'online' ? 'touch-badge' : 'danger-badge'}">${t.connectionStatus.toUpperCase()}</span></td>
-          <td>${t.lastActive}</td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon-only btn-view-tv" data-id="${t.id}" title="View Details" style="padding: 0.3rem 0.4rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-secondary btn-icon-only btn-edit-tv" data-id="${t.id}" title="Edit Settings" style="padding: 0.3rem 0.4rem;"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-danger btn-icon-only btn-delete-tv" data-id="${t.id}" title="Delete Record" style="padding: 0.3rem 0.4rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    bindEvents('.btn-view-tv', showTVDetails);
-    bindEvents('.btn-edit-tv', editTV);
-    bindEvents('.btn-delete-tv', deleteTV);
-  }
-
-  // 4.5 Fallback config Content
-  function renderFallback() {
-    const config = KioskStore.getConfig();
-    if (!config || !config.fallbackContent) return;
-
-    const f = config.fallbackContent;
-    document.getElementById('fallback-preview-image').src = f.image;
-    document.getElementById('fallback-preview-type').textContent = f.contentType.toUpperCase();
-    document.getElementById('fallback-preview-date').textContent = f.lastUpdated;
-
-    document.getElementById('fallback-title').value = f.title;
-    document.getElementById('fallback-desc').value = f.description;
-    document.getElementById('fallback-image').value = f.image;
-  }
-
-  // 4.5 Categories CRUD
-  let categoryPage = 1;
-  let categoryPageSize = 10;
-
-  function renderCategories() {
-    const categories = KioskStore.getCategories() || [];
-    const tbody = document.getElementById('categories-tbody');
-    const paginationEl = document.getElementById('categories-pagination');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const search = (document.getElementById('category-search')?.value || '').toLowerCase();
-    const current = activeFilters.categories || { status: [] };
-
-    const filtered = categories.filter(c => {
-      const matchSearch = c.name.toLowerCase().includes(search);
-      let matchStatus = true;
-      if (current.status && current.status.length > 0) {
-        matchStatus = false;
-        if (current.status.includes('active') && c.status === 'active') matchStatus = true;
-        if (current.status.includes('inactive') && c.status !== 'active') matchStatus = true;
-      }
-      return matchSearch && matchStatus;
-    });
-
-    if (window.tableSorts && window.tableSorts.categories) {
-      const { field, dir } = window.tableSorts.categories;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / categoryPageSize));
-    if (categoryPage > totalPages) categoryPage = totalPages;
-    const startIdx = (categoryPage - 1) * categoryPageSize;
-    const pageItems = filtered.slice(startIdx, startIdx + categoryPageSize);
-
-    if (totalItems === 0) {
-      const hasSearch = search.length > 0;
-      const hasFilters = current.status && current.status.length > 0;
-      let emptyHtml = '';
-      if (hasSearch) {
-        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No categories match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('category-search').value='';document.getElementById('category-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
-      } else if (hasFilters) {
-        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No categories match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.categories={status:[]};updateFilterChips('categories');renderCategories();">Clear Filters</button></div></td></tr>`;
-      } else {
-        emptyHtml = `<tr><td colspan="5"><div class="table-empty-state"><i data-lucide="folder" class="empty-icon"></i><h4>No categories found</h4><p>Create your first menu category.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-category').click();">Create Category</button></div></td></tr>`;
-      }
-      tbody.innerHTML = emptyHtml;
-      if (paginationEl) paginationEl.innerHTML = '';
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    pageItems.forEach(c => {
-      const isActive = c.status === 'active';
-      const statusBadge = isActive
-        ? '<span class="badge touch-badge">Active</span>'
-        : '<span class="badge danger-badge">Inactive</span>';
-
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <strong style="display:block;line-height:1.3;">${c.name}</strong>
-            <div style="font-size: 0.75rem; color: var(--text-admin-muted);">ID: ${c.id}</div>
-          </td>
-          <td><div style="font-size: 1.5rem;"><i data-lucide="${c.icon || 'folder'}" style="width: 24px; height: 24px;"></i></div></td>
-          <td><span class="badge desktop-badge">${c.count || 0} Products</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              ${statusBadge}
-              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
-                <input type="checkbox" class="category-status-toggle" data-id="${c.id}" ${isActive ? 'checked' : ''}>
-                <span class="slider"></span>
-              </label>
-            </div>
-          </td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn-action btn-view-category" data-id="${c.id}" title="View Details">
-                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-edit-category" data-id="${c.id}" title="Edit">
-                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-action-danger btn-delete-category" data-id="${c.id}" title="Delete">
-                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (paginationEl) {
-      const showFrom = startIdx + 1;
-      const showTo = Math.min(startIdx + categoryPageSize, totalItems);
-      let pagesHtml = '';
-      for (let i = 1; i <= totalPages; i++) {
-        pagesHtml += `<button class="page-btn ${i === categoryPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-      }
-      paginationEl.innerHTML = `
-        <div class="pagination-info">
-          Showing <strong>${showFrom}–${showTo}</strong> of <strong>${totalItems}</strong> categories
-          <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
-          <select class="page-size-select" id="category-page-size-select">
-            <option value="10" ${categoryPageSize === 10 ? 'selected' : ''}>10</option>
-            <option value="20" ${categoryPageSize === 20 ? 'selected' : ''}>20</option>
-            <option value="50" ${categoryPageSize === 50 ? 'selected' : ''}>50</option>
-          </select>
-        </div>
-        <div class="pagination-controls">
-          <button class="page-btn" data-page="prev" ${categoryPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
-          ${pagesHtml}
-          <button class="page-btn" data-page="next" ${categoryPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
-        </div>
-      `;
-
-      paginationEl.querySelectorAll('.page-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const pg = btn.getAttribute('data-page');
-          if (pg === 'prev') categoryPage = Math.max(1, categoryPage - 1);
-          else if (pg === 'next') categoryPage = Math.min(totalPages, categoryPage + 1);
-          else categoryPage = parseInt(pg);
-          renderCategories();
-        });
-      });
-      const pageSizeSel = document.getElementById('category-page-size-select');
-      if (pageSizeSel) {
-        pageSizeSel.addEventListener('change', (e) => {
-          categoryPageSize = parseInt(e.target.value);
-          categoryPage = 1;
-          renderCategories();
-        });
-      }
-    }
-
-    if (window.lucide) lucide.createIcons();
-    
-    // Bind listeners
-    document.querySelectorAll('.category-status-toggle').forEach(toggle => {
-      toggle.addEventListener('change', (e) => {
-        e.preventDefault();
-        const id = toggle.getAttribute('data-id');
-        const all = KioskStore.getCategories();
-        const cat = all.find(x => x.id === id);
-        if (!cat) return;
-        const wasActive = cat.status === 'active';
-        const willBeActive = !wasActive;
-        // revert visual state momentarily
-        toggle.checked = wasActive;
-        // Open confirmation
-        document.getElementById('confirm-modal-title').textContent = willBeActive ? 'Activate Category' : 'Deactivate Category';
-        document.getElementById('confirm-modal-body').textContent = `Are you sure you want to ${willBeActive ? 'activate' : 'deactivate'} "${cat.name}"?`;
-        
-        const confirmBtn = document.getElementById('btn-confirm-execute');
-        confirmBtn.className = willBeActive ? 'btn btn-primary' : 'btn btn-warning';
-        confirmBtn.textContent = willBeActive ? 'Yes, Activate' : 'Yes, Deactivate';
-        
-        document.getElementById('confirm-modal').classList.add('visible');
-        
-        // Remove old listeners
-        const newBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-        
-        newBtn.addEventListener('click', () => {
-          cat.status = willBeActive ? 'active' : 'inactive';
-          KioskStore.setCategories(all);
-          document.getElementById('confirm-modal').classList.remove('visible');
-          showToast(willBeActive ? 'Category activated successfully' : 'Category deactivated', willBeActive ? 'success' : 'warning');
-          renderCategories();
-        });
-      });
-    });
-    bindEvents('.btn-view-category', showCategoryDetails);
-    bindEvents('.btn-edit-category', editCategory);
-    bindEvents('.btn-delete-category', deleteCategory);
-  }
-
-  // 4.6 Products CRUD
-  let productPage = 1;
-  let productPageSize = 10;
-
-  function renderProducts() {
-    const products = KioskStore.getProducts() || [];
-    const categories = KioskStore.getCategories() || [];
-    const tbody = document.getElementById('products-tbody');
-    const paginationEl = document.getElementById('products-pagination');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const search = (document.getElementById('product-search')?.value || '').toLowerCase();
-    const current = activeFilters.products || { status: [], category: [], availability: [] };
-
-    const filtered = products.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(search);
-      let matchStatus = true;
-      if (current.status && current.status.length > 0) {
-        matchStatus = false;
-        if (current.status.includes('active') && p.status === 'active') matchStatus = true;
-        if (current.status.includes('inactive') && p.status !== 'active') matchStatus = true;
-      }
-      let matchCat = true;
-      if (current.category && current.category.length > 0) {
-        matchCat = current.category.includes(p.categoryId);
-      }
-      let matchAvail = true;
-      if (current.availability && current.availability.length > 0) {
-        matchAvail = false;
-        if (current.availability.includes('available') && p.available) matchAvail = true;
-        if (current.availability.includes('unavailable') && !p.available) matchAvail = true;
-      }
-      return matchSearch && matchStatus && matchCat && matchAvail;
-    });
-
-    if (window.tableSorts && window.tableSorts.products) {
-      const { field, dir } = window.tableSorts.products;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / productPageSize));
-    if (productPage > totalPages) productPage = totalPages;
-    const startIdx = (productPage - 1) * productPageSize;
-    const pageItems = filtered.slice(startIdx, startIdx + productPageSize);
-
-    if (totalItems === 0) {
-      const hasSearch = search.length > 0;
-      const hasFilters = (current.status && current.status.length > 0) || (current.category && current.category.length > 0) || (current.availability && current.availability.length > 0);
-      let emptyHtml = '';
-      if (hasSearch) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No products match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('product-search').value='';document.getElementById('product-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
-      } else if (hasFilters) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No products match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.products={status:[],category:[],availability:[]};updateFilterChips('products');renderProducts();">Clear Filters</button></div></td></tr>`;
-      } else {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="package" class="empty-icon"></i><h4>No products found</h4><p>Add products to your catalog.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-product').click();">Add Product</button></div></td></tr>`;
-      }
-      tbody.innerHTML = emptyHtml;
-      if (paginationEl) paginationEl.innerHTML = '';
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    pageItems.forEach(p => {
-      const cat = categories.find(c => c.id === p.categoryId) || { name: 'Uncategorized' };
-      const isActive = p.status === 'active';
-      const statusBadge = isActive
-        ? '<span class="badge touch-badge">Active</span>'
-        : '<span class="badge danger-badge">Inactive</span>';
-      
-      const isAvail = p.available;
-      const availBadge = isAvail
-        ? '<span class="badge desktop-badge" style="color:var(--green);">In Stock</span>'
-        : '<span class="badge desktop-badge" style="color:var(--danger);">Out of Stock</span>';
-
-      tbody.innerHTML += `
-        <tr>
-          <td><strong style="display:block;line-height:1.3;">${p.name}</strong></td>
-          <td>
-            <img src="${p.image}" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-admin); display: block;"
-              alt="${p.name}" onerror="this.outerHTML='<div class=\\'thumb-placeholder\\'><i data-lucide=\\'image\\' style=\\'width:18px;height:18px;\\'></i></div>'">
-          </td>
-          <td><span class="badge desktop-badge">${cat.name}</span></td>
-          <td><strong>$${p.price.toFixed(2)}</strong></td>
-          <td>${availBadge}</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              ${statusBadge}
-              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
-                <input type="checkbox" class="product-status-toggle" data-id="${p.id}" ${isActive ? 'checked' : ''}>
-                <span class="slider"></span>
-              </label>
-            </div>
-          </td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn-action btn-view-product" data-id="${p.id}" title="View Details">
-                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-edit-product" data-id="${p.id}" title="Edit">
-                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-action-danger btn-delete-product" data-id="${p.id}" title="Delete">
-                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (paginationEl) {
-      const showFrom = startIdx + 1;
-      const showTo = Math.min(startIdx + productPageSize, totalItems);
-      let pagesHtml = '';
-      for (let i = 1; i <= totalPages; i++) {
-        pagesHtml += `<button class="page-btn ${i === productPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-      }
-      paginationEl.innerHTML = `
-        <div class="pagination-info">
-          Showing <strong>${showFrom}–${showTo}</strong> of <strong>${totalItems}</strong> products
-          <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
-          <select class="page-size-select" id="product-page-size-select">
-            <option value="10" ${productPageSize === 10 ? 'selected' : ''}>10</option>
-            <option value="20" ${productPageSize === 20 ? 'selected' : ''}>20</option>
-            <option value="50" ${productPageSize === 50 ? 'selected' : ''}>50</option>
-          </select>
-        </div>
-        <div class="pagination-controls">
-          <button class="page-btn" data-page="prev" ${productPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
-          ${pagesHtml}
-          <button class="page-btn" data-page="next" ${productPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
-        </div>
-      `;
-
-      paginationEl.querySelectorAll('.page-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const pg = btn.getAttribute('data-page');
-          if (pg === 'prev') productPage = Math.max(1, productPage - 1);
-          else if (pg === 'next') productPage = Math.min(totalPages, productPage + 1);
-          else productPage = parseInt(pg);
-          renderProducts();
-        });
-      });
-      const pageSizeSel = document.getElementById('product-page-size-select');
-      if (pageSizeSel) {
-        pageSizeSel.addEventListener('change', (e) => {
-          productPageSize = parseInt(e.target.value);
-          productPage = 1;
-          renderProducts();
-        });
-      }
-    }
-
-    if (window.lucide) lucide.createIcons();
-    
-    // Bind listeners
-    document.querySelectorAll('.product-status-toggle').forEach(toggle => {
-      toggle.addEventListener('change', (e) => {
-        e.preventDefault();
-        const id = toggle.getAttribute('data-id');
-        const all = KioskStore.getProducts();
-        const p = all.find(x => x.id === id);
-        if (!p) return;
-        const wasActive = p.status === 'active';
-        const willBeActive = !wasActive;
-        // revert visual state momentarily
-        toggle.checked = wasActive;
-        // Open confirmation
-        document.getElementById('confirm-modal-title').textContent = willBeActive ? 'Activate Product' : 'Deactivate Product';
-        document.getElementById('confirm-modal-body').textContent = `Are you sure you want to ${willBeActive ? 'activate' : 'deactivate'} "${p.name}"?`;
-        
-        const confirmBtn = document.getElementById('btn-confirm-execute');
-        confirmBtn.className = willBeActive ? 'btn btn-primary' : 'btn btn-warning';
-        confirmBtn.textContent = willBeActive ? 'Yes, Activate' : 'Yes, Deactivate';
-        
-        document.getElementById('confirm-modal').classList.add('visible');
-        
-        // Remove old listeners
-        const newBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-        
-        newBtn.addEventListener('click', () => {
-          p.status = willBeActive ? 'active' : 'inactive';
-          KioskStore.setProducts(all);
-          document.getElementById('confirm-modal').classList.remove('visible');
-          showToast(willBeActive ? 'Product activated successfully' : 'Product deactivated', willBeActive ? 'success' : 'warning');
-          renderProducts();
-        });
-      });
-    });
-    bindEvents('.btn-view-product', showProductDetails);
-    bindEvents('.btn-edit-product', editProduct);
-    bindEvents('.btn-delete-product', deleteProduct);
-  }
-
-  window.changeProductPage = function(p) {
-    productPage = p;
-    renderProducts();
-  }
-
-  // 4.7 Modifiers CRUD
-  let modifierPage = 1;
-  let modifierPageSize = 10;
-
-  function renderModifiers() {
-    // We will extract unique modifiers from products
-    const products = KioskStore.getProducts() || [];
-    let modifiersMap = new Map();
-    
-    products.forEach(p => {
-      if (p.addOns) {
-        p.addOns.forEach(a => {
-          if (!modifiersMap.has(a.name)) {
-            modifiersMap.set(a.name, { id: 'mod-' + a.name.toLowerCase().replace(/\\s+/g, '-'), name: a.name, type: 'Add-on', price: a.price, required: false, applicable: [p.name], status: 'active' });
-          } else {
-            modifiersMap.get(a.name).applicable.push(p.name);
-          }
-        });
-      }
-      if (p.variants) {
-        p.variants.forEach(v => {
-          if (!modifiersMap.has(v.name)) {
-            modifiersMap.set(v.name, { id: 'mod-' + v.name.toLowerCase().replace(/\\s+/g, '-'), name: v.name, type: 'Variant', price: 0, required: true, applicable: [p.name], status: 'active' });
-          } else {
-            modifiersMap.get(v.name).applicable.push(p.name);
-          }
-        });
-      }
-    });
-    
-    const modifiers = Array.from(modifiersMap.values());
-    
-    const tbody = document.getElementById('modifiers-tbody');
-    const paginationEl = document.getElementById('customisation-pagination');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const search = (document.getElementById('modifier-search')?.value || '').toLowerCase();
-    const current = activeFilters.customisation || { status: [], type: [], required: [] };
-
-    const filtered = modifiers.filter(m => {
-      const matchSearch = m.name.toLowerCase().includes(search);
-      let matchStatus = true;
-      if (current.status && current.status.length > 0) {
-        matchStatus = false;
-        if (current.status.includes('active') && m.status === 'active') matchStatus = true;
-        if (current.status.includes('inactive') && m.status !== 'active') matchStatus = true;
-      }
-      return matchSearch && matchStatus;
-    });
-
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / modifierPageSize));
-    if (modifierPage > totalPages) modifierPage = totalPages;
-    const startIdx = (modifierPage - 1) * modifierPageSize;
-    const pageItems = filtered.slice(startIdx, startIdx + modifierPageSize);
-
-    if (totalItems === 0) {
-      const hasSearch = search.length > 0;
-      const hasFilters = current.status && current.status.length > 0;
-      let emptyHtml = '';
-      if (hasSearch) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="search" class="empty-icon"></i><h4>No modifiers match your search</h4><p>Try a different search term.</p><button class="btn btn-secondary" onclick="document.getElementById('modifier-search').value='';document.getElementById('modifier-search').dispatchEvent(new Event('input'));">Clear Search</button></div></td></tr>`;
-      } else if (hasFilters) {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="filter-x" class="empty-icon"></i><h4>No modifiers match the selected filters</h4><p>Adjust your filters or clear them.</p><button class="btn btn-secondary" onclick="activeFilters.customisation={status:[]};updateFilterChips('customisation');renderModifiers();">Clear Filters</button></div></td></tr>`;
-      } else {
-        emptyHtml = `<tr><td colspan="7"><div class="table-empty-state"><i data-lucide="sliders-horizontal" class="empty-icon"></i><h4>No customisations found</h4><p>Create variants or add-ons for products.</p><button class="btn btn-primary" onclick="document.getElementById('btn-add-modifier').click();">Add Modifier</button></div></td></tr>`;
-      }
-      tbody.innerHTML = emptyHtml;
-      if (paginationEl) paginationEl.innerHTML = '';
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    pageItems.forEach(m => {
-      const isActive = m.status === 'active';
-      const statusBadge = isActive
-        ? '<span class="badge touch-badge">Active</span>'
-        : '<span class="badge danger-badge">Inactive</span>';
-      
-      const reqBadge = m.required
-        ? '<span class="badge warning-badge">Required</span>'
-        : '<span class="badge desktop-badge">Optional</span>';
-
-      tbody.innerHTML += `
-        <tr>
-          <td><strong style="display:block;line-height:1.3;">${m.name}</strong></td>
-          <td>${m.type}</td>
-          <td>${m.price > 0 ? '+$' + m.price.toFixed(2) : 'Varies'}</td>
-          <td>${reqBadge}</td>
-          <td><span class="badge desktop-badge">${m.applicable.length} Products</span></td>
-          <td>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              ${statusBadge}
-              <label class="status-switch" title="${isActive ? 'Deactivate' : 'Activate'}">
-                <input type="checkbox" class="modifier-status-toggle" data-id="${m.id}" ${isActive ? 'checked' : ''}>
-                <span class="slider"></span>
-              </label>
-            </div>
-          </td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn-action btn-view-modifier" data-id="${m.id}" title="View Details">
-                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-edit-modifier" data-id="${m.id}" title="Edit">
-                <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
-              </button>
-              <button class="btn-action btn-action-danger btn-delete-modifier" data-id="${m.id}" title="Delete">
-                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (paginationEl) {
-      const showFrom = startIdx + 1;
-      const showTo = Math.min(startIdx + modifierPageSize, totalItems);
-      let pagesHtml = '';
-      for (let i = 1; i <= totalPages; i++) {
-        pagesHtml += `<button class="page-btn ${i === modifierPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-      }
-      paginationEl.innerHTML = `
-        <div class="pagination-info">
-          Showing <strong>${showFrom}–${showTo}</strong> of <strong>${totalItems}</strong> modifiers
-          <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
-          <select class="page-size-select" id="modifier-page-size-select">
-            <option value="10" ${modifierPageSize === 10 ? 'selected' : ''}>10</option>
-            <option value="20" ${modifierPageSize === 20 ? 'selected' : ''}>20</option>
-            <option value="50" ${modifierPageSize === 50 ? 'selected' : ''}>50</option>
-          </select>
-        </div>
-        <div class="pagination-controls">
-          <button class="page-btn" data-page="prev" ${modifierPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
-          ${pagesHtml}
-          <button class="page-btn" data-page="next" ${modifierPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
-        </div>
-      `;
-
-      paginationEl.querySelectorAll('.page-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const pg = btn.getAttribute('data-page');
-          if (pg === 'prev') modifierPage = Math.max(1, modifierPage - 1);
-          else if (pg === 'next') modifierPage = Math.min(totalPages, modifierPage + 1);
-          else modifierPage = parseInt(pg);
-          renderModifiers();
-        });
-      });
-      const pageSizeSel = document.getElementById('modifier-page-size-select');
-      if (pageSizeSel) {
-        pageSizeSel.addEventListener('change', (e) => {
-          modifierPageSize = parseInt(e.target.value);
-          modifierPage = 1;
-          renderModifiers();
-        });
-      }
-    }
-
-    if (window.lucide) lucide.createIcons();
-    
-    // Bind listeners
-    document.querySelectorAll('.modifier-status-toggle').forEach(toggle => {
-      toggle.addEventListener('change', (e) => {
-        e.preventDefault();
-        const id = toggle.getAttribute('data-id');
-        const wasActive = toggle.checked; // Stub
-        const willBeActive = !wasActive;
-        toggle.checked = wasActive;
-        
-        document.getElementById('confirm-modal-title').textContent = willBeActive ? 'Activate Modifier' : 'Deactivate Modifier';
-        document.getElementById('confirm-modal-body').textContent = `Are you sure you want to ${willBeActive ? 'activate' : 'deactivate'} this modifier?`;
-        
-        const confirmBtn = document.getElementById('btn-confirm-execute');
-        confirmBtn.className = willBeActive ? 'btn btn-primary' : 'btn btn-warning';
-        confirmBtn.textContent = willBeActive ? 'Yes, Activate' : 'Yes, Deactivate';
-        
-        document.getElementById('confirm-modal').classList.add('visible');
-        
-        const newBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-        
-        newBtn.addEventListener('click', () => {
-          // Typically update store here, but it's a stub
-          document.getElementById('confirm-modal').classList.remove('visible');
-          showToast(willBeActive ? 'Modifier activated successfully' : 'Modifier deactivated', willBeActive ? 'success' : 'warning');
-          renderModifiers();
-        });
-      });
-    });
-    bindEvents('.btn-view-modifier', showModifierDetails);
-    bindEvents('.btn-edit-modifier', editModifier);
-    bindEvents('.btn-delete-modifier', deleteModifier);
-  }
-
-  window.changeModifierPage = function(p) {
-    modifierPage = p;
-    renderModifiers();
-  };
-
-  // 4.9 Taxes CRUD
-  let taxPage = 1;
-  let taxPageSize = 10;
-  
-  function renderTaxes() {
-    const taxes = KioskStore.getTaxes() || [];
-    const tbody = document.getElementById('taxes-tbody');
-    const searchInput = document.getElementById('tax-search');
-    const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
-
-    let filtered = taxes.filter(t => {
-      return !searchVal || t.name.toLowerCase().includes(searchVal);
-    });
-
-    if (window.tableSorts && window.tableSorts.taxes) {
-      const { field, dir } = window.tableSorts.taxes;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 3rem; color: var(--text-admin-muted);">
-        <i data-lucide="inbox" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 1rem; display: block; margin: 0 auto;"></i>
-        No taxes found.
-      </td></tr>`;
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    // Pagination
-    const totalPages = Math.ceil(filtered.length / taxPageSize);
-    if (taxPage > totalPages) taxPage = Math.max(1, totalPages);
-    const startIndex = (taxPage - 1) * taxPageSize;
-    const paginated = filtered.slice(startIndex, startIndex + taxPageSize);
-
-    tbody.innerHTML = '';
-    paginated.forEach(t => {
-      const statusBadge = t.status === 'active' 
-        ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Active</span>`
-        : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Inactive</span>`;
-        
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <div style="width:32px; height:32px; border-radius:6px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="percent" style="width:16px;height:16px; color:var(--primary);"></i>
-              </div>
-              <strong>${t.name}</strong>
-            </div>
-          </td>
-          <td>${t.percentage}%</td>
-          <td>${statusBadge}</td>
-          <td style="text-align: right;">
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon btn-edit-tax" data-id="${t.id}" title="Edit"><i data-lucide="edit"></i></button>
-              <button class="btn btn-secondary btn-icon btn-delete-tax" data-id="${t.id}" title="Delete"><i data-lucide="trash-2"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (window.lucide) lucide.createIcons();
-    bindEvents('.btn-edit-tax', editTax);
-    bindEvents('.btn-delete-tax', deleteTax);
-  }
-
-  // Bind Search
-  const taxSearch = document.getElementById('tax-search');
-  if (taxSearch) taxSearch.addEventListener('input', () => { taxPage = 1; renderTaxes(); });
-
-  // 4.10 Discounts CRUD
-  let discountPage = 1;
-  let discountPageSize = 10;
-  
-  function renderDiscounts() {
-    const discounts = KioskStore.getDiscounts() || [];
-    const tbody = document.getElementById('discounts-tbody');
-    const searchInput = document.getElementById('discount-search');
-    const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
-
-    let filtered = discounts.filter(d => {
-      return !searchVal || d.name.toLowerCase().includes(searchVal);
-    });
-
-    if (window.tableSorts && window.tableSorts.discounts) {
-      const { field, dir } = window.tableSorts.discounts;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-admin-muted);">
-        <i data-lucide="tag" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 1rem; display: block; margin: 0 auto;"></i>
-        No discounts found.
-      </td></tr>`;
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    const totalPages = Math.ceil(filtered.length / discountPageSize);
-    if (discountPage > totalPages) discountPage = Math.max(1, totalPages);
-    const startIndex = (discountPage - 1) * discountPageSize;
-    const paginated = filtered.slice(startIndex, startIndex + discountPageSize);
-
-    tbody.innerHTML = '';
-    paginated.forEach(d => {
-      const statusBadge = d.status === 'active' 
-        ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Active</span>`
-        : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Inactive</span>`;
-        
-      const valStr = d.type === 'percentage' ? `${d.value}%` : `₹${d.value.toFixed(2)}`;
-      
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <div style="width:32px; height:32px; border-radius:6px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="tag" style="width:16px;height:16px; color:var(--primary);"></i>
-              </div>
-              <div style="display:flex; flex-direction:column;">
-                <strong>${d.name}</strong>
-                <span style="font-size:0.75rem; color:var(--text-admin-muted);">${d.type.toUpperCase()}</span>
-              </div>
-            </div>
-          </td>
-          <td><strong style="color:var(--primary);">${valStr}</strong></td>
-          <td>${d.applicableProducts || 'All'}</td>
-          <td>
-            <div style="font-size:0.8rem; color:var(--text-admin-muted);">
-              ${d.startDate || '-'} <br/> ${d.endDate || '-'}
-            </div>
-          </td>
-          <td>${statusBadge}</td>
-          <td style="text-align: right;">
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon btn-edit-discount" data-id="${d.id}" title="Edit"><i data-lucide="edit"></i></button>
-              <button class="btn btn-secondary btn-icon btn-delete-discount" data-id="${d.id}" title="Delete"><i data-lucide="trash-2"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    if (window.lucide) lucide.createIcons();
-    bindEvents('.btn-edit-discount', editDiscount);
-    bindEvents('.btn-delete-discount', deleteDiscount);
-  }
-
-  const discountSearch = document.getElementById('discount-search');
-  if (discountSearch) discountSearch.addEventListener('input', () => { discountPage = 1; renderDiscounts(); });
-
-  let kioskPage = 1;
-  let kioskPageSize = 10;
-  
-  function renderKiosks() {
-    const kiosks = KioskStore.getKiosks() || [];
-    const tbody = document.getElementById('kiosks-tbody');
-    const searchInput = document.getElementById('kiosk-search');
-    const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
-
-    let filtered = kiosks.filter(k => {
-      return !searchVal || k.id.toLowerCase().includes(searchVal) || k.location.toLowerCase().includes(searchVal);
-    });
-
-    if (window.tableSorts && window.tableSorts.kiosks) {
-      const { field, dir } = window.tableSorts.kiosks;
-      filtered.sort((a, b) => {
-        let valA = a[field];
-        let valB = b[field];
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-admin-muted);">
-        <i data-lucide="monitor" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 1rem; display: block; margin: 0 auto;"></i>
-        No kiosks found.
-      </td></tr>`;
-      if (window.lucide) lucide.createIcons();
-      return;
-    }
-
-    const totalPages = Math.ceil(filtered.length / kioskPageSize);
-    if (kioskPage > totalPages) kioskPage = Math.max(1, totalPages);
-    const startIndex = (kioskPage - 1) * kioskPageSize;
-    const paginated = filtered.slice(startIndex, startIndex + kioskPageSize);
-
-    tbody.innerHTML = '';
-    paginated.forEach(k => {
-      const statusBadge = k.status === 'active'
-        ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Active</span>`
-        : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Inactive</span>`;
-        
-      const connBadge = k.connectionStatus === 'online'
-        ? `<span style="color: #22c55e; display:flex; align-items:center; gap:0.25rem;"><i data-lucide="wifi" style="width:14px;height:14px;"></i> Online</span>`
-        : (k.connectionStatus === 'warning' ? `<span style="color: #eab308; display:flex; align-items:center; gap:0.25rem;"><i data-lucide="wifi-off" style="width:14px;height:14px;"></i> Unstable</span>` : `<span style="color: #ef4444; display:flex; align-items:center; gap:0.25rem;"><i data-lucide="wifi-off" style="width:14px;height:14px;"></i> Offline</span>`);
-      
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <div style="width:32px; height:32px; border-radius:6px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="smartphone" style="width:16px;height:16px; color:var(--primary);"></i>
-              </div>
-              <strong>${k.id}</strong>
-            </div>
-          </td>
-          <td>${k.location}</td>
-          <td>${connBadge}</td>
-          <td><span style="font-size:0.85rem; color:var(--text-admin-muted);">${k.lastActive}</span></td>
-          <td>${statusBadge}</td>
-          <td style="text-align: right;">
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon btn-edit-kiosk" data-id="${k.id}" title="Edit"><i data-lucide="edit"></i></button>
             </div>
           </td>
         </tr>

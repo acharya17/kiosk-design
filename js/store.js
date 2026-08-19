@@ -27,6 +27,11 @@
     // Force clear for latest updates
     localStorage.clear();
 
+    if (typeof window.INITIAL_CATEGORIES === 'undefined') {
+      alert("CRITICAL ERROR: mockData.js did not load! Dashboard will be empty.");
+      return;
+    }
+
 
     if (!localStorage.getItem(KEYS.CATEGORIES)) {
       localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(window.INITIAL_CATEGORIES));

@@ -54,11 +54,45 @@
         }
       });
 
+      // Show the main header on lists/overview tabs, hide it on forms/details to avoid double header
+      const mainHeader = document.querySelector('.main-header');
+      if (mainHeader) {
+        mainHeader.style.display = 'block';
+      }
+
       const meta = tabMeta[targetTab] || { title: 'Dashboard', desc: '' };
       tabTitle.textContent = meta.title;
       tabDescription.textContent = meta.desc;
       breadcrumbCurrent.textContent = meta.title;
     });
+  });
+
+  // Global delegated handler for ALL back/cancel btn-dashboard-nav buttons on form & view pages
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-dashboard-nav');
+    if (!btn) return;
+    e.preventDefault();
+    const targetTab = btn.getAttribute('data-tab');
+    if (!targetTab) return;
+    const sidebarItem = document.querySelector(`.nav-item[data-tab="${targetTab}"]`);
+    if (sidebarItem) {
+      sidebarItem.click();
+    } else {
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      const targetPane = document.getElementById(`tab-${targetTab}`);
+      if (targetPane) targetPane.classList.add('active');
+      
+      const mainHeader = document.querySelector('.main-header');
+      if (mainHeader) {
+        // Show main header on list tab, hide on detail/form tab
+        mainHeader.style.display = (targetTab === 'banners' || targetTab === 'products' || targetTab === 'categories') ? 'block' : 'none';
+      }
+
+      const meta = tabMeta[targetTab] || { title: targetTab, desc: '' };
+      tabTitle.textContent = meta.title;
+      tabDescription.textContent = meta.desc;
+      breadcrumbCurrent.textContent = meta.title;
+    }
   });
 
 
@@ -408,7 +442,7 @@
           <tr>
             <td><strong>${o.orderId}</strong></td>
             <td>${o.kioskId}</td>
-            <td><strong>Γé╣${o.totalAmount.toFixed(2)}</strong></td>
+            <td><strong>$${o.totalAmount.toFixed(2)}</strong></td>
             <td><span class="badge ${payClass}">${payText}</span></td>
             <td><span class="badge ${orderClass}">${orderText}</span></td>
           </tr>
@@ -507,6 +541,10 @@
 
   function openFilterDrawer(tab) {
     activeFilterTab = tab;
+    const modal = document.getElementById('filter-drawer-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+    }
     const body = document.getElementById('filter-drawer-body');
     body.innerHTML = '';
 
@@ -625,6 +663,7 @@
     activeFilters[tab] = { status: [], type: [], playlist: [], priority: [], location: [], category: [], availability: [], paymentStatus: [], orderStatus: [], kiosk: [], startDate: '', endDate: '' };
     document.querySelectorAll('#filter-drawer-body input[type="checkbox"]').forEach(cb => cb.checked = false);
     document.getElementById('filter-drawer-modal').classList.remove('visible');
+    document.getElementById('filter-drawer-modal').style.display = 'none';
     updateFilterChips(tab);
     refreshActiveTabList(tab);
   });
@@ -646,6 +685,7 @@
     current.orderStatus = getChecked('orderStatus');
 
     document.getElementById('filter-drawer-modal').classList.remove('visible');
+    document.getElementById('filter-drawer-modal').style.display = 'none';
     updateFilterChips(tab);
     refreshActiveTabList(tab);
   });
@@ -761,7 +801,7 @@
   let bannerPageSize = 10;
 
   function formatDatePretty(dateStr, timeStr) {
-    if (!dateStr) return 'ΓÇö';
+    if (!dateStr) return '-';
     const d = new Date(dateStr + (timeStr ? 'T' + timeStr : ''));
     if (isNaN(d)) return dateStr;
     const day = d.getDate();
@@ -899,7 +939,7 @@
     }
     paginationEl.innerHTML = `
       <div class="pagination-info">
-        Showing <strong>${showFrom}ΓÇô${showTo}</strong> of <strong>${totalItems}</strong> banners
+        Showing <strong>${showFrom}-${showTo}</strong> of <strong>${totalItems}</strong> banners
         <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
         <select class="page-size-select" id="banner-page-size-select">
           <option value="10" ${bannerPageSize === 10 ? 'selected' : ''}>10</option>
@@ -942,7 +982,7 @@
         const banner = allBanners.find(x => x.id === bid);
         if (!banner) return;
         const wasActive = banner.active;
-        // Revert immediately ΓÇö wait for confirmation
+        // Revert immediately - wait for confirmation
         toggle.checked = wasActive;
         const action = wasActive ? 'Deactivate' : 'Activate';
         triggerConfirm(`${action} ${banner.title}?`, `Are you sure you want to ${action.toLowerCase()} this banner?`, () => {
@@ -1033,15 +1073,20 @@
   if (paymentSearch) paymentSearch.addEventListener('input', () => { paymentPage = 1; renderPayments(); });
 
   // 4.3 Playlists CRUD
+  let playlistPage = 1;
+  let playlistPageSize = 10;
+
   function renderPlaylists() {
     const playlists = KioskStore.getPlaylists() || [];
     const tbody = document.getElementById('playlists-tbody');
+    const paginationEl = document.getElementById('playlists-pagination');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    const search = document.getElementById('playlists-search').value.toLowerCase();
+    const search = (document.getElementById('playlists-search')?.value || '').toLowerCase();
     const current = activeFilters.playlists || { status: [] };
 
-    const filtered = playlists.filter(p => {
+    let filtered = playlists.filter(p => {
       const matchSearch = p.name.toLowerCase().includes(search);
       let matchStatus = true;
       if (current.status.length > 0) {
@@ -1050,30 +1095,107 @@
       return matchSearch && matchStatus;
     });
 
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-admin-muted);">No playlists match the selected filters.</td></tr>';
+    if (window.tableSorts && window.tableSorts.playlists) {
+      const { field, dir } = window.tableSorts.playlists;
+      filtered.sort((a, b) => {
+        let valA = a[field];
+        let valB = b[field];
+        if (field === 'playlistname') { valA = a.name; valB = b.name; }
+        if (field === 'bannercount') { valA = a.bannerIds?.length || 0; valB = b.bannerIds?.length || 0; }
+        if (field === 'assignedtvs') { valA = a.assignedTVs || ''; valB = b.assignedTVs || ''; }
+        if (field === 'lastupdated') { valA = a.updatedDate || ''; valB = b.updatedDate || ''; }
+        
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+        if (valA < valB) return dir === 'asc' ? -1 : 1;
+        if (valA > valB) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const totalItems = filtered.length;
+    if (totalItems === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-admin-muted);">
+        <i data-lucide="sliders-horizontal" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 1rem; display: block; margin: 0 auto;"></i>
+        No playlists found.
+      </td></tr>`;
+      if (window.lucide) lucide.createIcons();
       return;
     }
 
-    filtered.forEach(p => {
+    const totalPages = Math.ceil(totalItems / playlistPageSize);
+    if (playlistPage > totalPages) playlistPage = Math.max(1, totalPages);
+    const startIdx = (playlistPage - 1) * playlistPageSize;
+    const paginated = filtered.slice(startIdx, startIdx + playlistPageSize);
+
+    paginated.forEach(p => {
+      const statusBadge = p.status === 'active' 
+        ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Active</span>`
+        : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Inactive</span>`;
+
       tbody.innerHTML += `
         <tr>
           <td><strong>${p.name}</strong><br><small style="color: var(--text-admin-muted);">ID: ${p.id}</small></td>
           <td>${p.bannerIds?.length || 0} Banners</td>
           <td>${p.assignedTVs || '0 TVs'}</td>
-          <td><span class="badge touch-badge">${p.status.toUpperCase()}</span></td>
+          <td>${statusBadge}</td>
           <td>${p.updatedDate}</td>
-          <td style="text-align: right; white-space: nowrap;">
-            <div style="display: inline-flex; gap: 0.25rem; align-items: center; justify-content: flex-end;">
-              <button class="btn btn-secondary btn-icon-only btn-view-playlist" data-id="${p.id}" title="View Details" style="padding: 0.3rem 0.4rem;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-secondary btn-icon-only btn-edit-playlist" data-id="${p.id}" title="Edit Settings" style="padding: 0.3rem 0.4rem;"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
-              <button class="btn btn-danger btn-icon-only btn-delete-playlist" data-id="${p.id}" title="Delete Record" style="padding: 0.3rem 0.4rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon btn-view-playlist" data-id="${p.id}" title="View Details"><i data-lucide="eye"></i></button>
+              <button class="btn btn-secondary btn-icon btn-edit-playlist" data-id="${p.id}" title="Edit"><i data-lucide="edit"></i></button>
+              <button class="btn btn-secondary btn-icon btn-delete-playlist" data-id="${p.id}" title="Delete"><i data-lucide="trash-2"></i></button>
             </div>
           </td>
         </tr>
       `;
     });
 
+    if (paginationEl) {
+      const showFrom = startIdx + 1;
+      const showTo = Math.min(startIdx + playlistPageSize, totalItems);
+      let pagesHtml = '';
+      for (let i = 1; i <= totalPages; i++) {
+        pagesHtml += `<button class="page-btn ${i === playlistPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+      paginationEl.innerHTML = `
+        <div class="pagination-info">
+          Showing <strong>${showFrom}-${showTo}</strong> of <strong>${totalItems}</strong> playlists
+          <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
+          <select class="page-size-select" id="playlist-page-size-select">
+            <option value="10" ${playlistPageSize === 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${playlistPageSize === 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${playlistPageSize === 50 ? 'selected' : ''}>50</option>
+          </select>
+        </div>
+        <div class="pagination-controls">
+          <button class="page-btn" data-page="prev" ${playlistPage <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+          ${pagesHtml}
+          <button class="page-btn" data-page="next" ${playlistPage >= totalPages ? 'disabled' : ''}><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+        </div>
+      `;
+
+      paginationEl.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pg = btn.getAttribute('data-page');
+          if (pg === 'prev') playlistPage = Math.max(1, playlistPage - 1);
+          else if (pg === 'next') playlistPage = Math.min(totalPages, playlistPage + 1);
+          else playlistPage = parseInt(pg);
+          renderPlaylists();
+        });
+      });
+
+      const pageSizeSel = document.getElementById('playlist-page-size-select');
+      if (pageSizeSel) {
+        pageSizeSel.addEventListener('change', (e) => {
+          playlistPageSize = parseInt(e.target.value);
+          playlistPage = 1;
+          renderPlaylists();
+        });
+      }
+    }
+
+    if (window.lucide) lucide.createIcons();
     bindEvents('.btn-view-playlist', simulatePlaylistSequence);
     bindEvents('.btn-edit-playlist', editPlaylist);
     bindEvents('.btn-delete-playlist', deletePlaylist);
@@ -1097,7 +1219,7 @@
       }
       let matchType = true;
       if (current.type.length > 0) {
-        matchType = current.connectionStatus.includes(t.connectionStatus);
+        matchType = current.type.includes(t.connectionStatus);
       }
       let matchPlaylist = true;
       if (current.playlist.length > 0) {
@@ -1267,7 +1389,7 @@
       }
       paginationEl.innerHTML = `
         <div class="pagination-info">
-          Showing <strong>${showFrom}ΓÇô${showTo}</strong> of <strong>${totalItems}</strong> categories
+          Showing <strong>${showFrom}-${showTo}</strong> of <strong>${totalItems}</strong> categories
           <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
           <select class="page-size-select" id="category-page-size-select">
             <option value="10" ${categoryPageSize === 10 ? 'selected' : ''}>10</option>
@@ -1472,7 +1594,7 @@
       }
       paginationEl.innerHTML = `
         <div class="pagination-info">
-          Showing <strong>${showFrom}ΓÇô${showTo}</strong> of <strong>${totalItems}</strong> products
+          Showing <strong>${showFrom}-${showTo}</strong> of <strong>${totalItems}</strong> products
           <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
           <select class="page-size-select" id="product-page-size-select">
             <option value="10" ${productPageSize === 10 ? 'selected' : ''}>10</option>
@@ -1679,7 +1801,7 @@
       }
       paginationEl.innerHTML = `
         <div class="pagination-info">
-          Showing <strong>${showFrom}ΓÇô${showTo}</strong> of <strong>${totalItems}</strong> modifiers
+          Showing <strong>${showFrom}-${showTo}</strong> of <strong>${totalItems}</strong> modifiers
           <span style="margin-left: 0.75rem; color: var(--text-admin-muted);">Rows per page</span>
           <select class="page-size-select" id="modifier-page-size-select">
             <option value="10" ${modifierPageSize === 10 ? 'selected' : ''}>10</option>
@@ -1816,6 +1938,7 @@
           <td>${statusBadge}</td>
           <td style="text-align: right;">
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon btn-view-tax" data-id="${t.id}" title="View Details"><i data-lucide="eye"></i></button>
               <button class="btn btn-secondary btn-icon btn-edit-tax" data-id="${t.id}" title="Edit"><i data-lucide="edit"></i></button>
               <button class="btn btn-secondary btn-icon btn-delete-tax" data-id="${t.id}" title="Delete"><i data-lucide="trash-2"></i></button>
             </div>
@@ -1825,6 +1948,7 @@
     });
 
     if (window.lucide) lucide.createIcons();
+    bindEvents('.btn-view-tax', showTaxDetails);
     bindEvents('.btn-edit-tax', editTax);
     bindEvents('.btn-delete-tax', deleteTax);
   }
@@ -1880,7 +2004,7 @@
         ? `<span class="badge touch-badge" style="background: rgba(34,197,94,0.1); color: #22c55e;"><i data-lucide="check-circle" style="width:12px;height:12px;margin-right:4px;"></i> Active</span>`
         : `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Inactive</span>`;
         
-      const valStr = d.type === 'percentage' ? `${d.value}%` : `Γé╣${d.value.toFixed(2)}`;
+      const valStr = d.type === 'percentage' ? `${d.value}%` : `$${d.value.toFixed(2)}`;
       
       tbody.innerHTML += `
         <tr>
@@ -1905,6 +2029,7 @@
           <td>${statusBadge}</td>
           <td style="text-align: right;">
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon btn-view-discount" data-id="${d.id}" title="View Details"><i data-lucide="eye"></i></button>
               <button class="btn btn-secondary btn-icon btn-edit-discount" data-id="${d.id}" title="Edit"><i data-lucide="edit"></i></button>
               <button class="btn btn-secondary btn-icon btn-delete-discount" data-id="${d.id}" title="Delete"><i data-lucide="trash-2"></i></button>
             </div>
@@ -1914,8 +2039,59 @@
     });
 
     if (window.lucide) lucide.createIcons();
+    bindEvents('.btn-view-discount', showDiscountDetails);
     bindEvents('.btn-edit-discount', editDiscount);
     bindEvents('.btn-delete-discount', deleteDiscount);
+  }
+
+  // --- SHOW TAX DETAILS ---
+  function showTaxDetails(id) {
+    const taxes = KioskStore.getTaxes();
+    const t = taxes.find(item => item.id === id);
+    if (!t) return;
+    document.getElementById('view-tax-name').textContent = t.name;
+    document.getElementById('view-tax-rate').textContent = `${t.percentage}%`;
+    document.getElementById('view-tax-status').innerHTML = t.status === 'active'
+      ? '<span class="badge touch-badge">Active</span>'
+      : '<span class="badge danger-badge">Inactive</span>';
+
+    const editBtn = document.getElementById('btn-edit-tax-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => editTax(t.id));
+    }
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tax-view').classList.add('active');
+    tabTitle.textContent = 'Tax Details';
+    tabDescription.textContent = 'View tax parameters.';
+    breadcrumbCurrent.textContent = 'View Tax';
+  }
+
+  // --- SHOW DISCOUNT DETAILS ---
+  function showDiscountDetails(id) {
+    const discounts = KioskStore.getDiscounts();
+    const d = discounts.find(item => item.id === id);
+    if (!d) return;
+    document.getElementById('view-discount-name').textContent = d.name;
+    document.getElementById('view-discount-type').textContent = d.type === 'percentage' ? 'Percentage' : 'Fixed Amount';
+    document.getElementById('view-discount-value').textContent = d.type === 'percentage' ? `${d.value}%` : `$${d.value.toFixed(2)}`;
+    document.getElementById('view-discount-validity').textContent = `${d.startDate || 'No start'} to ${d.endDate || 'No expiration'}`;
+    document.getElementById('view-discount-status').innerHTML = d.status === 'active'
+      ? '<span class="badge touch-badge">Active</span>'
+      : '<span class="badge danger-badge">Inactive</span>';
+
+    const editBtn = document.getElementById('btn-edit-discount-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => editDiscount(d.id));
+    }
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-discount-view').classList.add('active');
+    tabTitle.textContent = 'Discount Details';
+    tabDescription.textContent = 'View discount parameters.';
+    breadcrumbCurrent.textContent = 'View Discount';
   }
 
   const discountSearch = document.getElementById('discounts-search');
@@ -1987,6 +2163,7 @@
           <td>${statusBadge}</td>
           <td style="text-align: right;">
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn btn-secondary btn-icon btn-view-kiosk" data-id="${k.id}" title="View Details"><i data-lucide="eye"></i></button>
               <button class="btn btn-secondary btn-icon btn-edit-kiosk" data-id="${k.id}" title="Edit"><i data-lucide="edit"></i></button>
             </div>
           </td>
@@ -1995,6 +2172,7 @@
     });
 
     if (window.lucide) lucide.createIcons();
+    bindEvents('.btn-view-kiosk', showKioskDetails);
     bindEvents('.btn-edit-kiosk', editKiosk);
   }
 
@@ -2095,7 +2273,7 @@
       if (o.paymentStatus === 'failed') payStatusBadge = `<span class="badge touch-badge" style="background: rgba(239,68,68,0.1); color: #ef4444;"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:4px;"></i> Failed</span>`;
       else if (o.paymentStatus === 'refunded') payStatusBadge = `<span class="badge touch-badge" style="background: rgba(168,162,158,0.1); color: #78716c;"><i data-lucide="rotate-ccw" style="width:12px;height:12px;margin-right:4px;"></i> Refunded</span>`;
       
-      const valStr = `Γé╣${o.totalAmount.toFixed(2)}`;
+      const valStr = `$${o.totalAmount.toFixed(2)}`;
       
       tbody.innerHTML += `
         <tr>
@@ -2130,7 +2308,7 @@
     document.getElementById('pay-view-order-id').textContent = o.orderId;
     document.getElementById('pay-view-kiosk-id').textContent = o.kioskId;
     document.getElementById('pay-view-datetime').textContent = new Date(o.dateTime).toLocaleString();
-    document.getElementById('pay-view-amount').textContent = `Γé╣${o.totalAmount.toFixed(2)}`;
+    document.getElementById('pay-view-amount').textContent = `$${o.totalAmount.toFixed(2)}`;
     document.getElementById('pay-view-method').textContent = o.paymentMethod;
     
     // Status text mapping
@@ -2616,6 +2794,9 @@
     document.getElementById('banner-status-label').textContent = 'Active';
     document.getElementById('banner-date-error').style.display = 'none';
 
+    const mainHeader = document.querySelector('.main-header');
+    if (mainHeader) mainHeader.style.display = 'none';
+
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-form').classList.add('active');
     tabTitle.textContent = 'Add Banner';
@@ -2724,6 +2905,9 @@
 
     document.getElementById('btn-save-banner').textContent = 'Save Changes';
     
+    const mainHeader = document.querySelector('.main-header');
+    if (mainHeader) mainHeader.style.display = 'none';
+
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-form').classList.add('active');
     tabTitle.textContent = 'Edit Banner';
@@ -2732,6 +2916,9 @@
   }
 
   function previewBanner(id) {
+    const mainHeader = document.querySelector('.main-header');
+    if (mainHeader) mainHeader.style.display = 'none';
+
     const banners = KioskStore.getBanners();
     const b = banners.find(item => item.id === id);
     if (!b) return;
@@ -2763,6 +2950,15 @@
     statusEl.textContent = b.active ? 'Active' : 'Inactive';
     statusEl.className = b.active ? 'badge touch-badge' : 'badge danger-badge';
 
+    const editBtn = document.getElementById('btn-edit-banner-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => {
+        editBanner(b.id);
+      });
+    }
+
     tabPanes.forEach(pane => pane.classList.remove('active'));
     document.getElementById('tab-banner-view').classList.add('active');
     tabTitle.textContent = 'Banner Details';
@@ -2777,6 +2973,389 @@
     triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
       KioskStore.setBanners(list.filter(item => item.id !== id));
       showToast('Banner deleted.');
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+  }
+
+  function editCategory(id) {
+    const cats = KioskStore.getCategories();
+    const c = cats.find(item => item.id === id);
+    if (!c) return;
+    document.getElementById('category-name-input').value = c.name;
+    document.getElementById('category-desc-input').value = c.description || '';
+    document.getElementById('category-status-input').checked = c.status === 'active';
+
+    document.getElementById('category-form-title').textContent = 'Edit Category';
+
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-category-form').classList.add('active');
+    tabTitle.textContent = 'Edit Category';
+    tabDescription.textContent = 'Modify folder details.';
+    breadcrumbCurrent.textContent = 'Edit Category';
+  }
+
+  // --- SHOW CATEGORY DETAILS ---
+  function showCategoryDetails(id) {
+    const cats = KioskStore.getCategories();
+    const c = cats.find(item => item.id === id);
+    if (!c) return;
+
+    document.getElementById('view-category-name').textContent = c.name;
+    document.getElementById('view-category-status').innerHTML = c.status === 'active'
+      ? '<span class="status-badge status-active">Active</span>'
+      : '<span class="status-badge status-inactive">Inactive</span>';
+    document.getElementById('view-category-desc').textContent = c.description || 'No description.';
+    const products = KioskStore.getProducts() || [];
+    const count = products.filter(p => p.categoryId === c.id).length;
+    document.getElementById('view-category-products-count').textContent = count;
+
+    const editBtn = document.getElementById('btn-edit-category-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => editCategory(c.id));
+    }
+
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-category-view').classList.add('active');
+    tabTitle.textContent = 'Category Details';
+    tabDescription.textContent = 'View category information.';
+    breadcrumbCurrent.textContent = 'View Category';
+  }
+
+  // --- DELETE CATEGORY ---
+  function deleteCategory(id) {
+    const list = KioskStore.getCategories();
+    const c = list.find(item => item.id === id);
+    const name = c ? c.name : 'Category';
+    triggerConfirm(`Delete ${name}?`, 'This will permanently delete this category.', () => {
+      KioskStore.setCategories(list.filter(item => item.id !== id));
+      showToast('Category deleted.');
+      renderCategories();
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+  }
+
+  // --- ADD PRODUCT NAVIGATION ---
+  document.getElementById('btn-add-products').addEventListener('click', () => {
+    document.getElementById('product-form-page').reset();
+    document.getElementById('product-page-id').value = '';
+    document.getElementById('product-form-title-h3').textContent = 'Add Product';
+    const cats = KioskStore.getCategories() || [];
+    const sel = document.getElementById('product-page-category');
+    sel.innerHTML = '<option value="">Select Category</option>';
+    cats.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-product-form').classList.add('active');
+    tabTitle.textContent = 'Add Product';
+    tabDescription.textContent = 'Add a new product to your catalog.';
+    breadcrumbCurrent.textContent = 'Add Product';
+  });
+
+  // --- PRODUCT FORM SUBMIT ---
+  document.getElementById('product-form-page').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('product-page-id').value;
+    const name = document.getElementById('product-page-name').value.trim();
+    const categoryId = document.getElementById('product-page-category').value;
+    const price = parseFloat(document.getElementById('product-page-price').value) || 0;
+    const image = document.getElementById('product-page-image').value.trim()
+      || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format&fit=crop&q=80';
+    const desc = document.getElementById('product-page-desc').value.trim();
+    const available = document.getElementById('product-page-available').value === 'true';
+    const status = document.getElementById('product-page-status').value;
+    if (!name || !categoryId) { showToast('Name and Category are required.', 'error'); return; }
+    const list = KioskStore.getProducts() || [];
+    if (id) {
+      const p = list.find(item => item.id === id);
+      if (p) Object.assign(p, { name, categoryId, price, image, description: desc, available, status });
+    } else {
+      list.push({ id: 'prod-' + Date.now(), name, categoryId, price, image, description: desc, available, status, addOns: [], variants: [] });
+    }
+    KioskStore.setProducts(list);
+    showToast(`Product "${name}" saved.`);
+    document.querySelector('.nav-item[data-tab="products"]').click();
+  });
+
+  // --- SHOW PRODUCT DETAILS ---
+  function showProductDetails(id) {
+    const products = KioskStore.getProducts();
+    const p = products.find(item => item.id === id);
+    if (!p) return;
+    const cats = KioskStore.getCategories() || [];
+    const cat = cats.find(c => c.id === p.categoryId);
+    document.getElementById('view-product-name').textContent = p.name;
+    document.getElementById('view-product-category').textContent = cat ? cat.name : 'Uncategorized';
+    document.getElementById('view-product-price').textContent = `$${p.price.toFixed(2)}`;
+    document.getElementById('view-product-available').innerHTML = p.available
+      ? '<span class="badge touch-badge" style="color:#22c55e;">In Stock</span>'
+      : '<span class="badge danger-badge">Out of Stock</span>';
+    document.getElementById('view-product-status').innerHTML = p.status === 'active'
+      ? '<span class="badge touch-badge">Active</span>'
+      : '<span class="badge danger-badge">Inactive</span>';
+    document.getElementById('view-product-desc').textContent = p.description || 'No description.';
+    const imgEl = document.getElementById('view-product-image-preview');
+    if (imgEl) imgEl.src = p.image;
+    const editBtn = document.getElementById('btn-edit-product-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => editProduct(p.id));
+    }
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-product-view').classList.add('active');
+    tabTitle.textContent = 'Product Details';
+    tabDescription.textContent = 'View product information and pricing.';
+    breadcrumbCurrent.textContent = 'View Product';
+  }
+
+  // --- EDIT PRODUCT ---
+  function editProduct(id) {
+    const products = KioskStore.getProducts();
+    const p = products.find(item => item.id === id);
+    if (!p) return;
+    document.getElementById('product-page-id').value = p.id;
+    document.getElementById('product-page-name').value = p.name;
+    const cats = KioskStore.getCategories() || [];
+    const sel = document.getElementById('product-page-category');
+    sel.innerHTML = '<option value="">Select Category</option>';
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      if (c.id === p.categoryId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    document.getElementById('product-page-price').value = p.price;
+    document.getElementById('product-page-image').value = p.image || '';
+    document.getElementById('product-page-desc').value = p.description || '';
+    document.getElementById('product-page-available').value = p.available ? 'true' : 'false';
+    document.getElementById('product-page-status').value = p.status;
+    document.getElementById('product-form-title-h3').textContent = 'Edit Product';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-product-form').classList.add('active');
+    tabTitle.textContent = 'Edit Product';
+    tabDescription.textContent = 'Modify product details.';
+    breadcrumbCurrent.textContent = 'Edit Product';
+  }
+
+  // --- DELETE PRODUCT ---
+  function deleteProduct(id) {
+    const list = KioskStore.getProducts();
+    const p = list.find(item => item.id === id);
+    const name = p ? p.name : 'Product';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure?', () => {
+      KioskStore.setProducts(list.filter(item => item.id !== id));
+      showToast('Product deleted.'); renderProducts();
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+  }
+
+  // --- SHOW MODIFIER DETAILS ---
+  function showModifierDetails(id) {
+    const products = KioskStore.getProducts() || [];
+    let found = null;
+    products.forEach(p => {
+      if (p.addOns) p.addOns.forEach(a => {
+        if ('mod-' + a.name.toLowerCase().replace(/\s+/g, '-') === id)
+          found = { ...a, type: 'Add-on', required: false, status: 'active' };
+      });
+      if (p.variants) p.variants.forEach(v => {
+        if ('mod-' + v.name.toLowerCase().replace(/\s+/g, '-') === id)
+          found = { ...v, type: 'Variant', required: true, status: 'active' };
+      });
+    });
+    if (!found) { showToast('Modifier details not available.'); return; }
+    document.getElementById('view-modifier-name').textContent = found.name;
+    document.getElementById('view-modifier-type').textContent = found.type;
+    document.getElementById('view-modifier-price').textContent = found.price > 0 ? `+$${found.price.toFixed(2)}` : 'Varies';
+    document.getElementById('view-modifier-required').innerHTML = found.required
+      ? '<span class="badge warning-badge">Required</span>'
+      : '<span class="badge desktop-badge">Optional</span>';
+    document.getElementById('view-modifier-status').innerHTML = '<span class="badge touch-badge">Active</span>';
+    const editBtn = document.getElementById('btn-edit-modifier-view');
+    if (editBtn) {
+      const newBtn = editBtn.cloneNode(true);
+      editBtn.parentNode.replaceChild(newBtn, editBtn);
+      newBtn.addEventListener('click', () => editModifier(id));
+    }
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-modifier-view').classList.add('active');
+    tabTitle.textContent = 'Modifier Details';
+    tabDescription.textContent = 'View modifier configuration.';
+    breadcrumbCurrent.textContent = 'View Modifier';
+  }
+
+  // --- ADD MODIFIER NAVIGATION ---
+  document.getElementById('btn-add-customisation').addEventListener('click', () => {
+    document.getElementById('modifier-form-page').reset();
+    document.getElementById('modifier-page-id').value = '';
+    document.getElementById('modifier-form-title-h3').textContent = 'Add Modifier';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-modifier-form').classList.add('active');
+    tabTitle.textContent = 'Add Modifier';
+    tabDescription.textContent = 'Define product modifiers and add-ons.';
+    breadcrumbCurrent.textContent = 'Add Modifier';
+  });
+
+  // --- MODIFIER FORM SUBMIT ---
+  document.getElementById('modifier-form-page').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('modifier-page-name').value.trim();
+    if (!name) { showToast('Modifier name is required.', 'error'); return; }
+    showToast(`Modifier "${name}" saved.`);
+    document.querySelector('.nav-item[data-tab="customisation"]').click();
+  });
+
+  // --- EDIT MODIFIER ---
+  function editModifier(id) {
+    document.getElementById('modifier-page-id').value = id;
+    document.getElementById('modifier-form-title-h3').textContent = 'Edit Modifier';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-modifier-form').classList.add('active');
+    tabTitle.textContent = 'Edit Modifier';
+    tabDescription.textContent = 'Modify add-on configuration.';
+    breadcrumbCurrent.textContent = 'Edit Modifier';
+  }
+
+  // --- DELETE MODIFIER ---
+  function deleteModifier(id) {
+    triggerConfirm('Delete Modifier?', 'Remove this modifier?', () => {
+      showToast('Modifier removed.'); renderModifiers();
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+  }
+
+  // --- ADD TAX NAVIGATION ---
+  document.getElementById('btn-add-taxes').addEventListener('click', () => {
+    document.getElementById('tax-form-page').reset();
+    document.getElementById('tax-page-id').value = '';
+    document.getElementById('tax-form-title-h3').textContent = 'Add Tax';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tax-form').classList.add('active');
+    tabTitle.textContent = 'Add Tax';
+    tabDescription.textContent = 'Create a new tax configuration.';
+    breadcrumbCurrent.textContent = 'Add Tax';
+  });
+
+  // --- TAX FORM SUBMIT ---
+  document.getElementById('tax-form-page').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('tax-page-id').value;
+    const name = document.getElementById('tax-page-name').value.trim();
+    const rate = parseFloat(document.getElementById('tax-page-rate').value) || 0;
+    const status = document.getElementById('tax-page-status').value;
+    if (!name) { showToast('Tax name is required.', 'error'); return; }
+    const list = KioskStore.getTaxes() || [];
+    if (id) {
+      const t = list.find(item => item.id === id);
+      if (t) Object.assign(t, { name, percentage: rate, status });
+    } else {
+      list.push({ id: 'tax-' + Date.now(), name, percentage: rate, status });
+    }
+    KioskStore.setTaxes(list);
+    showToast(`Tax "${name}" saved.`);
+    document.querySelector('.nav-item[data-tab="taxes"]').click();
+  });
+
+  // --- EDIT TAX ---
+  function editTax(id) {
+    const taxes = KioskStore.getTaxes();
+    const t = taxes.find(item => item.id === id);
+    if (!t) return;
+    document.getElementById('tax-page-id').value = t.id;
+    document.getElementById('tax-page-name').value = t.name;
+    document.getElementById('tax-page-rate').value = t.percentage;
+    document.getElementById('tax-page-status').value = t.status;
+    document.getElementById('tax-form-title-h3').textContent = 'Edit Tax';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-tax-form').classList.add('active');
+    tabTitle.textContent = 'Edit Tax';
+    tabDescription.textContent = 'Modify tax rate configuration.';
+    breadcrumbCurrent.textContent = 'Edit Tax';
+  }
+
+  // --- DELETE TAX ---
+  function deleteTax(id) {
+    const list = KioskStore.getTaxes();
+    const t = list.find(item => item.id === id);
+    const name = t ? t.name : 'Tax';
+    triggerConfirm(`Delete ${name}?`, 'Delete this tax configuration?', () => {
+      KioskStore.setTaxes(list.filter(item => item.id !== id));
+      showToast('Tax deleted.'); renderTaxes();
+    }, { isDestructive: true, confirmText: 'Yes, Delete' });
+  }
+
+  // --- ADD DISCOUNT NAVIGATION ---
+  document.getElementById('btn-add-discounts').addEventListener('click', () => {
+    document.getElementById('discount-form-page').reset();
+    document.getElementById('discount-page-id').value = '';
+    document.getElementById('discount-page-start-date').value = new Date().toISOString().split('T')[0];
+    const end = new Date(); end.setDate(end.getDate() + 30);
+    document.getElementById('discount-page-end-date').value = end.toISOString().split('T')[0];
+    document.getElementById('discount-form-title-h3').textContent = 'Add Discount';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-discount-form').classList.add('active');
+    tabTitle.textContent = 'Add Discount';
+    tabDescription.textContent = 'Create a promotional discount campaign.';
+    breadcrumbCurrent.textContent = 'Add Discount';
+  });
+
+  // --- DISCOUNT FORM SUBMIT ---
+  document.getElementById('discount-form-page').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('discount-page-id').value;
+    const name = document.getElementById('discount-page-name').value.trim();
+    const value = parseFloat(document.getElementById('discount-page-value').value) || 0;
+    const type = document.getElementById('discount-page-type').value;
+    const startDate = document.getElementById('discount-page-start-date').value;
+    const endDate = document.getElementById('discount-page-end-date').value;
+    const status = document.getElementById('discount-page-status').value;
+    if (!name) { showToast('Discount name is required.', 'error'); return; }
+    const list = KioskStore.getDiscounts() || [];
+    if (id) {
+      const d = list.find(item => item.id === id);
+      if (d) Object.assign(d, { name, value, type, startDate, endDate, status });
+    } else {
+      list.push({ id: 'disc-' + Date.now(), name, value, type, startDate, endDate, status, applicableProducts: 'All' });
+    }
+    KioskStore.setDiscounts(list);
+    showToast(`Discount "${name}" saved.`);
+    document.querySelector('.nav-item[data-tab="discounts"]').click();
+  });
+
+  // --- EDIT DISCOUNT ---
+  function editDiscount(id) {
+    const discounts = KioskStore.getDiscounts();
+    const d = discounts.find(item => item.id === id);
+    if (!d) return;
+    document.getElementById('discount-page-id').value = d.id;
+    document.getElementById('discount-page-name').value = d.name;
+    document.getElementById('discount-page-value').value = d.value;
+    document.getElementById('discount-page-type').value = d.type;
+    document.getElementById('discount-page-start-date').value = d.startDate || '';
+    document.getElementById('discount-page-end-date').value = d.endDate || '';
+    document.getElementById('discount-page-status').value = d.status;
+    document.getElementById('discount-form-title-h3').textContent = 'Edit Discount';
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    document.getElementById('tab-discount-form').classList.add('active');
+    tabTitle.textContent = 'Edit Discount';
+    tabDescription.textContent = 'Modify discount campaign settings.';
+    breadcrumbCurrent.textContent = 'Edit Discount';
+  }
+
+  // --- EDIT PAYMENT (stub) ---
+  function editPayment(id) {
+    const payments = KioskStore.getPayments() || [];
+    const p = payments.find(item => item.id === id);
+    if (!p) return;
+    showToast(`Configure ${p.name} settings via Payment Configuration tab.`);
+    document.querySelector('.nav-item[data-tab="payments"]').click();
+  }
+
+  function deleteDiscount(id) {
+    const list = KioskStore.getDiscounts();
+    const d = list.find(item => item.id === id);
+    const name = d ? d.name : 'Discount Campaign';
+    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
+      KioskStore.setDiscounts(list.filter(item => item.id !== id));
+      showToast('Discount campaign deleted.');
+      renderDiscounts();
     }, { isDestructive: true, confirmText: 'Yes, Delete' });
   }
 
@@ -3150,7 +3729,7 @@
     document.getElementById('preview-modal-title').textContent = 'Fallback Preview';
     document.getElementById('preview-modal-image').src = image;
     document.getElementById('preview-modal-type').textContent = 'FALLBACK';
-    document.getElementById('preview-modal-duration').textContent = 'Γê₧';
+    document.getElementById('preview-modal-duration').textContent = 'Infinite';
     document.getElementById('preview-modal-priority').textContent = 'N/A';
     document.getElementById('preview-modal-schedule').textContent = 'Unconditional Fallback';
     document.getElementById('preview-modal-status').textContent = 'DEFAULT STATE';
@@ -3213,45 +3792,7 @@
     renderCategories();
   });
 
-  function editCategory(id) {
-    const cats = KioskStore.getCategories();
-    const c = cats.find(item => item.id === id);
-    if (!c) return;
 
-    let hidden = document.getElementById('category-page-id');
-    if (!hidden) {
-      hidden = document.createElement('input');
-      hidden.id = 'category-page-id';
-      hidden.type = 'hidden';
-      document.getElementById('tab-category-form').appendChild(hidden);
-    }
-    hidden.value = c.id;
-
-    document.getElementById('category-name-input').value = c.name;
-    document.getElementById('category-desc-input').value = c.description || '';
-    document.getElementById('category-status-input').checked = c.status === 'active';
-
-    document.getElementById('category-form-title').textContent = 'Edit Category';
-    
-    tabPanes.forEach(pane => pane.classList.remove('active'));
-    document.getElementById('tab-category-form').classList.add('active');
-    tabTitle.textContent = 'Edit Category';
-    tabDescription.textContent = 'Modify folder details.';
-    breadcrumbCurrent.textContent = 'Edit Category';
-  }
-
-  
-
-  function deleteDiscount(id) {
-    const list = KioskStore.getDiscounts();
-    const d = list.find(item => item.id === id);
-    const name = d ? d.name : 'Discount Campaign';
-    triggerConfirm(`Delete ${name}?`, 'Are you sure you want to delete this item? This action cannot be undone.', () => {
-      KioskStore.setDiscounts(list.filter(item => item.id !== id));
-      showToast('Discount campaign deleted.');
-      renderDiscounts();
-    }, { isDestructive: true, confirmText: 'Yes, Delete' });
-  }
 
   // Kiosk Add/Edit/View
   document.getElementById('btn-add-kiosks').addEventListener('click', () => {
@@ -3598,6 +4139,17 @@
     bannerSearchInput.addEventListener('input', () => {
       bannerPage = 1;
       renderBanners();
+    });
+  }
+
+  // Playlist search clear button
+  const playlistSearchClear = document.getElementById('playlists-search-clear');
+  if (playlistSearchClear) {
+    playlistSearchClear.addEventListener('click', () => {
+      const input = document.getElementById('playlists-search');
+      input.value = '';
+      playlistPage = 1;
+      renderPlaylists();
     });
   }
 
